@@ -640,7 +640,7 @@ class UserController extends Controller
             }
 
             // Google Maps API Key
-            $apiKey = 'AIzaSyDtg_iY8FedOwjt419T7zaT0fHTcTYcwPE';
+            $apiKey = env('GOOGLE_API_KEY');
 
             // Get filter inputs
             $latitude = $request->input('latitude');
@@ -948,7 +948,7 @@ class UserController extends Controller
                     // Make request to Google Maps Distance Matrix API
                     $response = $client->request('GET', 'https://maps.googleapis.com/maps/api/distancematrix/json', [
                         'query' => [
-                            'key' => 'AIzaSyDtg_iY8FedOwjt419T7zaT0fHTcTYcwPE',
+                            'key' => env('GOOGLE_API_KEY'),
                             'origins' => $latitude . ',' . $longitude,
                             'destinations' => $plantItem->latitude . ',' . $plantItem->longitude,
                             'units' => 'imperial', // 'imperial' for miles

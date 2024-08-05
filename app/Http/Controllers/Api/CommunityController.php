@@ -415,7 +415,7 @@ class CommunityController extends Controller
 
         // Structure the response data
         $data = collect([]);
-        $apiKey = 'AIzaSyDtg_iY8FedOwjt419T7zaT0fHTcTYcwPE';
+        $apiKey = env('GOOGLE_API_KEY');
 
         // Get filter inputs
         $latitude = $lat;
