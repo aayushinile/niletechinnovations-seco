@@ -1,0 +1,40 @@
+.profile-info-item {margin-bottom: 1rem; background: var(--white); /* border: 1px solid var(--Lighter); */ padding: 10px; border-radius: 5px; display: flex; gap: 20px; box-shadow: 0px 8px 13px rgb(0 0 0 / 5%); }
+
+.profile-info-item-media {width:300px; height: 200px; position: relative; overflow: hidden; border-radius: 10px; }
+.profile-info-item-media img{width: 100%; height: 100%; object-fit: cover;}
+
+.profile-info-item-content{ border-right: 1px solid var(--gray); position: relative; padding: 0 10px 0 0; flex: 1} 
+.profile-info-item-content h2 {font-size:20px; font-weight: 700; margin: 0 0 10px 0; padding: 0; color: var(--pink); }
+.profile-info-item-content p {font-size: 14px; margin:0 0 1rem 0; color: var(--gray); line-height: 24px; font-weight: normal; }
+
+.course-date{font-size: 14px; display: flex; align-items: center; gap: 10px; margin: 0; color: var(--lightgray); line-height: 24px; font-weight: normal; }
+.chapter-text {background: var(--white); border: 1px solid var(--green); padding: 2px 20px; display: inline-block; font-size: 13px; color:var(--blue); border-radius: 5px; text-transform: uppercase; font-weight: bold; text-align: center; box-shadow: 0px 8px 13px 0px rgba(0, 0, 0, 0.05); margin-bottom: 10px; }
+.chapter-text span{margin-right: 5px; color: var(--green);}
+.course-info-item-action{display: flex; align-items: center; justify-content:center; flex-direction: column;    width: 150px;}
+a.editbtn {background: var(--green); border: 1px solid var(--green); padding: 6px 20px; margin-bottom: 5px; display: inline-block; font-size: 12px; width: 100%; color: var(--white); border-radius: 5px; text-transform: uppercase; font-weight: bold; text-align: center; box-shadow: 0px 8px 13px 0px rgba(0, 0, 0, 0.05); }
+a.deletebtn {background: var(--red); border: 1px solid var(--red); padding: 6px 20px; display: inline-block; font-size: 12px; width: 100%; color: var(--white); border-radius: 5px; text-transform: uppercase; font-weight: bold; text-align: center; box-shadow: 0px 8px 13px 0px rgba(0, 0, 0, 0.05); }
+
+
+a.deletebtn {background: var(--red); color: var(--white); padding: 5px 15px; border-radius: 5px; font-size: 14px; box-shadow: 0 4px 10px #5f0f5845; display: inline-block; position: relative; }
+a.editbtn {background: var(--pink); color: var(--white); padding: 5px 15px; border-radius: 5px; font-size: 14px; box-shadow: 0 4px 10px #5f0f5845; display: inline-block; position: relative;}
+a.viewbtn {background: var(--green); color: var(--white); padding: 5px 15px; border-radius: 5px; font-size: 14px; box-shadow: 0 4px 10px #5f0f5845; display: inline-block; position: relative;}
+
+
+.ss-heading-section {display: flex;    align-items: center; justify-content: space-between; margin-bottom: 1rem; }
+.ss-heading-section h2 {font-size: 16px; font-weight: 600; margin: 0; padding: 0; color: var(--pink); }
+
+button.addnewplant-btn{background: var(--pink);width: 100%; color: var(--white); padding: 8px 15px; border-radius: 5px; font-size: 14px; box-shadow: 0 4px 10px #5f0f5845; display: inline-block; position: relative;}
+
+.Verifiedtext {background: var(--white); margin-bottom: 10px; display: inline-block; text-align: center; font-size: 13px; font-weight: 600; border-radius: 5px; color: var(--green); padding: 3px 10px; margin: 0; border: 1px solid; }
+
+
+.User-contact-info {position: relative; width: 100%; border-radius: 0; padding:  0; display: flex;  margin-bottom: 0rem; }
+.User-contact-info-icon {width: 40px; height: 40px; margin-right: 10px; line-height: 40px; }
+.User-contact-info-icon img {height: 32px; }
+.User-contact-info-content h2 {    font-size: 12px; font-weight: 700; margin: 0 0 5px 0; padding: 0; color: #4f5168; }
+.profile-info-point {display: flex; gap: 10px; align-items: center; margin-bottom: 1rem; }
+.Ownertext{font-size: 12px; margin: 0 0 0px 0; color:var(--gray); line-height: normal; font-weight: 600; }
+
+.profile-info-item-action {display: flex; align-items: center;  border-top: 1px solid var(--border); padding-top: 10px; gap: 10px; }
+a.EditProfilebtn {background: var(--pink); color: var(--white); padding: 8px 15px; border-radius: 5px; font-size: 14px; box-shadow: 0 4px 10px #5f0f5845; display: inline-block; position: relative;}
+a.ChangePasswordbtn {background: var(--green); color: var(--white); padding: 8px 15px; border-radius: 5px; font-size: 14px; box-shadow: 0 4px 10px #5f0f5845; display: inline-block; position: relative;}

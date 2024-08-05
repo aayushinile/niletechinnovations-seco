@@ -1,0 +1,56 @@
+
+.ss-heading-section {display: flex;    align-items: center; justify-content: space-between; margin-bottom: 1rem; }
+.ss-heading-section h2 {font-size: 16px; font-weight: 600; margin: 0; padding: 0; color: var(--pink); }
+
+button.addnewplant-btn{background: var(--pink);width: 100%; color: var(--white); padding: 8px 15px; border-radius: 5px; font-size: 14px; box-shadow: 0 4px 10px #5f0f5845; display: inline-block; position: relative;}
+a.addnewplant-btn{background: var(--pink);width: 100%; color: var(--white); padding: 8px 15px; border-radius: 5px; font-size: 14px; box-shadow: 0 4px 10px #5f0f5845; display: inline-block; position: relative;}
+
+
+
+
+
+
+
+.listed-plants-section {background-color: var(--cardbg); border: none; border-radius: 0.4rem; box-shadow: 0px 8px 13px 0px rgba(0, 0, 0, 0.05); }
+.plants-details-head {display: flex; align-items: center; justify-content: space-between; padding: 10px; }
+.plants-details-head-text h4 {font-size: 18px; font-weight: 600; margin: 0; padding: 0; color: var(--pink); }
+.plants-details-location {font-size: 14px; }
+.plants-details-item{display: flex; gap: 10px; align-items: center;}
+.plants-details-logo {height:48px; width: 48px; position: relative; overflow: hidden; }
+.plants-details-logo img {width: 100%; height: 100%; object-fit: cover; }
+
+
+.plants-details-action a.edit-btn {background: var(--pink); color: var(--white); padding:12px 20px; border-radius: 5px; font-size: 14px; box-shadow: 0 4px 10px #5f0f5845; display: inline-block; position: relative; }
+.plants-details-action a.delete-btn {background: var(--red); color: var(--white); padding:12px 20px; border-radius: 5px; font-size: 14px; box-shadow: 0 4px 10px #5f0f5845; display: inline-block; position: relative; }
+
+.listed-plants-details-section {padding: 10px; background: var(--body); }
+.listed-plants-slider-media {height: 235px; width: 100%; position: relative; overflow: hidden; }
+.listed-plants-slider-media img {width: 100%; height: 100%; object-fit: cover; }
+
+.plants-about-section{padding: 10px; position: relative;}
+.plants-about-section h2{font-size: 16px; font-weight: 600; margin: 0 0 10px 0; padding: 0; color: var(--pink); }
+.plants-about-section p{font-size: 14px; color: var(--gray); }
+
+.amenities-section{padding: 10px; position: relative;    margin-bottom: 2rem;}
+.plants-amenities-info{position: relative; width: 100%; border-radius: 0; padding: 0; display: flex; gap: 10px; margin-bottom: 0rem; }
+.plants-amenities-info img {height: 32px; }
+.plants-amenities-info-content {display: flex; gap: 10px; align-items: center; border: 1px solid; padding: 8px; width: 100%; border-radius: 5px; background: #fff; }
+
+
+.plants-amenities-info-content h2 {font-size: 14px; font-weight: 700; margin: 0 0 0px 0; padding: 0; color: var(--gray); }
+.plants-amenities-info-content p {font-size: 14px; margin: 0; color: var(--gray); line-height: normal; font-weight: normal; }
+ .pricing-info {margin-bottom: 10px; }
+.pricing-host-section {padding: 10px; position: relative; }
+.plants-pricing-item h2 {font-size: 18px; font-weight: 600; margin: 0 0 5px 0; color: var(--white); background: var(--pink); display: inline-block; padding: 10px 10px; }
+
+.contact-item-info {margin-bottom: 10px;font-size: 16px; }
+.sales-manager-info h1 {font-size: 18px; font-weight: 600; margin: 0 0 1rem 0; padding: 0; color: var(--pink); }
+.sales-manager-card {display: flex; gap: 10px; margin-bottom: 1rem; background: var(--body); padding: 15px; border-radius: 10px; } 
+.sales-manager-image {width: 100px; height: 100px; position: relative; overflow: hidden; border-radius: 50%; } 
+.sales-manager-image img {width: 100%; height: 100%; object-fit: cover; } 
+.sales-manager-content h3 {font-size: 18px; margin: 0 0 5px 0; padding: 0; color: var(--gray); } 
+.sales-manager-content h4 {font-size: 13px; margin: 0; padding: 0 0 0px 0; color: var(--gray); } 
+.sales-manager-contact {font-size: 14px; color: var(--pink); margin-top: 10px; }
+
+.TotalCommunity-text {font-size: 14px; font-weight: 600; margin: 0; color: var(--white); background: var(--pink); display: inline-block; padding: 8px 10px; }
+
