@@ -44,7 +44,7 @@
                                 <div class="brand-logo">
                                     <img src="{{asset('images/logo.svg')}}" alt="logo">
                                 </div>
-                                <h2>Manufacturer Login</h2>
+                                <h2>Manufacturer/Plant Login</h2>
                                 <p>To Get Into Show Search Control Panal</p>
                                 <form class="pt-4" method="post" action="{{ url('manufacturer/login') }}">
                                     @csrf
@@ -72,7 +72,7 @@
                                         <a href="{{ route('manufacturer.forget.password') }}">I forgot my password</a>
                                     </div>
                                     <div class="mt-1 forgotpsw-text">
-                                        <a href="{{ url('signup') }}"><b>Signup</b> As A New Manufacturer</a>
+                                        <a href="{{ url('signup') }}"><b>Signup</b> As A New Manufacturer/Plant</a>
                                     </div>
                                 </form>
 

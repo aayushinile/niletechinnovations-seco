@@ -104,7 +104,7 @@
 @section('content')
     <div class="body-main-content">
         <div class="ss-heading-section">
-            <h2>Manage Plant Details</h2>
+            <h2>Manage Plant/Manufacturer Details</h2>
             <div class="search-filter wd20">
             @php 
                         $plant_id = $plant['id'];
@@ -309,7 +309,7 @@
                     <div class="add-plants-item">
                         <div class="sales-add-card">
                             <div class="sales-add-head">
-                                <h2>Team Member Details</h2>
+                                <h2>Add Team Member Details</h2>
                                 <div class="add-plants-action">
                                     <a class="addmoremanager" href="javascript:void(0)" style="cursor: pointer;">Add
                                         More</a>
@@ -896,7 +896,7 @@
     <script src='https://api.mapbox.com/mapbox-gl-js/v2.10.0/mapbox-gl.js'></script>
     <!-- Mapbox Geocoder -->
     <script src='https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v4.7.0/mapbox-gl-geocoder.min.js'></script>
-    <script src="https://maps.googleapis.com/maps/api/js?key=env('GOOGLE_API_KEY')&libraries=places">
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDtg_iY8FedOwjt419T7zaT0fHTcTYcwPE&libraries=places">
     </script>
     <script>
         mapboxgl.accessToken = 'pk.eyJ1IjoidXNlcnMxIiwiYSI6ImNsdGgxdnpsajAwYWcya25yamlvMHBkcGEifQ.qUy8qSuM_7LYMSgWQk215w';

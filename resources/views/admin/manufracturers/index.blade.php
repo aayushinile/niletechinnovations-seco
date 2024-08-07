@@ -86,6 +86,11 @@
                                         <span class="search-icon"><img src="{{ asset('images/search-icon.svg') }}"></span>
                                     </div>
                                 </div>
+                                <div class="col-md-1">
+                                    <a href="{{ route('admin.manufracturers', array_merge(request()->all(), ['download' => 1])) }}"  class="btn-bl">
+                                <i class="fa fa-file-excel-o" aria-hidden="true"></i>
+                            </a>
+                                </div>
                             </form>
                         </div>
                         <div class="col-md-1">

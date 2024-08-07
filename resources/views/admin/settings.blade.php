@@ -53,6 +53,12 @@
                                     placeholder="$0" maxlength="10">
                             </div>
                         </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <h5>Set Miles</h5>
+                                <input type="number" class="form-control" name="set_miles" placeholder="0" value="{{ $mile['miles'] ?? 0}}">
+                            </div>
+                        </div>
                     </div>
                         <div class="add-plants-foot">
                             <div class="row">

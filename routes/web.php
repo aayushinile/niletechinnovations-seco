@@ -110,7 +110,7 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.'], function () {
 
         // enquries
         Route::get('enquiries', [AdminController::class, 'enquiries'])->name('enquiries');
-
+        Route::get('community-export', [AdminController::class, 'export'])->name('community.export');
         // community owners
         Route::get('community-owners', [AdminController::class, 'communityOwners'])->name('community.owners');
         Route::get('community-owners/{slug}', [AdminController::class, 'communityOwnersShow'])->name('community.owners.show');

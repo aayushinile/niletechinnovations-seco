@@ -20,24 +20,34 @@
         <div class="ss-card">
             <div class="card-header">
                 <h2>Community Owners</h2>
-                <div class="search-filter wd5" style="width: 50%">
-                    <div class="row g-1">
-                        <div class="col-md-6 offset-md-5"">
-                            <form action="" method="get">
+                <div class="search-filter wd50">
+                    <div class="row g-2">
+                        <div class="col-md-7">
+                             <form action="" method="get">
                                 <div class="form-group">
                                     <div class="search-form-group">
                                         <input type="text" name="search" class="form-control"
                                             @if (request()->has('search')) value="{{ request('search') }}" @endif
                                             placeholder="Search By Name, Location, Email & Phone…">
-                                        <span class="search-icon"><img
-                                                src="{{ asset('admin/images/search-icon.svg') }}"></span>
+                                        <span class="search-icon">
+                                            <img src="{{ asset('admin/images/search-icon.svg') }}">
+                                        </span>
                                     </div>
                                 </div>
+                                <!-- Export Button -->
+                                
                             </form>
                         </div>
                         <div class="col-md-1">
                             <a class="btn-refresh" href="{{ route('admin.community.owners') }}"> <i class="fa fa-refresh"
                                     aria-hidden="true"></i></a>
+
+                        </div>
+
+                        <div class="col-md-4">
+                            <a href="{{ route('admin.community.owners', array_merge(request()->all(), ['download' => 1])) }}" class="btn-bl">
+                                <i class="fa fa-file-excel-o" aria-hidden="true"></i> Export to Excel
+                            </a>
 
                         </div>
                         <div class="col-md-5 d-none">

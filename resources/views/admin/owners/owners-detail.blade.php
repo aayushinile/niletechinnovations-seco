@@ -99,6 +99,10 @@
                                 <div class="contacted-manufacturer-head">
                                     <h2>Contacted Manufacturer ({{ count($contact_m) }})</h2>
                                 </div>
+                                <form action="{{ route('admin.community.export') }}" method="GET">
+                                    <input type="hidden" value="{{$owner->id}}" name="id">
+                                    <button type="submit" class="btn btn-success"><i class="fa fa-file-excel-o" aria-hidden="true"></i>Download as Excel</button>
+                                </form>
                                 <div class="contacted-manufacturer-body">
                                     @foreach ($contact_m as $item)
                                         <div class="contacted-manufacturer-item">

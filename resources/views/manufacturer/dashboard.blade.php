@@ -85,7 +85,7 @@
                                         <a href="{{route('manufacturer.manage-locations')}}">
                                         <div class="overview-location-content">
                                             <div class="overview-location-content-text">
-                                                <p>Total listed Plants</p>
+                                                <p>Total listed Plant/Manufacturer</p>
                                                 <h2>{{$count}}</h2>
                                             </div>    
                                             <div class="overview-location-content-icon">

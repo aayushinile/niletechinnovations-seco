@@ -20,12 +20,18 @@ use App\Models\PlantLogin;
 use App\Models\PlantMedia;
 use App\Models\PlantSalesManager;
 use App\Models\ShippingCost;
+use App\Models\MileSettings;
 use App\Models\Specifications;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Redis;
 use Illuminate\Validation\Rule;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\CommunityOwnersExport;
+use App\Exports\PlantsExport;
+use App\Exports\ContactedManufacturerExport;
+use App\Exports\EnquiriesExport;
 
 class AdminController extends Controller
 {
@@ -114,27 +120,43 @@ class AdminController extends Controller
 
     public function communityOwners(Request $request)
     {
-
+        // Get the list of community user IDs
         $community = Community::whereNotNull("user_id")->groupBy("user_id")->pluck("user_id")->toArray();
-        $owners = User::where("type", 2)->when($request->has('search'), function ($query) use ($request) {
-            $keyword = trim($request->search);
-            return $query->where("business_name", "LIKE", "%$keyword%")->orWhere("email", "LIKE", "%$keyword%")->orWhere("mobile", "LIKE", "%$keyword%");
-        })->when($request->has('status'), function ($query) use ($request) {
 
-            return $query->where("status", $request->status);
-        })->when($request->has('date'), function ($query) use ($request) {
+        // Build the query with the necessary filters
+        $ownersQuery = User::where("type", 2)
+            ->when($request->has('search'), function ($query) use ($request) {
+                $keyword = trim($request->search);
+                return $query->where(function ($query) use ($keyword) {
+                    $query->where("business_name", "LIKE", "%$keyword%")
+                        ->orWhere("email", "LIKE", "%$keyword%")
+                        ->orWhere("mobile", "LIKE", "%$keyword%");
+                });
+            })
+            ->when($request->has('status'), function ($query) use ($request) {
+                return $query->where("status", $request->status);
+            })
+            ->when($request->has('date'), function ($query) use ($request) {
+                return $query->whereDate("created_at", $request->date);
+            })
+            ->whereIn("id", $community);
 
-            return $query->whereDate("created_at", $request->date);
-        })->whereIn("id", $community);
+        // Define the owners variable for export
         if ($request->has("search") || $request->has("status") || $request->has("date")) {
-            $owners = $owners->orderBy("id", "desc")->get();
+            $owners = $ownersQuery->orderBy("id", "desc")->get();
+            $owners_2 = $owners;
         } else {
-            $owners = $owners->orderBy("id", "desc")->paginate(10);
+            $owners_2 = $ownersQuery->orderBy("id", "desc")->get();
+            $owners = $ownersQuery->orderBy("id", "desc")->paginate(10);
         }
 
+        // Export to Excel if download request is filled
+        if ($request->filled('download')) {
+            // dd($owners_2);
+            return Excel::download(new CommunityOwnersExport($owners_2), 'community_owners.xls');
+        }
 
-
-
+        // Return the view with paginated data
         return view("admin.owners.index", compact('owners'));
     }
     public function communityOwnersShow(Request $request, $slug)
@@ -173,6 +195,35 @@ class AdminController extends Controller
         }
         return view("admin.owners.owners-detail", compact('community', 'owner', 'contact_m'));
     }
+
+
+    public function export(Request $request)
+    {
+        // Retrieve the ID from the query string
+        $id = $request->query('id');
+        
+        // Find the owner by ID
+        $owner = User::find($id);
+
+        // Check if the owner exists
+        if (!$owner) {
+            return redirect()->back()->withErrors('Owner not found');
+        }
+
+        // Get the list of manufacturers related to the owner
+        $manufacturers = ContactManufacturer::where("user_id", $id)->pluck("plant_id")->toArray();
+
+        // Fetch plant data with optional media
+        $contact_m = DB::table('plant')
+            ->select('plant.*', 'plant_media.image_url')
+            ->leftJoin('plant_media', 'plant.id', '=', 'plant_media.plant_id')
+            ->whereIn('plant.id', $manufacturers)
+            ->get();
+        // Download the Excel file
+        return Excel::download(new ContactedManufacturerExport($contact_m, $owner), 'contacted_manufacturer.xls');
+    }
+
+
     public function communityShow(Request $request, $slug)
     {
 
@@ -198,13 +249,21 @@ class AdminController extends Controller
 
             return $query->whereDate("created_at", $request->date);
         })->orderBy("id", "desc");
+
         if ($request->has("search") || $request->has("status") || $request->has("date")) {
             $manufracturers = $manufracturers->get();
+            $manufacturer_2 = $manufracturers;
         } else {
+            $manufacturer_2 = $manufracturers->get();
             $manufracturers = $manufracturers->paginate(10);
+            
         }
         //dd($manufracturers);
         $total = PlantLogin::count();
+        if ($request->filled('download')) {
+            // dd($manufacturer_2);
+            return Excel::download(new PlantsExport($manufacturer_2), 'plants.xls');
+        }
 
         return view("admin.manufracturers.index", compact('manufracturers', 'total'));
     }
@@ -266,7 +325,9 @@ class AdminController extends Controller
            // dd($request->manufacturer_id);
         if ($request->has("search") || $request->has("manufacturer_id") || $request->has("date")) {
             $mergedData = $mergedData->orderBy("id", "desc")->get();
+            $data_enquiries = $mergedData;
         } else {
+            $data_enquiries =  $mergedData->orderBy("id", "desc")->get();
             $mergedData = $mergedData->orderBy("id", "desc")->paginate(10);
         }
 
@@ -289,7 +350,10 @@ class AdminController extends Controller
 
         // $developers = contact_manufacturer::all();
         // return view('enquiries', ['developers' => $developers]);
-
+        if ($request->filled('download')) {
+           // dd($data_enquiries);
+            return Excel::download(new EnquiriesExport($data_enquiries), 'enquiries.xls');
+        }
         $pls = Plant::orderBy("id", 'desc')->get();
         $total = ContactManufacturer::whereNotNull("user_id")->count();
         return view('admin.enquiries', ['mergedData' => $mergedData, 'pls' => $pls, 'total' => $total]);
@@ -382,9 +446,10 @@ class AdminController extends Controller
     public function settings()
     {
         $shippingCosts = ShippingCost::all();
+        $miles = MileSettings::where('id',1)->first();
         // Transform the collection into a key-value array based on type
         $formattedData = $shippingCosts->keyBy('type');
-        return view('admin.settings', ['mergedData' => $formattedData]);
+        return view('admin.settings', ['mergedData' => $formattedData,'mile' => $miles]);
     }
     public function save_setting(Request $request)
     {
@@ -393,6 +458,7 @@ class AdminController extends Controller
             'single_wide_cost' => 'nullable',
             'double_wide_cost' => 'nullable',
             'single_double_wide_cost' => 'nullable',
+             'set_miles' => 'nullable|numeric'
         ]);
         DB::beginTransaction();
         try {
@@ -410,6 +476,12 @@ class AdminController extends Controller
                 ]);
                 // dd($record);
             }
+            //dd($validated['set_miles']);
+
+            MileSettings::where('id', 1)->update([
+                'miles' => $validated['set_miles'],
+            ]);
+
             DB::commit();
             // Redirect back with a success message
             return back()->with('success', 'Settings saved successfully');

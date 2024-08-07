@@ -3,7 +3,7 @@
 
     <div class="body-main-content">
         <div class="ss-heading-section">
-            <h2>Manage Plant Details</h2>
+            <h2>Manage Plant/Manufacturer Details</h2>
         </div>
         <div class="listed-plants-section">
             <div class="plants-details-head">
@@ -140,7 +140,7 @@
 
                     <div class="col-md-12">
                         <div class="sales-manager-info">
-                            <h1>Our Sales Managers</h1>
+                            <h1>Our Team Members</h1>
                             <div class="row">
                                 @foreach ($plant['sales_managers'] as $manager)
                                     <div class="col-md-4">

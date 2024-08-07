@@ -119,13 +119,13 @@
 @section('content')
     <div class="body-main-content">
         <div class="ss-heading-section">
-            <h2>Manage Plant Details</h2>
+            <h2>Manage Plant/Manufacturer Details</h2>
             <div class="search-filter wd20">
                 <div class="row g-1  justify-content-end">
                     <div class="col-md-4">
-                        <div class="form-group">
+                        <!-- <div class="form-group">
                             <a href="{{ route('manufacturer.manage-locations') }} "class="addnewplant-btn">Back</a>
-                        </div>
+                        </div> -->
                     </div>
                 </div>
             </div>
@@ -137,14 +137,14 @@
             @endphp
             <div class="add-plants-section">
                 <div class="add-plants-item">
-                    <h2>Add New Plant</h2>
+                    <h2>Edit Plant</h2>
 
                     <div class="add-plants-form">
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <h5>Plant Name *</h5>
-                                    <input type="text" class="form-control" name="plant_name" placeholder="Plant Name"
+                                    <h5>Plant/Manufacturer Name *</h5>
+                                    <input type="text" class="form-control" name="plant_name" placeholder="Plant/Manufacturer Name"
                                         value="{{ $plant['plant_name'] }}">
                                 </div>
                             </div>
@@ -181,7 +181,7 @@
                                     <h5>Location *</h5>
 
                                     <input id="geocoder" class="form-control" type="text"
-                                        placeholder="Plant Full Address" required value="{{ $plant['full_address'] }}">
+                                        placeholder="Plant/Mgf. Full Address" required value="{{ $plant['full_address'] }}">
                                     <input type="hidden" id="full_address" name="full_address" required
                                         class="form-control" value="{{ $plant['full_address'] }}">
                                     <input type="hidden" id="latitude" name="latitude" value="{{ $plant['latitude'] }}">
@@ -305,7 +305,7 @@
                     <div class="add-plants-item">
                         <div class="sales-add-card">
                             <div class="sales-add-head">
-                                <h2>Team Member Details</h2>
+                                <h2>Add Team Member Details</h2>
                                 <div class="add-plants-action">
                                     <a class="addmoremanager" href="javascript:void(0)" style="cursor: pointer;">Add
                                         More</a>
@@ -472,7 +472,7 @@
                             <div class="form-group">
                                 <a href="{{ route('manufacturer.manage-locations') }} "class="addnewplant-btn"
                                     style="width: 10%;padding: 10px 15px;">Cancel</a>
-                                <button type="submit" class="savecreatebtn">Add & Create</button>
+                                <button type="submit" class="savecreatebtn">Create</button>
                             </div>
                         </div>
                     </div>
@@ -913,7 +913,7 @@
     <script src='https://api.mapbox.com/mapbox-gl-js/v2.10.0/mapbox-gl.js'></script>
     <!-- Mapbox Geocoder -->
     <script src='https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v4.7.0/mapbox-gl-geocoder.min.js'></script>
-    <script src="https://maps.googleapis.com/maps/api/js?key=env('GOOGLE_API_KEY')&libraries=places">
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDtg_iY8FedOwjt419T7zaT0fHTcTYcwPE&libraries=places">
     </script>
 
     <script>

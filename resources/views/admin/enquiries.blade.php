@@ -22,7 +22,7 @@
                 <h2>Enquiries({{ $total }})</h2>
                 <div class="search-filter wd6" style="width: 60%">
                     <div class="row g-1">
-                        <div class="col-md-5">
+                        <div class="col-md-4">
                             <form action="">
                                 <div class="form-group search-form-group">
                                     <input type="text" name="search" class="form-control"
@@ -68,6 +68,12 @@
                                         aria-hidden="true" style="margin-top: 12px;"></i></a>
                             </div>
                         </div>
+                        <div class="col-md-1">
+                            <a href="{{ route('admin.enquiries', array_merge(request()->all(), ['download' => 1])) }}" class="btn-bl">
+                                <i class="fa fa-file-excel-o" aria-hidden="true"></i>
+                            </a>
+
+                        </div>
                     </div>
                 </div>
             </div>
@@ -94,7 +100,7 @@
                                         <td>{{ $data->user_name }}</td>
                                         <td>{{ $data->email }}</td>
                                         <td> {{ $data->phone_no }}</td>
-                                        <td>{{ $data->location ?? 'N/A' }}</td>
+                                        <td>{{ $data->location }}</td>
                                         <td> {{ substr($data->message, 0, 50) }}{{ strlen($data->message) > 50 ? '...' : '' }}
                                         @if(strlen($data->message) > 30)
                                                     <a class="infoRequestMessage"
