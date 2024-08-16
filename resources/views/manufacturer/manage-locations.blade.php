@@ -57,10 +57,11 @@ button.btn-search {
                     <form action="{{route('manufacturer.manage-locations')}}" method="POST">
                     @csrf
                     @php
-                    $user = Auth::user();
+                        $user = Auth::user();
+                        $plant_login = \App\Models\PlantLogin::where('id',$user->id)->first();
                         $add_plant = $media = \App\Models\Plant::where('manufacturer_id',$user->id)->count();
                     @endphp
-                    @if($add_plant < 1)
+                    @if($plant_login->plant_type ==  'plant_rep')
                         <div class="row g-1 justify-content-end">
                             <div class="col-md-4">
                                 <div class="form-group">
@@ -70,25 +71,31 @@ button.btn-search {
                         </div>
                     @else 
                     <div class="row g-1">
-                            <div class="col-md-10-1">
+                            <div class="col-md-6">
                                 <div class="form-group search-form-group">
                                     <input type="text"  name="search" value="{{ $search ? $search : '' }}"
                                     class="form-control" placeholder="Search">
                                     <span class="search-icon"><img src="{{asset('images/search-icon.svg')}}"></span>
                                 </div> 
                             </div>
-                            <div class="col-md-1-1">
+                            <div class="col-md-1">
                                 <div class="form-group">
                                     <a href="{{route('manufacturer.manage-locations')}}" class="btn-refresh"><i
                                             class="fa fa-refresh" aria-hidden="true" style="margin-top: 12px;"></i></a>
                                 </div>
                             </div>
-                            <div class="col-md-1-1">
+                            <div class="col-md-1">
                                 <div class="form-group">
                                     <button type="submit" class="btn-search"><i class="fa fa-search" aria-hidden="true"></i></button>
                                 </div>
                             </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <a href="{{ url('add-plant') }}" class="addnewplant-btn" style="padding: 9px 21px;">Add Plant</a>
+                                </div> 
+                            </div>
                         </div>
+                            
                     @endif
                     </form>  
                 </div>

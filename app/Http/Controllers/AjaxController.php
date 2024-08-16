@@ -50,9 +50,18 @@ class AjaxController extends Controller
                 ]);
             }
             $user = Auth::user();
+            $plants = DB::table('plant')->where('manufacturer_id', $user->id)->get();
+            $plantSpecificationIds = [];
+            foreach ($plants as $plant) {
+                $specIds = explode(',', $plant->specification ?? '');
+                $plantSpecificationIds = array_merge($plantSpecificationIds, $specIds);
+            }
+            $plantSpecificationIds[] = $specification->id;
 
+            // Remove duplicates from the plantSpecificationIds array
+            $plantSpecificationIds = array_unique($plantSpecificationIds);
             $specifications = DB::table('specifications')->where('manufacturer_id', $user->id)->get();
-            $view = view('manufacturer.ajax.specifications', compact('specifications'))->render();
+            $view = view('manufacturer.ajax.specifications', compact('specifications','plantSpecificationIds'))->render();
             return response()->json(['status' => true, 'view' => $view, 'message' => 'Specification saved successfully.', 'specification' => $specification]);
         } catch (\Exception $e) {
             return response()->json(['status' => false, 'message' => 'Failed to save specification: ' . $e->getMessage()]);
@@ -100,8 +109,19 @@ class AjaxController extends Controller
         }
 
         $user = Auth::user();
+        $plants = DB::table('plant')->where('manufacturer_id', $user->id)->get();
+        $plantSpecificationIds = [];
+            foreach ($plants as $plant) {
+                $specIds = explode(',', $plant->specification ?? '');
+                $plantSpecificationIds = array_merge($plantSpecificationIds, $specIds);
+            }
+            $plantSpecificationIds[] = $specification->id;
+
+            // Remove duplicates from the plantSpecificationIds array
+            $plantSpecificationIds = array_unique($plantSpecificationIds);
+        
         $specifications = DB::table('specifications')->where('manufacturer_id', $user->id)->get();
-        $view = view('manufacturer.ajax.specifications', compact('specifications'))->render();
+        $view = view('manufacturer.ajax.specifications', compact('specifications','plantSpecificationIds'))->render();
 
         return response()->json(['success' => 'Specification updated successfully.', 'view' => $view, 'specification' => $specification], 200);
     }

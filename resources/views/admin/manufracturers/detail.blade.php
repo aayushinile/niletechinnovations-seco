@@ -37,18 +37,26 @@
                             style="background: var(--green);color: var(--white);padding: 12px 20px;border-radius: 5px;font-size: 14px;box-shadow: 0 4px 10px #5f0f5845;display: inline-block;position: relative;cursor:pointer">Mark
                             As Active</a>
                     @endif
-                    <a class="ChangePasswordbtn" data-bs-toggle="modal" data-bs-target="#ChangePassword" style="background: var(--green);color: var(--white);padding: 12px 20px;border-radius: 5px;font-size: 14px;box-shadow: 0 4px 10px #5f0f5845;display: inline-block;position: relative;cursor:pointer" data-plant-id="{{ $mfs['id'] }}">Change Password</a>
+                    <a class="ChangePasswordbtn" data-bs-toggle="modal" data-bs-target="#ChangePassword" style="background: var(--green);color: var(--white);padding: 12px 20px;border-radius: 5px;font-size: 14px;box-shadow: 0 4px 10px #5f0f5845;display: inline-block;position: relative;cursor:pointer" data-plant-id="{{ $mfs['id'] }}">Reset Password</a>
                 </div>
             </div>
-            <div class="user-table-item d-none">
+            <div class="user-table-item">
                 <div class="row g-1 align-items-center">
                     <div class="col-md-4">
                         <div class="user-profile-item">
                             <div class="user-profile-media">
                                 <img src="{{ asset('images/defaultuser.png') }}">
                             </div>
+                            @php 
+                            $type = 'N/A';
+                            if($mfs->plant_type === 'corp_rep'){
+                                $type =  'Corp. Representative';
+                            }elseif($mfs->plant_type === 'plant_rep'){
+                                $type = ' Plant Representative';
+                            }
+                            @endphp
                             <div class="user-profile-text">
-                                <h2>{{ $manufacturer->full_name ?? 'N/A' }}</h2>
+                                <h2>{{ $mfs->plant_name ?? 'N/A' }}({{ $type ?? 'N/A' }})</h2>
                                 <div class="status-text {{ $mfs->status == 1 ? 'status-active' : 'status-inactive' }}">
                                     {{ $mfs->status == 1 ? 'Active' : 'Inactive' }}
                                 </div>
@@ -64,7 +72,7 @@
                                     </div>
                                     <div class="user-contact-info-content">
                                         <h2>Location</h2>
-                                        <p>{{ $manufacturer->manufacturer_address ?? 'N/A' }}</p>
+                                        <p>{{ $mfs->full_address ?? 'N/A' }}</p>
                                     </div>
                                 </div>
                             </div>
@@ -76,7 +84,7 @@
                                     </div>
                                     <div class="user-contact-info-content">
                                         <h2>Email</h2>
-                                        <p>{{ $manufacturer->email ?? 'N/A' }}</p>
+                                        <p>{{ $mfs->email ?? 'N/A' }}</p>
                                     </div>
                                 </div>
                             </div>
@@ -87,7 +95,7 @@
                                     </div>
                                     <div class="user-contact-info-content">
                                         <h2>Phone</h2>
-                                        <p>{{ $manufacturer->mobile ? '+1 ' . $manufacturer->mobile : 'N/A' }}</p>
+                                        <p>{{ $mfs->phone ? '+1 ' . $mfs->phone : 'N/A' }}</p>
                                     </div>
                                 </div>
                             </div>
@@ -109,9 +117,9 @@
                         </div>
                         <div class="plants-details-head-text">
 
-                            <h4>{{ $plant['plant_name'] ?? 'N/A' }}</h4>
+                        <h4>{{ $plant['plant_name'] ?? $mfs['plant_name'] ?? 'N/A' }}</h4>
                             <div class="plants-details-location">
-                                <img src="{{ asset('images/location-icon.svg') }}">{{ $plant['full_address'] ?? 'N/A' }}
+                                <img src="{{ asset('images/location-icon.svg') }}">{{ $plant['full_address'] ?? $mfs['full_address'] }}
                             </div>
                         </div>
                     </div>
@@ -147,7 +155,8 @@
                 <div class="amenities-section">
                     <h4 style="color: var(--pink);">Specifications</h4>
                     <div class="row">
-                        @if (!empty($specifications))
+                    @if ($specifications->isNotEmpty())
+
                             @foreach ($specifications as $specification)
                                 <div class="col-md-2">
                                     <div class="plants-amenities-info"
@@ -172,7 +181,6 @@
                             <div class="col-md-2">
                                 <div class="plants-amenities-info">
                                     <div class="plants-amenities-info-content">
-                                        <h2>Specifications</h2>
                                         <p>N/A</p>
                                     </div>
                                 </div>
@@ -210,23 +218,38 @@
                                 <div class="pricing-info">
                                     <div class="plants-pricing-item">
                                     @if(isset($plant['from_price_range']) && isset($plant['to_price_range']))
-    <h2>Price Range : ${{ $plant['from_price_range'] }} - ${{ $plant['to_price_range'] }}</h2>
-@else
-    <h2>Price Range : N/A</h2>
-@endif
+                                        <h2>Price Range : ${{ $plant['from_price_range'] }} - ${{ $plant['to_price_range'] }}</h2>
+                                    @else
+                                        <h2>Price Range : N/A</h2>
+                                    @endif
+                                    
                                     </div>
+                                    @php
+                                    if (!empty($plant) && isset($plant['type'])) {
+                                        $shippingCost = DB::table('shipping_cost')
+                                            ->where('type', $plant['type'])
+                                            ->first();
+                                    } else {
+                                        $shippingCost = null; 
+                                    }
+                                @endphp
+                                @if ($shippingCost)
+                                    <div class="plants-pricing-item">
+                                        <h2>Shipping Cost Per Mile @ ${{ $shippingCost->shipping_cost }}</h2>
+                                    </div>
+                                @endif
                                 </div>
                                 <div class="contact-item-info">
                                     <img
-                                        src="{{ asset('images/call.svg') }}">{{ $plant && $plant['phone'] ? '+1' . $plant['phone'] : 'N/A' }}
+                                        src="{{ asset('images/call.svg') }}">{{ $plant && $plant['phone'] ? '+1' . $plant['phone'] : ($mfs['phone'] ? '+1' . $mfs['phone'] : 'N/A') }}
                                 </div>
 
                                 <div class="contact-item-info">
-                                    <img src="{{ asset('images/sms.svg') }}"> {{ $plant['email'] ?? 'N/A' }}
+                                    <img src="{{ asset('images/sms.svg') }}"> {{ $mfs['email'] ?? 'N/A' }}
                                 </div>
                             </div>
                         </div>
-
+                        @if ($sales_managers->isNotEmpty())
                         <div class="col-md-12">
                             <div class="sales-manager-info">
                                 <h1>Our Team Members</h1>
@@ -263,6 +286,33 @@
                                 </div>
                             </div>
                         </div>
+                        @endif
+                        @if ($contact_m->isNotEmpty())
+                        <div class="col-md-12">
+                            <div class="sales-manager-info">
+                                <h1>Contacted Community Owners ({{ count($contact_m) }})</h1>
+                                <div class="row">
+                                @foreach ($contact_m as $item)
+                                    <div class="col-md-4">
+                                        <div class="sales-manager-card">
+                                            <div class="sales-manager-content">
+                                                <h3>{{ $item->business_name }}</h3>
+                                                <h4>{{ $item->business_address ?? 'N/A' }}</h4>
+                                                <div class="sales-manager-contact">
+                                                    <img src="{{ asset('images/call.svg') }}">
+                                                    {{ $item->mobile ?? 'N/A' }}
+                                                </div>
+                                                <div class="sales-manager-contact">
+                                                    <img src="{{ asset('images/sms.svg') }}"> {{ $item->email ?? 'N/A' }}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                @endforeach
+                            </div>
+                        </div>
+                        @endif
                     </div>
                 </div>
             </div>

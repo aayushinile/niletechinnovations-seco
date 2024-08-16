@@ -101,7 +101,7 @@ button.btn-search {
                             <div class="row g-1">
                                 <div class="col-md-4-1">
                                     <div class="form-group search-form-group">
-                                        <input type="text"name="search" value="{{ $search ? $search : '' }}" class="form-control" placeholder="Search By Name">
+                                        <input type="text"name="search" value="{{ $search ? $search : '' }}" class="form-control" placeholder="Search">
                                         <span class="search-icon"><img src="{{asset('images/search-icon.svg')}}"></span>
                                     </div> 
                                 </div>
@@ -141,9 +141,15 @@ button.btn-search {
                         <div class="ss-card-table table-responsive">
                             <table class="table">
                                 <thead>
+                                @php
+                                    $type = \App\Models\PlantLogin::where('id',$user->id)->first();
+                                    @endphp
                                     <tr>
                                         <th>S.no</th>
                                         <th>Date</th>
+                                        @if($type->plant_type == 'corp_rep')
+                                        <th>Plant Name</th>
+                                        @endif
                                         <th>Name</th>
                                         <th>Email</th>
                                         <th>Phone</th>
@@ -155,9 +161,16 @@ button.btn-search {
                                 @if(!$new_enquiries->isEmpty())
                                 <?php $s_no = 1; ?>
                                     @foreach ($new_enquiries as $index => $enquiry)
+                                    @php
+                                     $enq = \App\Models\ContactManufacturer::where('id',$enquiry->enquiry_id)->first();
+                                     $plant = \App\Models\Plant::where('id',$enq->plant_id)->first();
+                                    @endphp
                                         <tr>
                                             <td><span class="sno">{{ $index + 1 }}</span></td>
                                             <td>@if($enquiry->status == 0)<span class="new-msg-text">New</span>@endif {{ date('m/d/Y', strtotime($enquiry->created_at)) }}</td>
+                                            @if($type->plant_type == 'corp_rep')
+                                            <td>{{ $plant->plant_name ?? 'N/A'}}</td>
+                                            @endif
                                             <td>{{ $enquiry->enquiry_name }}</td>
                                             <td>{{ $enquiry->enquiry_mail }}</td>
                                             <td>{{ $enquiry->enquiry_phone }}</td>

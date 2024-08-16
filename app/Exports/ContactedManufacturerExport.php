@@ -27,6 +27,8 @@ class ContactedManufacturerExport implements FromCollection, WithHeadings, Shoul
                 'location' => $item->full_address,
                 'email' => $item->email,
                 'phone' => $this->formatPhone($item->phone),
+                'message' =>  $this->getMessage($this->owner->id, $item->id),
+                'date' => $this->getDate($this->owner->id, $item->id),
             ];
         });
     }
@@ -44,14 +46,40 @@ class ContactedManufacturerExport implements FromCollection, WithHeadings, Shoul
         return 'N/A';
     }
 
+
+
+    private function getMessage($user_id, $plant_id)
+    {
+        // Retrieve the message from ContactManufacturer where user_id and plant_id match
+        $contactManufacturer = \App\Models\ContactManufacturer::where('user_id', $user_id)
+            ->where('plant_id', $plant_id)
+            ->first();
+
+        return $contactManufacturer ? $contactManufacturer->message : 'N/A';
+    }
+
+
+
+    private function getDate($user_id, $plant_id)
+    {
+        // Retrieve the message from ContactManufacturer where user_id and plant_id match
+        $contactManufacturer = \App\Models\ContactManufacturer::where('user_id', $user_id)
+            ->where('plant_id', $plant_id)
+            ->first();
+
+            return $contactManufacturer ? $contactManufacturer->created_at->format('m/d/Y') : 'N/A';
+    }
+
     public function headings(): array
     {
         return [
             'Community Owner',
-            'Name',
+            'Plant Name',
             'Location',
             'Email',
             'Phone',
+            'Message',
+            'Enquiry Date',
         ];
     }
 }

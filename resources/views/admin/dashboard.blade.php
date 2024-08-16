@@ -116,7 +116,7 @@
                     <div class="user-table-list">
                         @foreach ($manufacturer_request as $item)
                             @php
-                                $plant = \App\Models\Plant::where('manufacturer_id', $item->id)->first();
+                                $plant = \App\Models\ManufacturerAttribute::where('manufacturer_id', $item->id)->first();
                                 if ($plant) {
                                     $image = \App\Models\PlantMedia::where('plant_id', $plant->id)->first();
                                 } else {
@@ -136,7 +136,15 @@
                                                 @endif
                                             </div>
                                             <div class="user-profile-text">
-                                                <h2>{{ $item->plant_name }}</h2>
+                                                <h2>
+                                                @if(!empty($item->plant_name))
+                                                    {{ $item->plant_name }}
+                                                @elseif(!empty($item->business_name))
+                                                    {{ $item->business_name }}
+                                                @else
+                                                    N/A
+                                                @endif
+                                                </h2>
                                                 <div class="status-text status-active">
                                                     {{ $item->status ? 'Active' : 'Inactive' }}</div>
                                             </div>

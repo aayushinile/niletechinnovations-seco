@@ -19,6 +19,7 @@ class Plant extends Model
         'full_address',
         'city',
         'state',
+        'country',
         'zipcode',
         'price_range',
         'type',
@@ -30,4 +31,11 @@ class Plant extends Model
         'from_price_range',
         'to_price_range',
     ];
+
+
+
+    public function plantLogin()
+{
+    return $this->belongsTo(PlantLogin::class, 'manufacturer_id');
+}
 }

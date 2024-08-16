@@ -19,14 +19,14 @@
     <div class="body-main-content">
         <div class="ss-card">
             <div class="card-header">
-                <h2>Enquiries({{ $total }})</h2>
+                <h2>Enquiries</h2>
                 <div class="search-filter wd6" style="width: 60%">
                     <div class="row g-1">
                         <div class="col-md-4">
                             <form action="">
                                 <div class="form-group search-form-group">
                                     <input type="text" name="search" class="form-control"
-                                        placeholder="Search By Community Name, Phone..">
+                                        placeholder="Search">
                                     <span class="search-icon"><img src="images/search-icon.svg"></span>
                                 </div>
                             </form>
@@ -69,7 +69,7 @@
                             </div>
                         </div>
                         <div class="col-md-1">
-                            <a href="{{ route('admin.enquiries', array_merge(request()->all(), ['download' => 1])) }}" class="btn-bl">
+                            <a href="{{ route('admin.enquiries', array_merge(request()->all(), ['download' => 1])) }}" class="btn-bl" style="background-color:var(--green)">
                                 <i class="fa fa-file-excel-o" aria-hidden="true"></i>
                             </a>
 
@@ -84,7 +84,7 @@
                             <tr>
                                 <th>Date</th>
                                 <th>Plant Name</th>
-                                <th>Community Name</th>
+                                <th>Community Owners</th>
                                 <th>Community Email</th>
                                 <th>Community Phone</th>
                                 <th>Community Location</th>

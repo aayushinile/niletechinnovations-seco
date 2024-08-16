@@ -96,13 +96,20 @@
                         </div>
                         <div class="col-md-4">
                             <div class="contacted-manufacturer-card">
-                                <div class="contacted-manufacturer-head">
-                                    <h2>Contacted Manufacturer ({{ count($contact_m) }})</h2>
+                            <div class="contacted-manufacturer-head row align-items-center">
+            <div class="col-md-8">
+                <h2>Contacted Manufacturer ({{ count($contact_m) }})</h2>
+            </div>
+            @if ($contact_m->isNotEmpty())
+                                <div class="col-md-4 text-right">
+                                    <form action="{{ route('admin.community.export') }}" method="GET">
+                                        <input type="hidden" value="{{ $owner->id }}" name="id">
+                                        <button type="submit" class="btnDownloadExcel">
+                                            <i class="fa fa-file-excel-o" aria-hidden="true"></i>
+                                        </button>
+                                    </form>
                                 </div>
-                                <form action="{{ route('admin.community.export') }}" method="GET">
-                                    <input type="hidden" value="{{$owner->id}}" name="id">
-                                    <button type="submit" class="btn btn-success"><i class="fa fa-file-excel-o" aria-hidden="true"></i>Download as Excel</button>
-                                </form>
+                                @endif
                                 <div class="contacted-manufacturer-body">
                                     @foreach ($contact_m as $item)
                                         <div class="contacted-manufacturer-item">

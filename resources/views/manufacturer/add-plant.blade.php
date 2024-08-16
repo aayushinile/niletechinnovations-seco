@@ -137,7 +137,7 @@
             @endphp
             <div class="add-plants-section">
                 <div class="add-plants-item">
-                    <h2>Edit Plant</h2>
+                    <h2>Plant Details</h2>
 
                     <div class="add-plants-form">
                         <div class="row">
@@ -145,7 +145,7 @@
                                 <div class="form-group">
                                     <h5>Plant/Manufacturer Name *</h5>
                                     <input type="text" class="form-control" name="plant_name" placeholder="Plant/Manufacturer Name"
-                                        value="{{ $plant['plant_name'] }}">
+                                        value="{{ $plant['plant_type'] === 'plant_rep' ? $plant['plant_name'] : '' }}">
                                 </div>
                             </div>
 
@@ -153,7 +153,7 @@
                                 <div class="form-group">
                                     <h5>Email *</h5>
                                     <input type="email" class="form-control email" name="email"
-                                        placeholder="Email Address" value="{{ $plant['email'] }}">
+                                        placeholder="Email Address" value="{{ $plant['plant_type'] === 'plant_rep' ? $plant['email'] : '' }}" >
                                     <span id="emailError" class="error-message"></span>
                                 </div>
                             </div>

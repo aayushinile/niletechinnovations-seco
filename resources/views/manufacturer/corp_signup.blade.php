@@ -53,16 +53,16 @@
                                 <div class="brand-logo">
                                     <img src="{{asset('images/logo.svg')}}" alt="logo" >
                                 </div>
-                                <h2>Manufacturer/Plant Signup</h2>
+                                <h2>Corporate Signup</h2>
                                 <p>Please Enter You Basic Details</p>
                                 <form class="pt-4" method="post" action="{{ route('saveManufacturer') }}" enctype="multipart/form-data" autocomplete="off">
                                     @csrf
-                                    <input type="hidden" name="rep_type" value="plant_rep">
+                                    <input type="hidden" name="rep_type" value="corp_rep">
                                     <div class="row">
 
                                     <div class="col-md-12 d-none">
                                             <div class="form-group">
-                                                <input type="text" name="manufacturer_full_name" class="form-control @error('manufacturer_full_name') is-invalid @enderror" placeholder="Manufacturer/Plant  Name " value="{{ old('manufacturer_full_name') }}">
+                                                <input type="text" name="manufacturer_full_name" class="form-control @error('manufacturer_full_name') is-invalid @enderror" placeholder="Representative  Name " value="{{ old('manufacturer_full_name') }}">
                                                 @error('manufacturer_full_name')
                                                     <span class="invalid-feedback" role="alert">
                                                         <strong>{{ $message }}</strong>
@@ -73,7 +73,7 @@
 
                                         <div class="col-md-12">
                                             <div class="form-group">
-                                                <input type="text" name="full_name" class="form-control @error('full_name') is-invalid @enderror" placeholder="Manufacturer/Plant  Name " value="{{ old('full_name') }}">
+                                                <input type="text" name="full_name" class="form-control @error('full_name') is-invalid @enderror" placeholder="Representative Name " value="{{ old('full_name') }}">
                                                 @error('full_name')
                                                     <span class="invalid-feedback" role="alert">
                                                         <strong>{{ $message }}</strong>
@@ -82,9 +82,9 @@
                                             </div>
                                         </div>
 
-                                        <div class="col-md-6">
+                                        <div class="col-md-12">
                                             <div class="form-group">
-                                                <input id="email" type="email" name="email" required class="form-control @error('email') is-invalid @enderror" placeholder="Mgf./Plant  Email Address *" value="{{ old('email') }}" autocomplete="new-email" onkeyup="checkEmail()">
+                                                <input id="email" type="email" name="email" required class="form-control @error('email') is-invalid @enderror" placeholder="Email Address *" value="{{ old('email') }}" autocomplete="new-email" onkeyup="checkEmail()">
                                                 @error('email')
                                                     <span class="invalid-feedback" role="alert">
                                                         <strong>{{ $message }}</strong>
@@ -94,11 +94,11 @@
                                             </div>
                                         </div>
 
-                                        <div class="col-md-6">
+                                        <div class="col-md-12 mb-4">
                                         <div class="form-group-phone">
                                                     <span class="input-group-text">+1</span>
                                                     <div class="input-group-form-control">
-                                                <input type="text" name="mobile"  class="form-control @error('mobile') is-invalid @enderror phone" placeholder="Mgf./Plant  Phone No." value="{{ old('mobile') }}" maxlength="10">
+                                                <input type="text" name="mobile"  class="form-control @error('mobile') is-invalid @enderror phone" placeholder="Phone Number" value="{{ old('mobile') }}" maxlength="10">
                                                 @error('mobile')
                                                     <span class="invalid-feedback" role="alert">
                                                         <strong>{{ $message }}</strong>
@@ -111,7 +111,7 @@
 
                                         <div class="col-md-12">
                                             <div class="form-group">
-                                                <input type="text" name="manufacturer_name" class="form-control @error('manufacturer_name') is-invalid @enderror" placeholder="Business Name" value="{{ old('manufacturer_name') }}">
+                                                <input type="text" name="manufacturer_name" class="form-control @error('manufacturer_name') is-invalid @enderror" placeholder="Business Name *" value="{{ old('manufacturer_name') }}" required>
                                                 @error('manufacturer_name')
                                                     <span class="invalid-feedback" role="alert">
                                                         <strong>{{ $message }}</strong>
@@ -143,7 +143,7 @@
 
                                         <div class="col-md-12">
                                             <div class="form-group form-group-icon">
-                                            <input id="geocoder" class="form-control" type="text" placeholder="Manufacturer/Plant  Address *" required name="manufacturer_address" required class="form-control @error('manufacturer_address') is-invalid @enderror" placeholder="Search for location" value="{{ old('manufacturer_address') }}">
+                                            <input id="geocoder" class="form-control" type="text" placeholder="Business Address *" required name="manufacturer_address" required class="form-control @error('manufacturer_address') is-invalid @enderror" placeholder="Search for location" value="{{ old('manufacturer_address') }}">
                                             <input type="hidden" id="full_address" name="full_address" required class="form-control">
                                             <input type="hidden" id="latitude" name="latitude">
                                             <input type="hidden" id="longitude" name="longitude">

@@ -1,11 +1,15 @@
 @if ($specifications->isNotEmpty())
+
     @foreach ($specifications as $specification)
+    @php
+    $isChecked = in_array($specification->id, $plantSpecificationIds);
+    @endphp
         <div class="col-md-4" id="specification-{{ $specification->id }}">
             <div class="specification-info">
                 <div class="specification-content">
                     <div class="specificationcheckbox">
                         <input type="checkbox" name="specifications[]" id="{{ $specification->id }}"
-                            value="{{ $specification->id }}">
+                            value="{{ $specification->id }}" {{ $isChecked ? 'checked' : '' }}>
                         <label for="{{ $specification->id }}">&nbsp</label>
                     </div>
                     @if (!empty($specification->image))

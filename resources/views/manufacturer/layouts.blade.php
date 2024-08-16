@@ -105,24 +105,35 @@
                         </li>
                         @php
                          $plant =  \App\Models\Plant::where('manufacturer_id',$user->id)->first();
+                         $plant_login =  \App\Models\PlantLogin::where('id',$user->id)->first();
                         @endphp
-                        @if(empty($plant))
+                        @if(empty($plant) && $plant_login['plant_type'] == 'plant_rep' || $plant_login['plant_type'] == 'null')
+                        <li class="nav-item @if($currentURL == 'AddPlant') active @endif">
+                            <a class="nav-link " href="{{route('AddPlant')}}">
+                                <span class="menu-icon">
+                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"> <path d="M22 12C22 6.48 17.52 2 12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22" stroke="#5F0F58" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/> <path d="M8.0001 3H9.0001C7.0501 8.84 7.0501 15.16 9.0001 21H8.0001" stroke="#5F0F58" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/> <path d="M15 3C15.97 5.92 16.46 8.96 16.46 12" stroke="#5F0F58" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/> <path d="M3 16V15C5.92 15.97 8.96 16.46 12 16.46" stroke="#5F0F58" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/> <path d="M3 8.99998C8.84 7.04998 15.16 7.04998 21 8.99998" stroke="#5F0F58" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/> <path d="M19.21 15.74L15.67 19.2801C15.53 19.4201 15.4 19.68 15.37 19.87L15.18 21.22C15.11 21.71 15.45 22.05 15.94 21.98L17.29 21.79C17.48 21.76 17.75 21.63 17.88 21.49L21.42 17.95C22.03 17.34 22.32 16.63 21.42 15.73C20.53 14.84 19.82 15.13 19.21 15.74Z" stroke="#5F0F58" stroke-width="1.5" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round"/> <path d="M18.7 16.25C19 17.33 19.84 18.17 20.92 18.47" stroke="#5F0F58" stroke-width="1.5" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round"/> </svg>
+                                </span>
+                                <span class="menu-title">Manage Plant/Mgf.</span>
+                            </a>
+                        </li>
+                        @elseif(!empty($plant) && $plant_login['plant_type'] == 'plant_rep')
+
+                        <li class="nav-item @if(Request::is('view-plant/' . $plant->id)) active @endif">
+                            <a class="nav-link " href="{{ url('view-plant/' . $plant->id) }}">
+                                <span class="menu-icon">
+                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"> <path d="M22 12C22 6.48 17.52 2 12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22" stroke="#5F0F58" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/> <path d="M8.0001 3H9.0001C7.0501 8.84 7.0501 15.16 9.0001 21H8.0001" stroke="#5F0F58" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/> <path d="M15 3C15.97 5.92 16.46 8.96 16.46 12" stroke="#5F0F58" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/> <path d="M3 16V15C5.92 15.97 8.96 16.46 12 16.46" stroke="#5F0F58" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/> <path d="M3 8.99998C8.84 7.04998 15.16 7.04998 21 8.99998" stroke="#5F0F58" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/> <path d="M19.21 15.74L15.67 19.2801C15.53 19.4201 15.4 19.68 15.37 19.87L15.18 21.22C15.11 21.71 15.45 22.05 15.94 21.98L17.29 21.79C17.48 21.76 17.75 21.63 17.88 21.49L21.42 17.95C22.03 17.34 22.32 16.63 21.42 15.73C20.53 14.84 19.82 15.13 19.21 15.74Z" stroke="#5F0F58" stroke-width="1.5" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round"/> <path d="M18.7 16.25C19 17.33 19.84 18.17 20.92 18.47" stroke="#5F0F58" stroke-width="1.5" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round"/> </svg>
+                                </span>
+                                <span class="menu-title">Manage Plant/Mgf.</span>
+                            </a>
+                        </li>
+                        @elseif( $plant_login['plant_type'] == 'corp_rep')
+                        
                         <li class="nav-item @if($currentURL == 'manufacturer.manage-locations') active @endif">
                             <a class="nav-link " href="{{route('manufacturer.manage-locations')}}">
                                 <span class="menu-icon">
                                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"> <path d="M22 12C22 6.48 17.52 2 12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22" stroke="#5F0F58" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/> <path d="M8.0001 3H9.0001C7.0501 8.84 7.0501 15.16 9.0001 21H8.0001" stroke="#5F0F58" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/> <path d="M15 3C15.97 5.92 16.46 8.96 16.46 12" stroke="#5F0F58" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/> <path d="M3 16V15C5.92 15.97 8.96 16.46 12 16.46" stroke="#5F0F58" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/> <path d="M3 8.99998C8.84 7.04998 15.16 7.04998 21 8.99998" stroke="#5F0F58" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/> <path d="M19.21 15.74L15.67 19.2801C15.53 19.4201 15.4 19.68 15.37 19.87L15.18 21.22C15.11 21.71 15.45 22.05 15.94 21.98L17.29 21.79C17.48 21.76 17.75 21.63 17.88 21.49L21.42 17.95C22.03 17.34 22.32 16.63 21.42 15.73C20.53 14.84 19.82 15.13 19.21 15.74Z" stroke="#5F0F58" stroke-width="1.5" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round"/> <path d="M18.7 16.25C19 17.33 19.84 18.17 20.92 18.47" stroke="#5F0F58" stroke-width="1.5" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round"/> </svg>
                                 </span>
-                                <span class="menu-title">Manage Plant</span>
-                            </a>
-                        </li>
-                        @elseif(!empty($plant))
-
-                        <li class="nav-item @if($currentURL == 'manufacturer.manage-locations') active @endif">
-                            <a class="nav-link " href="{{ url('view-plant/' . $plant->id) }}">
-                                <span class="menu-icon">
-                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"> <path d="M22 12C22 6.48 17.52 2 12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22" stroke="#5F0F58" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/> <path d="M8.0001 3H9.0001C7.0501 8.84 7.0501 15.16 9.0001 21H8.0001" stroke="#5F0F58" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/> <path d="M15 3C15.97 5.92 16.46 8.96 16.46 12" stroke="#5F0F58" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/> <path d="M3 16V15C5.92 15.97 8.96 16.46 12 16.46" stroke="#5F0F58" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/> <path d="M3 8.99998C8.84 7.04998 15.16 7.04998 21 8.99998" stroke="#5F0F58" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/> <path d="M19.21 15.74L15.67 19.2801C15.53 19.4201 15.4 19.68 15.37 19.87L15.18 21.22C15.11 21.71 15.45 22.05 15.94 21.98L17.29 21.79C17.48 21.76 17.75 21.63 17.88 21.49L21.42 17.95C22.03 17.34 22.32 16.63 21.42 15.73C20.53 14.84 19.82 15.13 19.21 15.74Z" stroke="#5F0F58" stroke-width="1.5" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round"/> <path d="M18.7 16.25C19 17.33 19.84 18.17 20.92 18.47" stroke="#5F0F58" stroke-width="1.5" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round"/> </svg>
-                                </span>
-                                <span class="menu-title">Manage Plant</span>
+                                <span class="menu-title">Manage Plant/Mgf.</span>
                             </a>
                         </li>
                         @endif
@@ -194,6 +205,15 @@
                                         </div>
                                         <div  class="profile-text" style="cursor: pointer;">
                                             <h3>{{ isset($user->plant_name) && $user->plant_name !== '' ? $user->plant_name : 'Admin' }} </h3>
+                                            <p>
+                                                @if($user->plant_type === 'corp_rep')
+                                                    Corporate Representative
+                                                @elseif($user->plant_type === 'plant_rep')
+                                                    Plant Representative
+                                                @else
+                                                    N/A
+                                                @endif
+                                            </p>
                                             @php
                                             $user = \App\Models\Manufacturer::where('plant_id',$user->id)->first();
                                             $status = '';
@@ -240,14 +260,27 @@
         <div class="modal-content">
             <div class="modal-body">
                 <div class="ss-modal-delete">
-                    <p id="delete-message">Are you sure you want to Logout?</p>
-                    <form id="delete-form" action="{{ route('manufacturer.logout') }}" method="POST">
+                    <p>Are you sure you want to Logout?</p>
+                    <form id="logout-form" action="{{ route('manufacturer.logout') }}" method="POST" style="display: none;">
                         @csrf
-                        <div class="ss-modal-delete-action">
-                            <button type="submit" class="yes-btn">Yes, Logout</button>
-                            <button type="button" class="cancel-btn" data-bs-dismiss="modal" aria-label="Close">Cancel</button>
-                        </div>
                     </form>
+                    <div class="ss-modal-delete-action">
+                        <a href="#" class="yes-btn"  onclick="event.preventDefault(); document.getElementById('logout-form').submit();" style="outline: none;
+                        width: 100%;
+                        padding: 15px 40px;
+                        display: inline-block;
+                        color: var(--white);
+                        font-size: 14px;
+                        font-weight: 600;
+                        border-radius: 5px;
+                        border: none;
+                        box-shadow: 0px 8px 13px 0px rgba(0, 0, 0, 0.05);
+                        background: var(--pink);
+                        margin-bottom: 5px;">
+                            Yes, Logout
+                        </a>
+                        <button type="button" class="cancel-btn" data-bs-dismiss="modal" aria-label="Close">Cancel</button>
+                    </div>
                 </div>
             </div>
         </div>

@@ -87,7 +87,7 @@
                                         <div class="password-container">
                                             <input type="password" name="password" class="form-control" id="password" placeholder="Password">
                                             <span class="eye-icon" onclick="togglePassword()">
-                                                <i class="fas fa-eye" id="eye"></i>
+                                                <i class="fas fa-eye-slash" id="eye"></i>
                                             </span>
                                         </div>
                                     </div>
@@ -247,12 +247,12 @@
         const eyeIcon = document.getElementById('eye');
         if (passwordInput.type === 'password') {
             passwordInput.type = 'text';
-            eyeIcon.classList.remove('fa-eye');
-            eyeIcon.classList.add('fa-eye-slash');
-        } else {
-            passwordInput.type = 'password';
             eyeIcon.classList.remove('fa-eye-slash');
             eyeIcon.classList.add('fa-eye');
+        } else {
+            passwordInput.type = 'password';
+            eyeIcon.classList.remove('fa-eye');
+            eyeIcon.classList.add('fa-eye-slash');
         }
     }
     </script>

@@ -1,6 +1,7 @@
 @extends('admin.layouts')
 @push('css')
     <link rel="stylesheet" type="text/css" href="{{ asset('admin/css/communityowners.css') }}">
+   
     <style>
         a.btn-refresh {
             width: 36px;
@@ -19,24 +20,31 @@
     <div class="body-main-content">
         <div class="ss-card">
             <div class="card-header">
-                <h2>Community Owners</h2>
+                <h2>Community Owners / Retailers</h2>
                 <div class="search-filter wd50">
                     <div class="row g-2">
-                        <div class="col-md-7">
+                        <div class="col-md-6">
                              <form action="" method="get">
                                 <div class="form-group">
                                     <div class="search-form-group">
                                         <input type="text" name="search" class="form-control"
                                             @if (request()->has('search')) value="{{ request('search') }}" @endif
-                                            placeholder="Search By Name, Location, Email & Phone…">
+                                            placeholder="Search">
                                         <span class="search-icon">
                                             <img src="{{ asset('admin/images/search-icon.svg') }}">
                                         </span>
                                     </div>
                                 </div>
                                 <!-- Export Button -->
-                                
                             </form>
+                        </div>
+                        <div class="col-md-3">
+                        <select class="form-control select2" name="type" id="type" onchange="changeManu(this.value)">
+                            <option value="">Select Type</option>
+                            <option value="all" @if (request('type') == 'all') selected @endif>All</option>
+                            <option value="2" @if (request('type') == '2') selected @endif>Community Owners</option>
+                            <option value="1" @if (request('type') == '1') selected @endif>Retailers</option>
+                        </select>
                         </div>
                         <div class="col-md-1">
                             <a class="btn-refresh" href="{{ route('admin.community.owners') }}"> <i class="fa fa-refresh"
@@ -44,9 +52,9 @@
 
                         </div>
 
-                        <div class="col-md-4">
-                            <a href="{{ route('admin.community.owners', array_merge(request()->all(), ['download' => 1])) }}" class="btn-bl">
-                                <i class="fa fa-file-excel-o" aria-hidden="true"></i> Export to Excel
+                        <div class="col-md-2">
+                            <a href="{{ route('admin.community.owners', array_merge(request()->all(), ['download' => 1])) }}" class="btnDownloadExcel">
+                                <i class="fa fa-file-excel-o" aria-hidden="true"></i>
                             </a>
 
                         </div>
@@ -91,8 +99,6 @@
                                     </div>
                                     <div class="col-md-8">
                                         <div class="row g-1 align-items-center">
-
-
                                             <div class="col-md-4">
                                                 <div class="user-contact-info">
                                                     <div class="user-contact-info-icon">
@@ -104,6 +110,8 @@
                                                     </div>
                                                 </div>
                                             </div>
+                                            
+
                                             <div class="col-md-3">
                                                 <div class="user-contact-info">
                                                     <div class="user-contact-info-icon">
@@ -115,8 +123,20 @@
                                                     </div>
                                                 </div>
                                             </div>
+                                            <div class="col-md-3">
+                                                <div class="user-contact-info">
+                                                    <div class="user-contact-info-content">
+                                                        <h2>Type</h2>
+                                                        <p> @if($item->type == 1)
+                                                                Retailer
+                                                            @else
+                                                                Community Owner
+                                                            @endif</p>
+                                                    </div>
+                                                </div>
+                                            </div>
 
-                                            <div class="col-md-1 offset-md-3 text-end">
+                                            <div class="col-md-2 text-end">
                                                 <div class="action-item-text">
                                                     <a class="action-btn"
                                                         href="{{ route('admin.community.owners.show', encrypt($item->id)) }}"><img
@@ -189,5 +209,32 @@
             // Reload the page with the new URL
             window.location.href = currentUrl.toString();
         });
+    </script>
+
+
+<script>
+        $(document).ready(function() {
+            $("select").select2();
+
+        });
+        function GetData(message) {
+            document.getElementById("message").innerText =
+                message;
+        }
+
+
+        function changeManu(val) {
+            var selectedValue = val;
+            var currentUrl = new URL(window.location.href);
+
+            // Add or update the 'run_id' parameter
+            currentUrl.searchParams.set('type', selectedValue);
+            if (val == 0) {
+                currentUrl.searchParams.delete('type');
+
+            }
+            // Reload the page with the new URL
+            window.location.href = currentUrl.toString();
+        }
     </script>
 @endsection

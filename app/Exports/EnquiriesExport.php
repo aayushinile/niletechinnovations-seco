@@ -49,7 +49,7 @@ class EnquiriesExport implements FromCollection, WithHeadings, ShouldAutoSize
             'Community Phone',
             'Community Location',
             'Message',
-            'Date',
+            'Enquiry Date',
         ];
     }
 }

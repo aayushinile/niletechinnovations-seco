@@ -82,7 +82,12 @@
                             <div class="overview-card">
                                 <div class="overview-card-head">
                                     <div class="overview-location-item">
+                                        @php
+                                        $type = \App\Models\PlantLogin::where('id',$user->id)->first();
+                                        @endphp
+                                        @if($type->plant_type = 'corp_rep')
                                         <a href="{{route('manufacturer.manage-locations')}}">
+                                        @endif
                                         <div class="overview-location-content">
                                             <div class="overview-location-content-text">
                                                 <p>Total listed Plant/Manufacturer</p>
@@ -102,7 +107,6 @@
                                         <div class="overview-location-item">
                                             <div class="overview-location-content">
                                                 <div class="overview-location-content-text">
-                                                    <p>{{ $details['count'] }} Plants</p>
                                                     <h2>{{ $details['city'] }}, {!! $details['state'] !!}</h2>
                                                 </div>
                                                 <div class="overview-location-content-icon">
@@ -130,9 +134,15 @@
                         <div class="ss-card-table table-responsive">
                             <table class="table">
                                 <thead>
+                                    @php
+                                    $type = \App\Models\PlantLogin::where('id',$user->id)->first();
+                                    @endphp
                                     <tr>
                                         <th>S.no</th>
                                         <th>Date</th>
+                                        @if($type->plant_type == 'corp_rep')
+                                        <th>Plant Name</th>
+                                        @endif
                                         <th>Name</th>
                                         <th>Email</th>
                                         <th>Phone</th>
@@ -144,10 +154,17 @@
                                     @if(!$new_enquiries->isEmpty())
                                     <?php $s_no = 1; ?>
                                     @foreach ($new_enquiries as $index => $enquiry)
+                                    @php
+                                     $enq = \App\Models\ContactManufacturer::where('id',$enquiry->enquiry_id)->first();
+                                     $plant = \App\Models\Plant::where('id',$enq->plant_id)->first();
+                                    @endphp
                                         <tr>
                                             <td><span class="sno">{{ $s_no }}</span></td>
                                             
                                             <td><span class="new-msg-text">New</span> {{ date('m/d/Y', strtotime($enquiry->created_at)) }}</td>
+                                            @if($type->plant_type == 'corp_rep')
+                                            <td>{{ $plant->plant_name ?? 'N/A'}}</td>
+                                            @endif
                                             <td>{{ $enquiry->enquiry_name }}</td>
                                             <td>{{ $enquiry->enquiry_mail }}</td>
                                             <td>{{ $enquiry->enquiry_phone }}</td>

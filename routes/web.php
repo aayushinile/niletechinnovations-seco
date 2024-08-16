@@ -81,6 +81,7 @@ Route::group(['prefix' => 'manufacturer', 'as' => 'manufacturer.'], function () 
 
 
 Route::get('/signup', [ManufacturerController::class, 'ManufacturerSignup'])->name('signup');
+Route::get('signup/corporate', [ManufacturerController::class, 'ManufacturerCorpSignup'])->name('corporate.signup');
 Route::post('/signup', [ManufacturerController::class, 'saveManufacturer'])->name('saveManufacturer');
 Route::post('/check-email', [ManufacturerController::class, 'checkEmail'])->name('checkEmail');
 
@@ -111,6 +112,7 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.'], function () {
         // enquries
         Route::get('enquiries', [AdminController::class, 'enquiries'])->name('enquiries');
         Route::get('community-export', [AdminController::class, 'export'])->name('community.export');
+        Route::get('plant-export', [AdminController::class, 'plantexport'])->name('plant.export');
         // community owners
         Route::get('community-owners', [AdminController::class, 'communityOwners'])->name('community.owners');
         Route::get('community-owners/{slug}', [AdminController::class, 'communityOwnersShow'])->name('community.owners.show');
@@ -118,9 +120,11 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.'], function () {
 
         // manufracturers
         Route::get('plants', [AdminController::class, 'manufracturers'])->name('manufracturers');
+        Route::get('corporate/plants', [AdminController::class, 'Corporatemanufracturers'])->name('manufracturers.corporate');
         Route::get('plants/requests', [AdminController::class, 'manufracturers_requests'])->name('manufracturers.requests');
         Route::post('plants/requests/approve/{id}', [AdminController::class, 'manufracturers_requests_approve'])->name('manufracturers.requests.approve');
         Route::get('plants/{slug}', [AdminController::class, 'manufracturersShow'])->name('manufracturers.show');
+        Route::get('corporate/plants/{slug}', [AdminController::class, 'manufracturersCorpShow'])->name('manufracturers.corporateshow');
 
 
         //   settings

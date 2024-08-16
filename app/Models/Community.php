@@ -25,6 +25,7 @@ class Community extends Model
         'no_of_new_homes',
         'vacant_lots',
         'no_of_home_needed',
+        'homes_needed_per_year',
         'latitude',
         'longitude',
     ];

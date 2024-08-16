@@ -52,9 +52,9 @@
     <div class="body-main-content">
         <div class="ss-card">
             <div class="card-header">
-                <h2>Plants({{ $total }})</h2>
-                <div class="search-filter wd80">
-                    <div class="row g-1">
+                <h2>Corporate Representatives({{ $total }})</h2>
+                <div class="search-filter wd70">
+                    <div class="row g-2">
 
                         <div class="col-md-3  d-none">
                             <div class="form-group">
@@ -91,14 +91,14 @@
                                     </form>
                                 </div>
                                 <div class="search-form-refresh-action">
-                                    <a class="btn-refresh" href="{{ route('admin.manufracturers') }}"> <i class="fa fa-refresh"
+                                    <a class="btn-refresh" href="{{ route('admin.manufracturers.corporate') }}"> <i class="fa fa-refresh"
                                     aria-hidden="true"></i></a>    
                                 </div>
                             </div> 
                         </div>
                       
                         <div class="col-md-2">
-                            <a href="{{ route('admin.manufracturers', array_merge(request()->all(), ['download' => 1])) }}" class="btnDownloadExcel">
+                            <a href="{{ route('admin.manufracturers.corporate', array_merge(request()->all(), ['download' => 1])) }}" class="btnDownloadExcel">
                                 <i class="fa fa-file-excel-o" aria-hidden="true"></i>
                             </a>
                         </div>
@@ -126,14 +126,13 @@
                         @php 
                         $manufacturer = \App\Models\PlantLogin::where('id',$item->manufacturer_id)->first();
                         @endphp
-                        @if ($manufacturer)
                             <div class="user-table-item">
                                 <div class="row g-1 align-items-center">
                                     <div class="col-md-4">
                                         <div class="usercheckbox-info">
                                             <div class="sscheckbox">
-                                                <input type="checkbox" name="select_plant[]" value="{{ $manufacturer->id }}" id="{{ $manufacturer->id }}">
-                                                <label for="{{ $manufacturer->id }}">&nbsp;</label>
+                                                <input type="checkbox" name="select_plant[]" value="{{ $item->id }}" id="{{ $item->id }}">
+                                                <label for="{{ $item->id }}">&nbsp;</label>
                                             </div>
                                             @php
                                                 $plant = \App\Models\Plant::where('manufacturer_id', $item->id)->first();
@@ -146,18 +145,13 @@
                                             @endphp
                                             <div class="user-profile-item">
                                                 <div class="user-profile-media">
-                                                    @if ($image)
-                                                        <img
-                                                            src="{{ asset('upload/manufacturer-image/' . $image['image_url']) }}">
-                                                    @else
                                                         <img src="{{ asset('images/defaultuser.png') }}">
-                                                    @endif
                                                 </div>
                                                 <div class="user-profile-text">
-                                                    <h2>{{ $item->plant_name ?? 'N/A' }}</h2>
+                                                    <h2>{{ $item->business_name ?? 'N/A' }}</h2>
                                                     <div
-                                                        class="status-text {{ $manufacturer->status == 1 ? 'status-active' : 'status-inactive' }}">
-                                                        {{ $manufacturer->status == 1 ? 'Active' : 'Inactive' }}
+                                                        class="status-text {{ $item->status == 1 ? 'status-active' : 'status-inactive' }}">
+                                                        {{ $item->status == 1 ? 'Active' : 'Inactive' }}
                                                     </div>
                                                 </div>
                                             </div>
@@ -200,19 +194,11 @@
                                                     </div>
                                                 </div>
                                             </div>
-                                            @php 
-                                                $type = 'N/A';
-                                                if($manufacturer->plant_type === 'corp_rep'){
-                                                    $type =  'Corp. Representative';
-                                                }elseif($manufacturer->plant_type === 'plant_rep'){
-                                                    $type = ' Plant Representative';
-                                                }
-                                            @endphp
                                             <div class="col-md-2 d-none">
                                                 <div class="user-contact-info">
                                                     <div class="user-contact-info-content">
                                                         <h2>Type</h2>
-                                                        <p>{{ $type ?? 'N/A' }}</p>
+                                                        <p></p>
                                                     </div>
                                                 </div>
                                             </div>
@@ -220,7 +206,7 @@
                                             <div class="col-md-1 text-end">
                                                 <div class="action-item-text">
                                                     <a class="action-btn"
-                                                        href="{{ route('admin.manufracturers.show', encrypt($item->id)) }}">
+                                                        href="{{ route('admin.manufracturers.corporateshow', encrypt($item->id)) }}">
                                                         <img src="{{ asset('images/arrow-right.svg') }}">
                                                     </a>
                                                 </div>
@@ -229,7 +215,6 @@
                                     </div>
                                 </div>
                             </div>
-                            @endif
                         @empty
                             <p class="text-center">No records found</p>
                         @endforelse

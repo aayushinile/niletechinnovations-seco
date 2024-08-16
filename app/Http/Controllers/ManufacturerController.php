@@ -19,6 +19,7 @@ use Exception;
 use Carbon\Carbon;
 use Mail;
 use App\Mail\ForgetPassword;
+use GuzzleHttp\Client;
 
 
 class ManufacturerController extends Controller
@@ -148,11 +149,17 @@ class ManufacturerController extends Controller
         return view('manufacturer.signup');
     }
 
+    public function ManufacturerCorpSignup(Request $request)
+    {
+        return view('manufacturer.corp_signup');
+    }
+
+
 
     public function saveManufacturer(Request $request)
-    {
+{
+    try {
         // Define validation rules
-        try{
         $rules = [
             'full_name' => 'nullable|string|max:255',
             'manufacturer_full_name' => 'nullable|string|max:255',
@@ -161,67 +168,105 @@ class ManufacturerController extends Controller
             'manufacturer_name' => 'nullable|string|max:255',
             'manufacturer_address' => 'required|string|max:255',
             'password' => 'required|string|min:6|confirmed',
-            'manufacturer_image' => 'image|mimes:jpeg,png,jpg|max:2048',
             'latitude' => 'required_with:full_address|numeric',
             'longitude' => 'required_with:full_address|numeric',
+            'rep_type' => 'nullable',
         ];
-
         // Validate the request
         $validator = Validator::make($request->all(), $rules);
 
         if ($validator->fails()) {
             return redirect()->back()->withErrors($validator)->withInput();
         }
-        //dd($request->all());
+        
+
+        // Get the full address
+        $fullAddress = $request->input('manufacturer_address');
+
+        // Initialize the HTTP client
+        $client = new Client();
+
+        // Make the request to the Mapbox Geocoding API
+        $response = $client->get('https://api.mapbox.com/geocoding/v5/mapbox.places/' . urlencode($fullAddress) . '.json', [
+            'query' => [
+                'access_token' => 'pk.eyJ1IjoidXNlcnMxIiwiYSI6ImNsdGgxdnpsajAwYWcya25yamlvMHBkcGEifQ.qUy8qSuM_7LYMSgWQk215w',
+            ],
+        ]);
+
+        // Parse the response
+        $data = json_decode($response->getBody(), true);
+        $features = $data['features'][0];
+
+        // Extract city, state, and country from the response
+        $city = $features['text'] ?? ''; // Use the main text as city if context doesn't have it
+        $state = '';
+        $country = '';
+
+        foreach ($features['context'] as $context) {
+            if (strpos($context['id'], 'place') === 0) {
+                $city = $context['text'];
+            } elseif (strpos($context['id'], 'region') === 0) {
+                $state = $context['text'];
+            } elseif (strpos($context['id'], 'country') === 0) {
+                $country = $context['text'];
+            }
+        }
+
+        // Log the API response for debugging
+        // Log::info('Mapbox API response', ['data' => $data]);
+
         // Create new manufacturer
         $plant = new PlantLogin();
         $plant->plant_name = $request->input('full_name');
         $plant->phone = $request->input('mobile');
         $plant->email = $request->input('email');
-        $plant->full_address = $request->input('manufacturer_address');
+        $plant->full_address = $fullAddress;
         $plant->password = bcrypt($request->input('password'));
         $plant->latitude = $request->latitude;
         $plant->longitude = $request->longitude;
+        $plant->city = $city;
+        $plant->state = $state;
+        $plant->country = $country;
         $plant->status = 1;
-        //$plant->manufacturer_id = Auth::user()->id;
+        $plant->plant_type = $request->rep_type;
+        $plant->business_name = $request->input('manufacturer_name') ?? '';
         $plant->save();
+
         $manufacturer = new Manufacturer();
         $manufacturer->status = 0;
         $manufacturer->plant_id = $plant->id; // Associate plant with manufacturer
         $manufacturer->manufacturer_name = $request->input('manufacturer_name') ?? '';
         $manufacturer->full_name = $request->input('manufacturer_full_name') ?? '';
         $manufacturer->save();
+
         $plant->update(['manufacturer_id' => $manufacturer->id]);
 
         if ($request->hasFile('manufacturer_image')) {
-            // dd('in');
             $file = $request->file('manufacturer_image');
-    
+
             // Generate unique file name
             $name = 'IMG_' . date('YmdHis') . '_' . rand(1000, 9999) . '.' . $file->getClientOriginalExtension();
-    
+
             // Move file to destination folder
             $file->move(public_path('upload/manufacturer-image'), $name);
-    
+
             // Save image attribute to database
-            $Attributes = ManufacturerAttributes::create([
-                'manufacturer_id' => $manufacturer->id, //manufacturer_id is plant_id now
+            ManufacturerAttributes::create([
+                'manufacturer_id' => $manufacturer->id,
                 'attribute_type' => 'Image',
                 'attribute_name' => $name,
-                'attribute_value' => $name, // Optionally, you can save the value here
+                'attribute_value' => $name,
                 'plant_id' => $plant->id,
             ]);
         }
-        // dd('out');
-        
-        
+
         Auth::guard('manufacturer')->login($plant);
 
         return redirect()->route('manufacturer.dashboard')->with('success', 'Manufacturer created successfully. Please log in.');
     } catch (\Exception $e) {
         return errorMsg("Exception -> " . $e->getMessage());
     }
-    }
+}
 
 
 
@@ -304,106 +349,164 @@ class ManufacturerController extends Controller
     public function savePlant(Request $request)
     {
         try {
-        $validator = Validator::make($request->all(), [
-            'plant_name' => 'nullable|string',
-            'email' => 'nullable|string',
-            'phone' => 'nullable|string',
-            'description' => 'required|string',
-            'full_address' => 'nullable|string',
-            'latitude' => 'required_with:full_address|numeric',
-            'longitude' => 'required_with:full_address|numeric',
-            'city' => 'nullable|string',
-            'state' => 'nullable|string',
-            'zipcode' => 'nullable|string',
-            'shipping_cost' => 'nullable|string',
-            'sales_manager' => 'nullable|array',
-            'sales_manager.name.*' => 'nullable|string',
-            'sales_manager.email.*' => 'nullable|string',
-            'sales_manager.phone.*' => 'nullable|string',
-            'sales_manager.designation.*' => 'nullable|string',
-            'sales_manager.images.*' => 'nullable',
-            'price_range' => 'nullable|string',
-            'from_price_range' => 'nullable|string',
-            'to_price_range' => 'nullable|string',
-            'specification' => 'nullable|string',
-            'type' => 'nullable|string',
-            'images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif|'
-        ]);
+            $validator = Validator::make($request->all(), [
+                'plant_name' => 'nullable|string',
+                'email' => 'nullable|string',
+                'phone' => 'nullable|string',
+                'description' => 'required|string',
+                'full_address' => 'nullable|string',
+                'latitude' => 'required_with:full_address|numeric',
+                'longitude' => 'required_with:full_address|numeric',
+                'city' => 'nullable|string',
+                'state' => 'nullable|string',
+                'zipcode' => 'nullable|string',
+                'shipping_cost' => 'nullable|string',
+                'sales_manager' => 'nullable|array',
+                'sales_manager.name.*' => 'nullable|string',
+                'sales_manager.email.*' => 'nullable|string',
+                'sales_manager.phone.*' => 'nullable|string',
+                'sales_manager.designation.*' => 'nullable|string',
+                'sales_manager.images.*' => 'nullable',
+                'price_range' => 'nullable|string',
+                'from_price_range' => 'nullable|string',
+                'to_price_range' => 'nullable|string',
+                'specification' => 'nullable|string',
+                'type' => 'nullable|string',
+                'images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            ]);
 
-        if ($validator->fails()) {
+            if ($validator->fails()) {
+                return redirect()->back()->withErrors($validator)->withInput();
+            }
+            $validated = $validator->validated();
 
-            return redirect()->back()->withErrors($validator)->withInput();
-        }
-        $validated = $validator->validated();
-        //dd($request->all());
+            $specifications = $request->specifications ? implode(',', $request->specifications) : null;
 
-        if (!empty($request->specifications)) {
-            $specifications = implode(',', $request->specifications);
-        }
-        $plant = Auth::user();
-        $plants = Plant::where('id',$plant->id)->first();
-        $plant = Plant::create([
-            'plant_name' => $request->plant_name,
-            'email' => $request->email,
-            'phone' => $request->phone,
-            'description' => $request->description,
-            'full_address' => $request->full_address,
-            'latitude' => $request->latitude,
-            'longitude' => $request->longitude,
-            'zipcode' => null,
-            'price_range' => $request->price_range,
-            'from_price_range' => $request->from_price_range,
-            'to_price_range' => $request->to_price_range,
-            'specification' => $specifications ?? null,
-            'type' => $request->type,
-            'manufacturer_id' => Auth::user()->id,
-            'shipping_cost'=> $request->shipping_cost,
-        ]);
+            // Initialize the HTTP client
+            $client = new Client();
 
-        if ($request->has('sales_manager')) {
-            foreach ($request->sales_manager['name'] as $key => $value) {
-                if (!empty($value)) {
-                    $name = ucfirst(strtolower($value));
-                $imagePath = null;
-                if ($request->hasFile("sales_manager.images.$key")) {
-                    $file = $request->file("sales_manager.images.$key");
-                    $imageName = 'IMG_' . date('YmdHis') . '_' . rand(1000, 9999) . '.' . $file->getClientOriginalExtension();
-                    $file->move(public_path('upload/sales-manager-images'), $imageName);
-                    $imagePath = $imageName;
+            // Make the request to the Mapbox Geocoding API
+            $response = $client->get('https://api.mapbox.com/geocoding/v5/mapbox.places/' . urlencode($request->full_address) . '.json', [
+                'query' => [
+                    'access_token' => 'pk.eyJ1IjoidXNlcnMxIiwiYSI6ImNsdGgxdnpsajAwYWcya25yamlvMHBkcGEifQ.qUy8qSuM_7LYMSgWQk215w',
+                ],
+            ]);
+    
+            // Parse the response
+            $data = json_decode($response->getBody(), true);
+            $features = $data['features'][0] ?? [];
+            //dd($features);
+            // Extract city, state, and country from the response
+            $city = '';
+            $state = '';
+            $country = '';
+    
+            if (isset($data['features'][0])) {
+                $features = $data['features'][0];
+                $city = $state = $country = $features['text'] ?? ''; // Default to text if no specific context
+                
+                foreach ($features['context'] as $context) {
+                    if (strpos($context['id'], 'place') === 0) {
+                        $city = $context['text'];
+                    } elseif (strpos($context['id'], 'region') === 0) {
+                        $state = $context['text'];
+                    } elseif (strpos($context['id'], 'country') === 0) {
+                        $country = $context['text'];
+                    }
                 }
     
-                PlantSalesManager::create([
-                    'plant_id' => $plant->id,
-                    'name' => $name,
-                    'phone' => $request->sales_manager['phone'][$key],
-                    'email' => $request->sales_manager['email'][$key],
-                    'designation' => $request->sales_manager['designation'][$key],
-                    'manufacturer_id' => Auth::user()->id,
-                    'image' => $imagePath,
-                ]);
+                // If no specific city found in context, use the text from the response
+                $city = $city ?: $features['text'];
+            } else {
+                // Handle case where features are not available
+                $city = $state = $country = 'Unknown';
             }
-        }
-        }
 
-        if ($request->hasfile('images')) {
-            foreach ($request->file('images') as $file) {
-                // Generate unique file name
-                $name = 'IMG_' . date('YmdHis') . '_' . rand(1000, 9999) . '.' . $file->getClientOriginalExtension();
-    
-                // Move file to destination folder
-                $file->move(public_path('upload/manufacturer-image'), $name);
-    
-                // Save image to database
-                PlantMedia::create([
-                    'plant_id' => $plant->id,
-                    'image_url' => $name
-                ]);
+            // Create the new plant
+            $plant = Plant::create([
+                'plant_name' => $request->plant_name,
+                'email' => $request->email,
+                'phone' => $request->phone,
+                'description' => $request->description,
+                'full_address' => $request->full_address,
+                'latitude' => $request->latitude,
+                'longitude' => $request->longitude,
+                'city' => $city,
+                'state' => $state,
+                'country' => $country,
+                'zipcode' => null,
+                'price_range' => $request->price_range,
+                'from_price_range' => $request->from_price_range,
+                'to_price_range' => $request->to_price_range,
+                'specification' => $specifications,
+                'type' => $request->type,
+                'manufacturer_id' => Auth::user()->id,
+                'shipping_cost'=> $request->shipping_cost,
+            ]);
+
+
+            $user = Auth::user();
+
+            $plants_login = PlantLogin::where('id',$user->id)->first();
+
+            // if($plants_login['plant_type'] == 'plant_rep'){
+            //     PlantLogin::where('id', $user->id)->update([
+            //         'email' => $request->email,
+            //         'plant_name' => $request->plant_name,
+            //         'full_address' => $request->full_address,
+            //         'longitude' => $request->longitude,
+            //         'latitude' => $request->latitude,
+            //         'phone' => $request->phone,
+            //         'city' => $city,
+            //         'state' => $state,
+            //         'country' => $country,
+            //     ]);
+            // }
+            
+
+            // Handle sales managers
+            if ($request->has('sales_manager')) {
+                foreach ($request->sales_manager['name'] as $key => $value) {
+                    if (!empty($value)) {
+                        $name = ucfirst(strtolower($value));
+                        $imagePath = null;
+                        if ($request->hasFile("sales_manager.images.$key")) {
+                            $file = $request->file("sales_manager.images.$key");
+                            $imageName = 'IMG_' . date('YmdHis') . '_' . rand(1000, 9999) . '.' . $file->getClientOriginalExtension();
+                            $file->move(public_path('upload/sales-manager-images'), $imageName);
+                            $imagePath = $imageName;
+                        }
+
+                        PlantSalesManager::create([
+                            'plant_id' => $plant->id,
+                            'name' => $name,
+                            'phone' => $request->sales_manager['phone'][$key],
+                            'email' => $request->sales_manager['email'][$key],
+                            'designation' => $request->sales_manager['designation'][$key],
+                            'manufacturer_id' => Auth::user()->id,
+                            'image' => $imagePath,
+                        ]);
+                    }
+                }
             }
-        }
 
-        return redirect()->route('ViewPlant', ['id' => $plant->id])->with('success', 'Details successfully saved!');
+            // Handle images
+            if ($request->hasfile('images')) {
+                foreach ($request->file('images') as $file) {
+                    $name = 'IMG_' . date('YmdHis') . '_' . rand(1000, 9999) . '.' . $file->getClientOriginalExtension();
+                    $file->move(public_path('upload/manufacturer-image'), $name);
+                    PlantMedia::create([
+                        'plant_id' => $plant->id,
+                        'image_url' => $name
+                    ]);
+                }
+            }
+            if ($user->plant_type === 'corp_rep') {
+                return redirect()->route('manufacturer.manage-locations')->with('success', 'Details successfully saved!');
+            }
+            return redirect()->route('ViewPlant', ['id' => $plant->id])->with('success', 'Details successfully saved!');
         } catch (\Exception $e) {
-            return errorMsg('Exception => ' . $e->getMessage());
+            return response('Exception => ' . $e->getMessage());
         }
     }
 
@@ -411,121 +514,171 @@ class ManufacturerController extends Controller
 
     public function updatePlant(Request $request, $id)
     {
-     //dd($request->all());
-        // Validate incoming request data
         try {
-        $validator = Validator::make($request->all(), [
-            'plant_name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255',
-            'phone' => 'required|string|max:255',
-            'description' => 'required|string',
-            'full_address' => 'nullable|string',
-            'latitude' => 'nullable|numeric',
-            'longitude' => 'nullable|numeric',
-            'price_range' => 'nullable|string',
-            'to_price_range' => 'nullable|string',
-            'from_price_range' => 'nullable|string',
-            'type' => 'nullable|string',
-            'specification' => 'nullable|string',
-            'shipping_cost' => 'nullable|string',
-            'sales_manager.name.*' => 'nullable|string',
-            'sales_manager.designation.*' => 'nullable|string',
-            'sales_manager.email.*' => 'nullable|string|email',
-            'sales_manager.phone.*' => 'nullable|string',
-            'sales_manager.images.*' => 'nullable',
-            'images.*' => 'nullable',
-        ]);
-        
-        if ($validator->fails()) {
-            return redirect()->back()->withErrors($validator)->withInput();
-        }
-        $validated = $validator->validated();
-       //dd($request->all());
-
-
-        // Find the plant by ID
-        $plant = Plant::findOrFail($id);
-        //dd($request->all());
-        // Update plant details
-        if (!empty($request->specifications)) {
-            $specifications = implode(',', $request->specifications);
-        }
-        $plant->update([
-            'plant_name' => $request->plant_name,
-            'email' => $request->email,
-            'phone' => $request->phone,
-            'description' => $request->description,
-            'full_address' => $request->full_address,
-            'latitude' => $request->latitude,
-            'longitude' => $request->longitude,
-            'price_range' => $request->price_range,
-            'from_price_range' => $request->from_price_range,
-            'to_price_range' => $request->to_price_range,
-            'specification' => $specifications ?? null,
-            'type' => $request->type,
-            'shipping_cost' => $request->shipping_cost,
-        ]);
-        $user = Auth::user();
-        PlantLogin::where('id',$user->id)->update([
-            'email' => $request->email,
-            'plant_name' => $request->plant_name,
-            'full_address' => $request->full_address,
-            'longitude' => $request->longitude,
-            'latitude' => $request->latitude,
-            'phone' => $request->phone]);
-        // Update sales managers
-        if ($request->has('sales_manager')) {
-            // Delete existing sales managers
-            DB::table('plant_sales_manager')->where('plant_id', $plant->id)->where('manufacturer_id', $user->id)->delete();
+            $validator = Validator::make($request->all(), [
+                'plant_name' => 'required|string|max:255',
+                'email' => 'required|string|email|max:255',
+                'phone' => 'nullable|string|max:255',
+                'description' => 'required|string',
+                'full_address' => 'nullable|string',
+                'latitude' => 'nullable|numeric',
+                'longitude' => 'nullable|numeric',
+                'price_range' => 'nullable|string',
+                'to_price_range' => 'nullable|string',
+                'from_price_range' => 'nullable|string',
+                'type' => 'nullable|string',
+                'specification' => 'nullable|string',
+                'shipping_cost' => 'nullable|string',
+                'sales_manager.name.*' => 'nullable|string',
+                'sales_manager.designation.*' => 'nullable|string',
+                'sales_manager.email.*' => 'nullable|string|email',
+                'sales_manager.phone.*' => 'nullable|string',
+                'sales_manager.images.*' => 'nullable',
+                'images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            ]);
     
-            // Create new sales managers
-            foreach ($request->sales_manager['name'] as $key => $value) {
-                if (!empty($value)) {
-                $imagePath = null;
-                $name = ucfirst(strtolower($value));
-                // Check if a new file is uploaded for this sales manager
-                if ($request->hasFile("sales_manager.images.$key")) {
-                    $file = $request->file("sales_manager.images.$key");
-                    $imageName = 'IMG_' . date('YmdHis') . '_' . rand(1000, 9999) . '.' . $file->getClientOriginalExtension();
-                    $file->move(public_path('upload/sales-manager-images'), $imageName);
-                    $imagePath = $imageName;
-                } else {
-                    // If no new image is uploaded, use the existing image from the hidden input
-                    $imagePath = $request->sales_manager['existing_images'][$key] ?? null;
+            if ($validator->fails()) {
+                return redirect()->back()->withErrors($validator)->withInput();
+            }
+            $validated = $validator->validated();
+    
+            // Find the plant by ID
+            $plant = Plant::findOrFail($id);
+    
+            // Update specifications if present
+            $specifications = $request->specifications ? implode(',', $request->specifications) : null;
+    
+            // Initialize the HTTP client
+            $client = new Client();
+    
+            // Make the request to the Mapbox Geocoding API
+            $response = $client->get('https://api.mapbox.com/geocoding/v5/mapbox.places/' . urlencode($request->full_address) . '.json', [
+                'query' => [
+                    'access_token' => 'pk.eyJ1IjoidXNlcnMxIiwiYSI6ImNsdGgxdnpsajAwYWcya25yamlvMHBkcGEifQ.qUy8qSuM_7LYMSgWQk215w',
+                ],
+            ]);
+    
+            // Parse the response
+            $data = json_decode($response->getBody(), true);
+            $features = $data['features'][0] ?? [];
+            //dd($features);
+            // Extract city, state, and country from the response
+            $city = '';
+            $state = '';
+            $country = '';
+            if (isset($data['features'][0])) {
+                $features = $data['features'][0];
+                $city = $state = $country = $features['text'] ?? ''; // Default to text if no specific context
+                
+                foreach ($features['context'] as $context) {
+                    if (strpos($context['id'], 'place') === 0) {
+                        $city = $context['text'];
+                    } elseif (strpos($context['id'], 'region') === 0) {
+                        $state = $context['text'];
+                    } elseif (strpos($context['id'], 'country') === 0) {
+                        $country = $context['text'];
+                    }
                 }
     
-                PlantSalesManager::create([
-                    'plant_id' => $plant->id,
-                    'name' =>$name,
-                    'phone' => $request->sales_manager['phone'][$key],
-                    'email' => $request->sales_manager['email'][$key],
-                    'designation' => $request->sales_manager['designation'][$key],
-                    'manufacturer_id' => $user->id,
-                    'image' => $imagePath,
-                ]);
+                // If no specific city found in context, use the text from the response
+                $city = $city ?: $features['text'];
+            } else {
+                // Handle case where features are not available
+                $city = $state = $country = 'Unknown';
             }
-            }
-        }
-        //dd($request->all());
-        // Handle image uploads
-        if ($request->hasFile('images')) {
-            //dd('in');
-            foreach ($request->file('images') as $file) {
-                // Generate unique file name
-                $name = 'IMG_' . date('YmdHis') . '_' . rand(1000, 9999) . '.' . $file->getClientOriginalExtension();
     
-                // Move file to destination folder
-                $file->move(public_path('upload/manufacturer-image'), $name);
+            // Update plant details
+            $plant->update([
+                'plant_name' => $request->plant_name,
+                'email' => $request->email,
+                'phone' => $request->phone,
+                'description' => $request->description,
+                'full_address' => $request->full_address,
+                'latitude' => $request->latitude,
+                'longitude' => $request->longitude,
+                'city' => $city,
+                'state' => $state,
+                'country' => $country,
+                'price_range' => $request->price_range,
+                'from_price_range' => $request->from_price_range,
+                'to_price_range' => $request->to_price_range,
+                'specification' => $specifications,
+                'type' => $request->type,
+                'shipping_cost' => $request->shipping_cost,
+            ]);
     
-                // Save image to database
-                PlantMedia::create([
-                    'plant_id' => $plant->id,
-                    'image_url' => $name
-                ]);
-            }
-        }
+            // Update PlantLogin details
+            $user = Auth::user();
 
-        return redirect()->route('ViewPlant', ['id' => $plant->id])->with('success', 'Plant details updated successfully.');
+
+            
+            $plants_login = PlantLogin::where('id',$user->id)->first();
+
+            // if($plants_login['plant_type'] == 'plant_rep'){
+            //     PlantLogin::where('id', $user->id)->update([
+            //         'email' => $request->email,
+            //         'plant_name' => $request->plant_name,
+            //         'full_address' => $request->full_address,
+            //         'longitude' => $request->longitude,
+            //         'latitude' => $request->latitude,
+            //         'phone' => $request->phone,
+            //         'city' => $city,
+            //         'state' => $state,
+            //         'country' => $country,
+            //     ]);
+            // }
+    
+            // Update sales managers
+            if ($request->has('sales_manager')) {
+                // Delete existing sales managers
+                DB::table('plant_sales_manager')->where('plant_id', $plant->id)->where('manufacturer_id', $user->id)->delete();
+    
+                // Create new sales managers
+                foreach ($request->sales_manager['name'] as $key => $value) {
+                    if (!empty($value)) {
+                        $imagePath = null;
+                        $name = ucfirst(strtolower($value));
+    
+                        // Check if a new file is uploaded for this sales manager
+                        if ($request->hasFile("sales_manager.images.$key")) {
+                            $file = $request->file("sales_manager.images.$key");
+                            $imageName = 'IMG_' . date('YmdHis') . '_' . rand(1000, 9999) . '.' . $file->getClientOriginalExtension();
+                            $file->move(public_path('upload/sales-manager-images'), $imageName);
+                            $imagePath = $imageName;
+                        } else {
+                            // If no new image is uploaded, use the existing image from the hidden input
+                            $imagePath = $request->sales_manager['existing_images'][$key] ?? null;
+                        }
+    
+                        PlantSalesManager::create([
+                            'plant_id' => $plant->id,
+                            'name' => $name,
+                            'phone' => $request->sales_manager['phone'][$key],
+                            'email' => $request->sales_manager['email'][$key],
+                            'designation' => $request->sales_manager['designation'][$key],
+                            'manufacturer_id' => $user->id,
+                            'image' => $imagePath,
+                        ]);
+                    }
+                }
+            }
+    
+            // Handle image uploads
+            if ($request->hasFile('images')) {
+                foreach ($request->file('images') as $file) {
+                    $name = 'IMG_' . date('YmdHis') . '_' . rand(1000, 9999) . '.' . $file->getClientOriginalExtension();
+                    $file->move(public_path('upload/manufacturer-image'), $name);
+                    PlantMedia::create([
+                        'plant_id' => $plant->id,
+                        'image_url' => $name
+                    ]);
+                }
+            }
+            if ($user->plant_type === 'corp_rep') {
+                return redirect()->route('manufacturer.manage-locations')->with('success', 'Plant details updated successfully.');
+            }
+    
+            return redirect()->route('ViewPlant', ['id' => $plant->id])->with('success', 'Plant details updated successfully.');
         } catch (\Exception $e) {
             return errorMsg('Exception => ' . $e->getMessage());
         }
@@ -939,7 +1092,8 @@ class ManufacturerController extends Controller
         if (!$plant) {
             return response()->json(['error' => 'Plant not found'], 404);
         }
-
+        PlantSalesManager::where('plant_id', $plantId)->delete();
+        PlantMedia::where('plant_id', $plantId)->delete();
         $plant->delete();
         session()->flash('success', 'Plant deleted successfully!');
 
