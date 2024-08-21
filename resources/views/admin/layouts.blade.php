@@ -139,42 +139,50 @@
                             </a>
                         </li>
 
-                        <li class="nav-item ">
-                            <a class="nav-link justify-content-between" href="#manufacturersSubMenu" data-bs-toggle="collapse" aria-expanded="false">
-                                <div>
-                                    <span class="menu-icon">
-                                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                            <path d="M2 22H22" stroke="#5F0F58" stroke-width="1.5" stroke-miterlimit="10"
-                                                stroke-linecap="round" stroke-linejoin="round" />
-                                            <path
-                                                d="M2.94995 22L2.99995 9.96999C2.99995 9.35999 3.28995 8.78004 3.76995 8.40004L10.77 2.95003C11.49 2.39003 12.5 2.39003 13.23 2.95003L20.23 8.39003C20.72 8.77003 21 9.34999 21 9.96999V22"
-                                                stroke="#5F0F58" stroke-width="1.5" stroke-miterlimit="10" stroke-linejoin="round" />
-                                            <path
-                                                d="M15.5 11H8.5C7.67 11 7 11.67 7 12.5V22H17V12.5C17 11.67 16.33 11 15.5 11Z"
-                                                stroke="#5F0F58" stroke-width="1.5" stroke-miterlimit="10" stroke-linecap="round"
-                                                stroke-linejoin="round" />
-                                            <path d="M10 16.25V17.75" stroke="#5F0F58" stroke-width="1.5" stroke-miterlimit="10"
-                                                stroke-linecap="round" stroke-linejoin="round" />
-                                            <path d="M10.5 7.5H13.5" stroke="#5F0F58" stroke-width="1.5" stroke-miterlimit="10"
-                                                stroke-linecap="round" stroke-linejoin="round" />
-                                        </svg>
-                                    </span>
-                                    <span class="menu-title">Manufacturers</span>
-                                </div>
-                                <i class="fa fa-angle-down" aria-hidden="true"></i> <!-- This icon indicates that there is a submenu -->
+                        <li class="nav-item {{ Route::is('admin.manufracturers*') ? 'active' : '' }}">
+                            <a class="nav-link" data-bs-toggle="collapse" href="#Manufacturersdropdown" >
+                                <span class="menu-icon">
+                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M2 22H22" stroke="#5F0F58" stroke-width="1.5" stroke-miterlimit="10"
+                                            stroke-linecap="round" stroke-linejoin="round" />
+                                        <path
+                                            d="M2.94995 22L2.99995 9.96999C2.99995 9.35999 3.28995 8.78004 3.76995 8.40004L10.77 2.95003C11.49 2.39003 12.5 2.39003 13.23 2.95003L20.23 8.39003C20.72 8.77003 21 9.34999 21 9.96999V22"
+                                            stroke="#5F0F58" stroke-width="1.5" stroke-miterlimit="10" stroke-linejoin="round" />
+                                        <path
+                                            d="M15.5 11H8.5C7.67 11 7 11.67 7 12.5V22H17V12.5C17 11.67 16.33 11 15.5 11Z"
+                                            stroke="#5F0F58" stroke-width="1.5" stroke-miterlimit="10" stroke-linecap="round"
+                                            stroke-linejoin="round" />
+                                        <path d="M10 16.25V17.75" stroke="#5F0F58" stroke-width="1.5" stroke-miterlimit="10"
+                                            stroke-linecap="round" stroke-linejoin="round" />
+                                        <path d="M10.5 7.5H13.5" stroke="#5F0F58" stroke-width="1.5" stroke-miterlimit="10"
+                                            stroke-linecap="round" stroke-linejoin="round" />
+                                    </svg>
+                                </span>
+                                <span class="menu-title">Manufacturers</span>
+                                <span class="dropdown-icon"><i class="fa fa-angle-down" aria-hidden="true"></i></span>
                             </a>
-                            <div id="manufacturersSubMenu" class="collapse {{ Route::is('admin.manufracturers*') || Route::is('admin.manufracturers.corporate') ? 'show' : '' }}">
-                                <ul class="nav flex-column sub-menu">
-                                    <li class="nav-item {{ Route::is('admin.manufracturers') ? 'active' : '' }}">
-                                        <a class="nav-link-1" href="{{ route('admin.manufracturers') }}">Plants</a>
-                                    </li>
-                                    <li class="nav-item {{ Route::is('admin.manufracturers.corporate') ? 'active' : '' }}">
-                                        <a class="nav-link-1" href="{{ route('admin.manufracturers.corporate') }}">Corporate</a>
-                                    </li>
-                                </ul>
-                            </div>
+                            <ul class="collapse {{ Route::is('admin.manufracturers*') || Route::is('admin.manufracturers.corporate') ? 'show' : '' }}" id="Manufacturersdropdown">
+                                <li class="{{ Route::is('admin.manufracturers') ? 'active' : '' }}">
+                                    <a class="dropdown-item" href="{{ route('admin.manufracturers') }}"> <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"> <path d="M2 22H22" stroke="#5F0F58" stroke-width="1.5" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round"/> <path d="M2.94995 22L2.99995 9.96999C2.99995 9.35999 3.28995 8.78004 3.76995 8.40004L10.77 2.95003C11.49 2.39003 12.4999 2.39003 13.2299 2.95003L20.23 8.39003C20.72 8.77003 21 9.34999 21 9.96999V22" stroke="#5F0F58" stroke-width="1.5" stroke-miterlimit="10" stroke-linejoin="round"/> <path d="M13 17H11C10.17 17 9.5 17.67 9.5 18.5V22H14.5V18.5C14.5 17.67 13.83 17 13 17Z" stroke="#5F0F58" stroke-width="1.5" stroke-miterlimit="10" stroke-linejoin="round"/> <path d="M9.5 13.75H7.5C6.95 13.75 6.5 13.3 6.5 12.75V11.25C6.5 10.7 6.95 10.25 7.5 10.25H9.5C10.05 10.25 10.5 10.7 10.5 11.25V12.75C10.5 13.3 10.05 13.75 9.5 13.75Z" stroke="#5F0F58" stroke-width="1.5" stroke-miterlimit="10" stroke-linejoin="round"/> <path d="M16.5 13.75H14.5C13.95 13.75 13.5 13.3 13.5 12.75V11.25C13.5 10.7 13.95 10.25 14.5 10.25H16.5C17.05 10.25 17.5 10.7 17.5 11.25V12.75C17.5 13.3 17.05 13.75 16.5 13.75Z" stroke="#5F0F58" stroke-width="1.5" stroke-miterlimit="10" stroke-linejoin="round"/> <path d="M19.0001 7L18.9701 4H14.5701" stroke="#5F0F58" stroke-width="1.5" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round"/> </svg> Plants </a>
+                                </li>
+                                <li class="{{ Route::is('admin.manufracturers.corporate') ? 'active' : '' }}">
+                                    <a class="dropdown-item" href="{{ route('admin.manufracturers.corporate') }}">
+                                    
+<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M1 22H23" stroke="#5F0F58" stroke-width="1.5" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M19.78 22.01V17.55" stroke="#5F0F58" stroke-width="1.5" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M19.8001 10.89C18.5801 10.89 17.6001 11.87 17.6001 13.09V15.36C17.6001 16.58 18.5801 17.56 19.8001 17.56C21.0201 17.56 22.0001 16.58 22.0001 15.36V13.09C22.0001 11.87 21.0201 10.89 19.8001 10.89Z" stroke="#5F0F58" stroke-width="1.5" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M2.1001 22V6.03003C2.1001 4.02003 3.10015 3.01001 5.09015 3.01001H11.3201C13.3101 3.01001 14.3001 4.02003 14.3001 6.03003V22" stroke="#5F0F58" stroke-width="1.5" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M5.80005 8.25H10.7501" stroke="#5F0F58" stroke-width="1.5" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M5.80005 12H10.7501" stroke="#5F0F58" stroke-width="1.5" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M8.25 22V18.25" stroke="#5F0F58" stroke-width="1.5" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
+ Corporate</a>
+                                </li>
+                            </ul>
                         </li>
 
+                        
 
                         <li class="nav-item {{ Route::is('admin.enquiries*') ? 'active' : '' }}">
                             <a class="nav-link" href="{{ route('admin.enquiries') }}">
@@ -302,10 +310,10 @@
                                 </a>
 
                                 <div class="dropdown-menu" style=" border-top: 1px solid var(--border); padding-top: 10px; gap: 10px;">
-                                    <a href="{{route('profile')}}" class="dropdown-item" style="font-size: 15px;">
+                                    <a href="{{route('admin.profile')}}" class="dropdown-item" style="font-size: 15px;">
                                     <i class="las la-user" style="font-size: 18px;"></i> Profile
                                     </a>
-                                    <a href="#" class="dropdown-item"  data-bs-toggle="modal" data-bs-target="#logout" style="font-size: 15px;">
+                                    <a href="{{ route('admin.logout') }}" class="dropdown-item" style="font-size: 15px;">
                                        <i class="las la-sign-out-alt" style="font-size: 18px;"></i> Logout
                                     </a>
                                 </div>

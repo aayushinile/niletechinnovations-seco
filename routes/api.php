@@ -45,5 +45,6 @@ Route::post('/plant', [ManufacturerController::class, 'savePlant']);
 Route::get('/plants', [UserController::class, 'plantListing']);
 Route::post('/plant-details', [UserController::class, 'plantDetails']);
 Route::post('/manufacturers', [UserController::class, 'manufacturerListing']);
+Route::post('/manufacturers2', [UserController::class, 'manufacturerListing2']);
 Route::post('/manufacturers-details', [UserController::class, 'getManufacturerDetails']);
 Route::get('/filter_static_data', [UserController::class, 'filter_static_data']);

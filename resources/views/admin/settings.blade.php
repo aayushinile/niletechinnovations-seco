@@ -55,7 +55,7 @@
                         </div>
                         <div class="col-md-6">
                             <div class="form-group">
-                                <h5>Set Miles</h5>
+                                <h5>Set Miles for Plant search in App</h5>
                                 <input type="number" class="form-control" name="set_miles" placeholder="0" value="{{ $mile['miles'] ?? 0}}">
                             </div>
                         </div>

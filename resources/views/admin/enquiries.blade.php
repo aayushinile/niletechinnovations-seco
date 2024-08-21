@@ -55,7 +55,8 @@
                                 <select class="form-control" id="manufacturer_id" onchange="changeManu(this.value)">
                                     <option value="0">Show All Plants</option>
                                     @foreach ($pls as $item)
-                                        <option value="{{ $item->id }}"
+                                    
+                                        <option value="{{ $item->plant_name }}"
                                             @if (request()->has('manufacturer_id') && request('manufacturer_id') === $item->id) selected @endif>{{ $item->plant_name }}
                                         </option>
                                     @endforeach
@@ -84,10 +85,10 @@
                             <tr>
                                 <th>Date</th>
                                 <th>Plant Name</th>
-                                <th>Community Owners</th>
-                                <th>Community Email</th>
-                                <th>Community Phone</th>
-                                <th>Community Location</th>
+                                <th>Co/Retailer Name</th>
+                                <th>Email</th>
+                                <th>Phone</th>
+                                <th>Location</th>
                                 <th>Message</th>
                             </tr>
                         </thead>
@@ -95,11 +96,11 @@
                             @if (!$mergedData->isEmpty())
                                 @foreach ($mergedData as $data)
                                     <tr>
-                                        <td>{{ date('m-d-Y', strtotime($data->created_at)) }}</td>
+                                        <td style="width: 8% !important;">{{ date('m-d-Y', strtotime($data->created_at)) }}</td>
                                         <td>{{ $data->plant_name }}</td>
                                         <td>{{ $data->user_name }}</td>
                                         <td>{{ $data->email }}</td>
-                                        <td> {{ $data->phone_no }}</td>
+                                        <td style="width: 12% !important;"> {{ $data->phone_no }}</td>
                                         <td>{{ $data->location }}</td>
                                         <td> {{ substr($data->message, 0, 50) }}{{ strlen($data->message) > 50 ? '...' : '' }}
                                         @if(strlen($data->message) > 30)
@@ -135,7 +136,6 @@
                             <div class="ss-modal-message">
                                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                                 <div class="message-modal-card">
-                                    <img src="{{asset('images/info.svg')}}">
                                     <p id="message" class="message-text"></p>
                                 </div>
                             </div>

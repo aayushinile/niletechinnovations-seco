@@ -32,6 +32,7 @@ use App\Exports\CommunityOwnersExport;
 use App\Exports\PlantsExport;
 use App\Exports\ContactedManufacturerExport;
 use App\Exports\EnquiriesExport;
+use App\Exports\CorporateManufacturersExport;
 
 class AdminController extends Controller
 {
@@ -101,20 +102,24 @@ class AdminController extends Controller
         $plants = DB::table('plant')->count();
         $plant_with_manufacturer = DB::table('plant')
             ->count();
+        $enquiries = DB::table('contact_manufacturer')
+        ->count();
         $total_manufacturer = DB::table('plant_login')->count();
+        $total_manufacturer_corp = DB::table('plant_login')->where('plant_type','corp_rep')->count();
+        $total_manufacturer_plant = DB::table('plant_login')->where('plant_type','plant_rep')->count();
         $total_community = DB::table('community')->where('status', 1)->count();
         $manufacturer_request = DB::table('plant_login')->where('status', 1)->orderBy("id", 'desc')->take(5)
             ->get();
         $community = Community::whereNotNull("user_id")->groupBy("user_id")->pluck("user_id")->toArray();
 
-        $owners = User::where("type", 2)->whereIn('id', $community)->count();
+        $owners = User::whereIn("type", [1, 2])->count();
 
         $plant_groups = Plant::select('full_address', 'plant_name', DB::raw('count(*) as total'))
             ->groupBy('full_address', 'plant_name')
             ->orderBy("total", "desc")
-            ->take(3)
+            ->take(5)
             ->get();
-        return view("admin.dashboard", compact('plants', 'plant_groups', 'owners', 'total_manufacturer', 'total_community', 'manufacturer_request', 'plant_with_manufacturer'));
+        return view("admin.dashboard", compact('plants', 'plant_groups', 'owners', 'total_manufacturer', 'total_community', 'manufacturer_request', 'plant_with_manufacturer','enquiries','total_manufacturer_plant','total_manufacturer_corp'));
     }
 
 
@@ -122,9 +127,9 @@ class AdminController extends Controller
     {
         // Get the list of community user IDs
         $community = Community::whereNotNull("user_id")->groupBy("user_id")->pluck("user_id")->toArray();
-
+        
         // Build the query with the necessary filters
-        $ownersQuery = User::where("type", 2)
+        $ownersQuery = User::whereIn('type', [1, 2])
             ->when($request->has('search'), function ($query) use ($request) {
                 $keyword = trim($request->search);
                 return $query->where(function ($query) use ($keyword) {
@@ -136,10 +141,14 @@ class AdminController extends Controller
             ->when($request->has('status'), function ($query) use ($request) {
                 return $query->where("status", $request->status);
             })
+            
             ->when($request->has('date'), function ($query) use ($request) {
                 return $query->whereDate("created_at", $request->date);
             })
-            ->whereIn("id", $community);
+
+            ->when($request->filled('type') && $request->type !== 'all', function ($query) use ($request) {
+                return $query->where("type", $request->type);
+            });
 
         // Define the owners variable for export
         if ($request->has("search") || $request->has("status") || $request->has("date")) {
@@ -152,7 +161,6 @@ class AdminController extends Controller
 
         // Export to Excel if download request is filled
         if ($request->filled('download')) {
-            // dd($owners_2);
             return Excel::download(new CommunityOwnersExport($owners_2), 'community_owners.xls');
         }
 
@@ -220,6 +228,7 @@ class AdminController extends Controller
             ->whereIn('plant.id', $manufacturers)
             ->get();
         // Download the Excel file
+       // dd($owner);
         return Excel::download(new ContactedManufacturerExport($contact_m, $owner), 'contacted_manufacturer.xls');
     }
 
@@ -239,16 +248,26 @@ class AdminController extends Controller
 
     public function manufracturers(Request $request)
     {
-        $manufracturers = PlantLogin::whereNotNull("status")->when($request->has('search'), function ($query) use ($request) {
+        $manufracturers = Plant::whereNotNull("plant_name")
+        ->whereHas('plantLogin', function ($query) {
+            $query->where('plant_type', 'plant_rep');
+        })
+        ->when($request->has('search'), function ($query) use ($request) {
             $keyword = trim($request->search);
-            return $query->where("plant_name", "LIKE", "%$keyword%")->orWhere("phone", "LIKE", "%$keyword%")->orWhere("email", "LIKE", "%$keyword%")->orWhere("full_address", "LIKE", "%$keyword%");
-        })->when($request->has('status'), function ($query) use ($request) {
-
-            return $query->where("status", $request->status);
-        })->when($request->has('date'), function ($query) use ($request) {
-
+            return $query->where(function ($query) use ($keyword) {
+                $query->where("plant_name", "LIKE", "%$keyword%")
+                    ->orWhere("phone", "LIKE", "%$keyword%")
+                    ->orWhere("email", "LIKE", "%$keyword%")
+                    ->orWhere("full_address", "LIKE", "%$keyword%")
+                    ->orWhere("state", "LIKE", "%$keyword%")
+                    ->orWhere("city", "LIKE", "%$keyword%")
+                    ->orWhere("country", "LIKE", "%$keyword%");
+            });
+        })
+        ->when($request->has('date'), function ($query) use ($request) {
             return $query->whereDate("created_at", $request->date);
-        })->orderBy("id", "desc");
+        })
+        ->orderBy("id", "desc");
 
         if ($request->has("search") || $request->has("status") || $request->has("date")) {
             $manufracturers = $manufracturers->get();
@@ -259,14 +278,71 @@ class AdminController extends Controller
             
         }
         //dd($manufracturers);
-        $total = PlantLogin::count();
+        $total = Plant::whereHas('plantLogin', function ($query) {
+            $query->where('plant_type', 'plant_rep');
+        })->count();
+        
         if ($request->filled('download')) {
-            // dd($manufacturer_2);
+            //dd($manufacturer_2);
             return Excel::download(new PlantsExport($manufacturer_2), 'plants.xls');
         }
 
         return view("admin.manufracturers.index", compact('manufracturers', 'total'));
     }
+
+
+
+
+    public function plantexport(Request $request)
+    {
+        $manufracturers = Plant::where('manufacturer_id',$request->id)
+        ->orderBy("id", "desc");
+        $manufacturer_2 = $manufracturers->get();
+        return Excel::download(new PlantsExport($manufacturer_2), 'plants.xls');
+    }
+
+
+
+    public function Corporatemanufracturers(Request $request)
+    {
+        $manufracturers = PlantLogin::where('plant_type', 'corp_rep')
+            ->when($request->has('search'), function ($query) use ($request) {
+                $keyword = trim($request->search);
+                return $query->where(function ($query) use ($keyword) {
+                    $query->where("plant_name", "LIKE", "%$keyword%")
+                        ->orWhere("business_name", "LIKE", "%$keyword%")
+                        ->orWhere("phone", "LIKE", "%$keyword%")
+                        ->orWhere("email", "LIKE", "%$keyword%")
+                        ->orWhere("full_address", "LIKE", "%$keyword%")
+                        ->orWhere("state", "LIKE", "%$keyword%")
+                        ->orWhere("city", "LIKE", "%$keyword%")
+                        ->orWhere("country", "LIKE", "%$keyword%");
+                });
+            })
+            ->when($request->has('date'), function ($query) use ($request) {
+                return $query->whereDate("created_at", $request->date);
+            })
+            ->orderBy("id", "desc");
+
+        if ($request->has("search") || $request->has("status") || $request->has("date")) {
+            $manufracturers = $manufracturers->get();
+            $manufacturer_2 = $manufracturers;
+        } else {
+            $manufacturer_2 = $manufracturers->get();
+            $manufracturers = $manufracturers->paginate(10);
+        }
+
+        //dd($manufracturers);
+        $total = PlantLogin::where('plant_type', 'corp_rep')->count();
+       
+        if ($request->filled('download')) {
+            return Excel::download(new CorporateManufacturersExport($manufacturer_2), 'corporate_representative.xls');
+        }
+
+        return view("admin.manufracturers.corporateindex", compact('manufracturers', 'total'));
+    }
+
+    
     public function manufracturers_requests(Request $request)
     {
         $manufracturers = Manufacturer::whereNull("status")->when($request->has('search'), function ($query) use ($request) {
@@ -290,20 +366,98 @@ class AdminController extends Controller
     public function manufracturersShow(Request $request, $slug)
     {
         $id = decrypt($slug);
-        $mfs = PlantLogin::find($id);
-        $manufacturer = Manufacturer::where('id', $mfs->manufacturer_id)->first();
-        $plant = Plant::where('manufacturer_id', $mfs->id)->first();
+       
+        $manufacturer = null;
+        $plant = Plant::where('id', $id)->first();
+        $mfs = PlantLogin::where('id',$plant->manufacturer_id)->first();
+
+        // $manufracturers = ContactManufacturer::where("plant_id", $plant->id)->pluck("user_id")->toArray();
+        // //dd($manufracturers);
+        // $contact_m = DB::table('users')
+        // ->whereIn('id', $manufracturers)
+        // ->get();
+
+        // foreach ($contact_m as  $item) {
+
+        //     $image_attribute = ManufacturerAttributes::where("manufacturer_id", $item->id)->where("attribute_name", "image")->first();
+        //     if ($image_attribute) {
+        //         $item->image = $image_attribute->attribute_value;
+        //     } else {
+        //         $item->image = null;
+        //     }
+        // }
+
         if (!empty($plant)) {
             $images = PlantMedia::where('plant_id', $plant->id)->get();
             $sales_managers = PlantSalesManager::where('plant_id', $plant->id)->get();
             $specificationIds = explode(',', $plant->specification);
             $specifications = Specifications::whereIn('id', $specificationIds)->get();
+            $manufracturers = ContactManufacturer::where("plant_id", $plant->id)->pluck("user_id")->toArray();
+            $contact_m = DB::table('users')
+                ->whereIn('id', $manufracturers)
+                ->get();
         } else {
-            $images = [];
-            $sales_managers = [];
-            $specifications = [];
+            $images = collect(); // Use an empty collection instead of an array
+            $sales_managers = collect(); // Same for sales managers
+            $specifications = collect(); // Same for specifications
+            $contact_m = collect(); // Same for contacted manufacturers
         }
-        return view("admin.manufracturers.detail", compact('mfs', 'plant', 'images', 'sales_managers', 'specifications', 'manufacturer'));
+        return view("admin.manufracturers.detail", compact('mfs', 'plant', 'images', 'sales_managers', 'specifications', 'manufacturer','contact_m'));
+    }
+
+
+
+    public function manufracturersCorpShow(Request $request, $slug)
+    {
+        $id = decrypt($slug);
+
+        $plants = DB::table('plant')
+                ->leftJoin('plant_media', 'plant_media.plant_id', '=', 'plant.id')
+                ->where('plant.manufacturer_id', $id)
+                ->orderBy('plant.id', 'DESC')
+                ->select(
+                    'plant.id as plant_id', // Select and alias the community id
+                    'plant.plant_name',
+                    'plant.full_address',   // Select the value from community_attributes
+                )
+                ->distinct()
+                ->get();
+
+        //$plant = Plant::where('id', $id)->first();
+        $mfs = PlantLogin::where('id',$id)->first();
+
+        // $manufracturers = ContactManufacturer::where("plant_id", $plant->id)->pluck("user_id")->toArray();
+        // //dd($manufracturers);
+        // $contact_m = DB::table('users')
+        // ->whereIn('id', $manufracturers)
+        // ->get();
+
+        // foreach ($contact_m as  $item) {
+
+        //     $image_attribute = ManufacturerAttributes::where("manufacturer_id", $item->id)->where("attribute_name", "image")->first();
+        //     if ($image_attribute) {
+        //         $item->image = $image_attribute->attribute_value;
+        //     } else {
+        //         $item->image = null;
+        //     }
+        // }
+
+        if (!empty($plant)) {
+            $images = PlantMedia::where('plant_id', $plant->id)->get();
+            $sales_managers = PlantSalesManager::where('plant_id', $plant->id)->get();
+            $specificationIds = explode(',', $plant->specification);
+            $specifications = Specifications::whereIn('id', $specificationIds)->get();
+            $manufracturers = ContactManufacturer::where("plant_id", $plant->id)->pluck("user_id")->toArray();
+            $contact_m = DB::table('users')
+                ->whereIn('id', $manufracturers)
+                ->get();
+        } else {
+            $images = collect(); // Use an empty collection instead of an array
+            $sales_managers = collect(); // Same for sales managers
+            $specifications = collect(); // Same for specifications
+            $contact_m = collect(); // Same for contacted manufacturers
+        }
+        return view("admin.manufracturers.corpdetails", compact('mfs', 'plants'));
     }
 
 
@@ -311,24 +465,26 @@ class AdminController extends Controller
     // anshul coded this functions
     public function enquiries(Request $request)
     {
-
+       // dd($request->all());
         $mergedData = ContactManufacturer::whereNotNull("user_id")
+        ->join('plant', 'contact_manufacturer.plant_id', '=', 'plant.id')
             ->when($request->has('search'), function ($query) use ($request) {
                 $keyword = trim($request->search);
                 return $query->where("user_name", "LIKE", "%$keyword%")->orWhere("email", "LIKE", "%$keyword%")->orWhere("location", "LIKE", "%$keyword%")->orWhere("phone_no", "LIKE", "%$keyword%");
             })->when($request->has('manufacturer_id'), function ($query) use ($request) {
-                return $query->where("plant_id", $request->manufacturer_id);
+                $manufacturerName = trim($request->manufacturer_id);
+                return $query->where("plant.plant_name", "LIKE", "%$manufacturerName%");
             })->when($request->has('date'), function ($query) use ($request) {
 
                 return $query->whereDate("created_at", $request->input('date'));
             });
            // dd($request->manufacturer_id);
         if ($request->has("search") || $request->has("manufacturer_id") || $request->has("date")) {
-            $mergedData = $mergedData->orderBy("id", "desc")->get();
+            $mergedData = $mergedData->orderBy("contact_manufacturer.id", "desc")->get();
             $data_enquiries = $mergedData;
         } else {
-            $data_enquiries =  $mergedData->orderBy("id", "desc")->get();
-            $mergedData = $mergedData->orderBy("id", "desc")->paginate(10);
+            $data_enquiries =  $mergedData->orderBy("contact_manufacturer.id", "desc")->get();
+            $mergedData = $mergedData->orderBy("contact_manufacturer.id", "desc")->paginate(10);
         }
 
 
@@ -354,7 +510,11 @@ class AdminController extends Controller
            // dd($data_enquiries);
             return Excel::download(new EnquiriesExport($data_enquiries), 'enquiries.xls');
         }
-        $pls = Plant::orderBy("id", 'desc')->get();
+        $pls = Plant::select('plant_name') // Select only the 'name' column
+        ->distinct()             // Ensure the names are distinct
+        ->orderBy('id', 'desc')  // Order by 'id' in descending order
+        ->groupBy('plant_name')        // Group by 'name' to avoid duplicates
+        ->get();
         $total = ContactManufacturer::whereNotNull("user_id")->count();
         return view('admin.enquiries', ['mergedData' => $mergedData, 'pls' => $pls, 'total' => $total]);
     }
@@ -484,7 +644,7 @@ class AdminController extends Controller
 
             DB::commit();
             // Redirect back with a success message
-            return back()->with('success', 'Settings saved successfully');
+            return back()->with('success', 'Settings updated successfully');
         } catch (\Exception $e) {
             // Handle any errors
             return back()->withErrors('An error occurred while saving settings: ' . $e->getMessage());
@@ -568,6 +728,8 @@ class AdminController extends Controller
 
                     if (request('otp') == session('otp')) {
                         if ((time() - session('time')) <= 600) {
+                            // Delete any existing token for this email
+                            DB::table('password_resets')->where('email', $request->email)->delete();
                             $token = uniqid();
                             DB::table('password_resets')->insert([
                                 'email' => $request->email,

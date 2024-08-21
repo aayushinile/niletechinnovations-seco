@@ -5,7 +5,7 @@
 @section('content')
     <div class="body-main-content">
         <div class="ss-heading-section">
-            <h2>Community Owner</h2>
+            <h2>Community Owner/Retailer</h2>
         </div>
         <div class="listed-plants-section">
             <div class="plants-details-head">
@@ -24,7 +24,7 @@
                     @foreach ($images as $item)
                         <div class="item">
                             <div class="listed-plants-slider-media">
-                                <a href="images/1.jpg" data-fancybox="gallery">
+                                <a href="{{  asset('upload/community_image/' . $item) }}" data-fancybox="gallery">
                                     <img src="{{  asset('upload/community_image/' . $item) }}" />
                                 </a>
                             </div>
@@ -35,7 +35,7 @@
                 </div>
             </div>
             <div class="plants-about-section">
-                <h2>About Us</h2>
+                <h2>Details</h2>
                 <p>{{ $community->description }}</p>
             </div>
 

@@ -270,7 +270,11 @@
                                                     <h4>{{ $manager['designation'] }}</h4>
                                                     <div class="sales-manager-contact">
                                                         <img src="{{ asset('images/call.svg') }}">
-                                                        +1{{ $manager['phone'] }}
+                                                        @if(!empty($manager['phone']))
+                                                            +1{{ $manager['phone'] }}
+                                                        @else
+                                                            N/A
+                                                        @endif
                                                     </div>
                                                     <div class="sales-manager-contact">
                                                         <img src="{{ asset('images/sms.svg') }}"> {{ $manager['email'] }}
@@ -323,7 +327,6 @@
                 <div class="modal-content">
                     <div class="modal-body">
                         <div class="ss-modal-delete">
-                            <div class="ss-modal-delete-icon"><img src=""></div>
                             <p id="delete-message">Are you sure you want to activate this Plant?</p>
                             <form id="activate-form" method="POST">
                                 @csrf
@@ -347,7 +350,6 @@
                 <div class="modal-content">
                     <div class="modal-body">
                         <div class="ss-modal-delete">
-                            <div class="ss-modal-delete-icon"><img src=""></div>
                             <p id="delete-message">Are you sure you want to In-activate this Plant?</p>
                             <form id="inactivate-form" method="POST">
                                 @csrf
@@ -370,7 +372,7 @@
         <div class="modal-content">
             <div class="modal-body">
                 <div class="ss-modal-form">
-                    <h2>Change Password</h2>
+                    <h2>Reset Password</h2>
                     <form id="changePasswordForm">
                         @csrf
                         <input type="hidden" id="plant-id" name="plant_id">
@@ -396,7 +398,7 @@
 
                             <div class="col-md-12">
                                 <div class="form-group">
-                                    <button type="submit" class="save-btn mb-2">Change Password</button>
+                                    <button type="submit" class="save-btn mb-2">Reset Password</button>
                                     <button type="button" class="cancel-btn" data-bs-dismiss="modal" aria-label="Close">Cancel</button>
                                 </div>
                             </div>

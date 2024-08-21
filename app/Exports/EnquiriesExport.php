@@ -44,10 +44,10 @@ class EnquiriesExport implements FromCollection, WithHeadings, ShouldAutoSize
     {
         return [
             'Plant Name',
-            'Community Name',
-            'Community Email',
-            'Community Phone',
-            'Community Location',
+            'CO/Retailer Name',
+            'Email',
+            'Phone',
+            'Location',
             'Message',
             'Enquiry Date',
         ];

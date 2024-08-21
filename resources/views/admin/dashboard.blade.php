@@ -11,12 +11,12 @@
     <div class="body-main-content">
         <div class="overview-section">
             <div class="row">
-                <div class="col-md-5">
+                <div class="col-md-12">
                     <div class="row">
-                        <div class="col-md-6">
+                        <div class="col-md-3">
                             <div class="overview-enquiries-card bl-bg-card">
                                 <div class="overview-enquiries-text">
-                                    <h1>Total Registered Community Owners</h1>
+                                    <h1>Total Registered CO/Retailer</h1>
                                     <p>{{ $owners }}</p>
                                 </div>
                                 <div class="overview-enquiries-img"><img src="images/Community-Owners1.svg" height="64"
@@ -24,19 +24,39 @@
                             </div>
                         </div>
 
-                        <div class="col-md-6">
+                        <div class="col-md-3">
                             <div class="overview-enquiries-card gr-bg-card">
                                 <div class="overview-enquiries-text">
-                                    <h1>Total Registered Plants</h1>
-                                    <p>{{ $total_manufacturer }}</p>
+                                    <h1>Total Registered Plant Rep.</h1>
+                                    <p>{{ $total_manufacturer_plant }}</p>
                                 </div>
                                 <div class="overview-enquiries-img"><img src="images/manufacturers1.svg" height="64"
                                         alt=""></div>
                             </div>
                         </div>
+                        <div class="col-md-3">
+                            <div class="overview-enquiries-card bl-bg-card">
+                                <div class="overview-enquiries-text">
+                                    <h1>Total Enquiries</h1>
+                                    <p>{{ $enquiries }}</p>
+                                </div>
+                                <div class="overview-enquiries-img"><img src="images/enquiries-icon.svg" height="64"
+                                        alt=""></div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="overview-enquiries-card gr-bg-card">
+                                <div class="overview-enquiries-text">
+                                    <h1>Total Registered Corporate Rep.</h1>
+                                    <p>{{ $total_manufacturer_corp }}</p>
+                                </div>
+                                <div class="overview-enquiries-img"><img src="images/building-4.svg" height="64"
+                                        alt=""></div>
+                            </div>
+                        </div>
                     </div>
                 </div>
-                <div class="col-md-7">
+                <div class="col-md-12 d-none">
                     <div class="overview-card">
                         <div class="overview-card-head">
                             <div class="overview-location-item">
@@ -106,7 +126,7 @@
         </div>
         <div class="ss-card">
             <div class="card-header">
-                <h2>Recent Registered Plants</h2>
+                <h2>Recent Registered Manufacturers</h2>
                 <div class="search-filter wd6">
 
                 </div>
@@ -116,7 +136,7 @@
                     <div class="user-table-list">
                         @foreach ($manufacturer_request as $item)
                             @php
-                                $plant = \App\Models\ManufacturerAttribute::where('manufacturer_id', $item->id)->first();
+                                $plant = \App\Models\ManufacturerAttributes::where('manufacturer_id', $item->id)->first();
                                 if ($plant) {
                                     $image = \App\Models\PlantMedia::where('plant_id', $plant->id)->first();
                                 } else {

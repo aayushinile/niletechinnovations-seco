@@ -6,7 +6,7 @@
     <div class="body-main-content">
         <div class="ss-card">
             <div class="card-header">
-                <h2>Community Owners Detail</h2>
+                <h2>Community Owners/Retailer Detail</h2>
                 <div class="search-filter wd2 d-none">
                     <div class="row g-1">
                         <div class="col-md-12">
@@ -110,6 +110,7 @@
                                     </form>
                                 </div>
                                 @endif
+                                @if ($contact_m->isNotEmpty())
                                 <div class="contacted-manufacturer-body">
                                     @foreach ($contact_m as $item)
                                         <div class="contacted-manufacturer-item">
@@ -127,6 +128,17 @@
 
 
                                 </div>
+                                @else 
+                                <div class="contacted-manufacturer-body">
+                                        <div class="contacted-manufacturer-item">
+                                            <div class="contacted-manufacturer-item-text">
+                                                <p>No Data Found</p>
+                                            </div>
+                                        </div>
+
+
+                                </div>
+                                @endif
                             </div>
                         </div>
                     </div>
