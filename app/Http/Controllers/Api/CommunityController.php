@@ -24,6 +24,8 @@ class CommunityController extends Controller
                 'mobile' => 'nullable|string',
                 'email' => 'nullable|email',
                 'community_address' => 'nullable|string',
+                'latitude' => 'nullable',
+                'longtitude' => 'nullable',
                 'user_id' => 'nullable|integer',
                 'image.*' => 'nullable|image',
                 'description' => 'nullable|string',
@@ -31,6 +33,7 @@ class CommunityController extends Controller
                 'no_of_new_homes' => 'nullable|integer',
                 'no_of_new_vacant_lots' => 'nullable|integer',
                 'no_of_home_needed' => 'nullable|integer',
+                'homes_needed_per_year' => 'nullable|integer',
                 'property_management' => 'nullable|array',
                 'property_management.*.name' => 'nullable|string',
                 'property_management.*.designation' => 'nullable|string',
@@ -50,6 +53,8 @@ class CommunityController extends Controller
                 'mobile' => $request->mobile,
                 'email' => $request->email,
                 'community_address' => $request->community_address,
+                'latitude' => $request->latitude,
+                'longitude' => $request->longtitude,
                 'city' => null,
                 'state' => null,
                 'zipcode' => null,
@@ -59,6 +64,7 @@ class CommunityController extends Controller
                 'no_of_new_homes' => $request->no_of_new_homes,
                 'vacant_lots' => $request->no_of_new_vacant_lots,
                 'no_of_home_needed' => $request->no_of_home_needed,
+                'homes_needed_per_year' => $request->homes_needed_per_year,
             ]);
 
             if ($request->hasFile('image')) {
@@ -161,6 +167,7 @@ class CommunityController extends Controller
                 'no_of_new_homes' => $community->no_of_new_homes,
                 'vacant_lots' => $community->vacant_lots,
                 'no_of_home_needed' => $community->no_of_home_needed,
+                'homes_needed_per_year' => $community->homes_needed_per_year,
                 'created_at' => $community->created_at,
                 'updated_at' => $community->updated_at,
                 'images' => $communityImages->map(function ($image) {
@@ -206,12 +213,15 @@ class CommunityController extends Controller
                 'mobile' => 'nullable|string|',
                 'email' => 'nullable|string|',
                 'community_address' => 'nullable|string|',
+                'latitude' => 'nullable',
+                'longtitude' => 'nullable',
                 'image.*' => 'nullable|image',
                 'description' => 'nullable|string',
                 'no_of_lots' => 'nullable|',
                 'no_of_new_homes' => 'nullable|',
                 'no_of_new_vacant_lots' => 'nullable|',
                 'no_of_home_needed' => 'nullable|',
+                'homes_needed_per_year' => 'nullable|',
                 'property_management' => 'nullable|array',
                 'property_management.*.name' => 'nullable|string|',
                 'property_management.*.designation' => 'nullable|string|',
@@ -234,12 +244,15 @@ class CommunityController extends Controller
                 'mobile' => $request->mobile ?? $community->mobile,
                 'email' => $request->email ?? $community->email,
                 'community_address' => $request->community_address ?? $community->community_address,
+                'longitude' => $request->longtitude ?? $community->longitude,
+                'latitude' =>$request->latitude ?? $community->latitude,
                 // Add other fields you want to update similarly
                 'description' => $request->description !== null && trim($request->description) !== '' ? $request->description : '',
                 'no_of_lots' => $request->no_of_lots ?? $community->no_of_lots,
                 'no_of_new_homes' => $request->no_of_new_homes ?? $community->no_of_new_homes,
                 'vacant_lots' => $request->no_of_new_vacant_lots ?? $community->vacant_lots,
                 'no_of_home_needed' => $request->no_of_home_needed ?? $community->no_of_home_needed,
+                'homes_needed_per_year' => $request->homes_needed_per_year ?? $community->homes_needed_per_year,
             ]);
 
             // Update community images
@@ -354,12 +367,15 @@ class CommunityController extends Controller
                 if ($community->attribute_type == 'community' && $community->attribute_name == 'Image') {
                     $formattedCommunity['image_path'] = asset('upload/community_image/' . $community->attribute_value);
                 }
-                if ($community->latitude && $community->longitude) {
 
-                    $formattedCommunity["nearby_plants_count"] = $this->getNearestPlant($community->latitude, $community->longitude);
+                // Determine state based on latitude and longitude
+                if ($community->latitude && $community->longitude) {
+                    $state = $this->getStateFromLatLng($community->latitude, $community->longitude);
+                    $formattedCommunity["nearby_plants_count"] = $this->getNearestPlants($state, $community->latitude, $community->longitude);
                 } else {
-                    $formattedCommunity["nearby_plants_count"] = 0;
+                    $formattedCommunity["nearby_plants_count"] = [];
                 }
+
                 $formattedCommunities[] = $formattedCommunity;
             }
 
@@ -379,98 +395,91 @@ class CommunityController extends Controller
     }
 
 
-    public function getNearestPlant($lat, $long)
+
+    public function getStateFromLatLng($lat, $long)
     {
-        $manufacturersQuery = DB::table('plant_login')
-            ->leftJoin('plant', 'plant.manufacturer_id', '=', 'plant_login.id')
-            ->leftJoin('plant_sales_manager', 'plant_sales_manager.plant_id', '=', 'plant.id')
-            ->leftJoin('plant_media', 'plant_media.plant_id', '=', 'plant.id')
-            ->leftJoin('specifications', 'specifications.manufacturer_id', '=', 'plant_login.id')
+        $mapboxToken = env('MAPBOX_ACESS_TOKEN'); // Get the Mapbox access token from .env file
+
+        // Initialize Guzzle client
+        $client = new Client();
+
+        // Fetch state information based on the given latitude and longitude
+        $response = $client->request('GET', 'https://api.mapbox.com/geocoding/v5/mapbox.places/' . $long . ',' . $lat . '.json', [
+            'query' => [
+                'access_token' => $mapboxToken,
+                'types' => 'region',
+                'limit' => 1,
+            ],
+        ]);
+
+        $body = json_decode($response->getBody(), true);
+        $state = null;
+
+        if (isset($body['features'][0]['text'])) {
+            $state = $body['features'][0]['text'];
+        }
+
+        return $state;
+    }
+
+
+    public function getNearestPlants($state, $lat, $long)
+    {
+        $mapboxToken = env('MAPBOX_ACESS_TOKEN'); // Get the Mapbox access token from .env file
+
+        // Initialize Guzzle client
+        $client = new Client();
+
+        // Filter plants by state
+        $plantsQuery = DB::table('plant')
+            ->leftJoin('plant_login', 'plant.manufacturer_id', '=', 'plant_login.id')
             ->select(
                 'plant.id as plant_id',
-                'plant.plant_name as plant_name',
-                'plant.phone as plant_phone',
-                'plant_sales_manager.name as sales_manager_name',
-                'plant_sales_manager.email as sales_manager_email',
-                'plant_sales_manager.designation as sales_manager_designation',
-                'plant_sales_manager.phone as sales_manager_phone',
-                'plant_sales_manager.image as sales_manager_image',
-                'plant.full_address as plant_location',
-                'plant.type as plant_type',
-                'plant.price_range as plant_price_range',
                 'plant.latitude as plant_latitude',
                 'plant.longitude as plant_longitude',
-                'plant_media.image_url as plant_image_url'
             )
-            ->where('plant.manufacturer_id', '!=', null)
+            ->where('plant.state', $state) // Filter by state
             ->where('plant_login.status', 1);
 
+        // Fetch filtered plants
+        $plants = $plantsQuery->get();
 
-        // Fetch manufacturers
-        $manufacturers = $manufacturersQuery->orderBy('plant_login.id', 'DESC')->get();
-
-        if ($manufacturers->isEmpty()) {
-            return 0;
+        if ($plants->isEmpty()) {
+            return [];
         }
 
         // Structure the response data
         $data = collect([]);
-        $apiKey = env('GOOGLE_API_KEY');
 
-        // Get filter inputs
-        $latitude = $lat;
-        $longitude = $long;
-
-
-        // Initialize Guzzle client
-        $client = new Client();
-        // Iterate through manufacturers to calculate distance and structure data
-        foreach ($manufacturers as $manufacturer) {
+        // Iterate through plants to calculate distance and structure data
+        foreach ($plants as $plant) {
             $distance = null;
-            if ($latitude && $longitude && $manufacturer->plant_latitude && $manufacturer->plant_longitude) {
-                // Make request to Google Maps Distance Matrix API
-                $response = $client->request('GET', 'https://maps.googleapis.com/maps/api/distancematrix/json', [
+
+            if ($lat && $long && $plant->plant_latitude && $plant->plant_longitude) {
+                // Make request to Mapbox Directions API
+                $response = $client->request('GET', 'https://api.mapbox.com/directions/v5/mapbox/driving/' . $long . ',' . $lat . ';' . $plant->plant_longitude . ',' . $plant->plant_latitude, [
                     'query' => [
-                        'key' => $apiKey,
-                        'origins' => $latitude . ',' . $longitude,
-                        'destinations' => $manufacturer->plant_latitude . ',' . $manufacturer->plant_longitude,
-                        'units' => 'imperial', // 'imperial' for miles
+                        'access_token' => $mapboxToken,
+                        'geometries' => 'geojson',
+                        'overview' => 'simplified',
                     ],
                 ]);
 
                 $body = json_decode($response->getBody(), true);
-                // dd($body);
+
                 // Extract distance from response
-                if (isset($body['rows'][0]['elements'][0]['distance']['text'])) {
-                    $distanceText = $body['rows'][0]['elements'][0]['distance']['text'];
-                    $dis = $body['rows'][0]['elements'][0]['distance']['value'];
-                    // dd($distanceText);
-                    if (strpos($distanceText, 'mi') !== false) {
-                        $distance = floatval(str_replace(' mi', '', $distanceText));
-                        $distanceText = str_replace(' mi', ' Miles', $distanceText); // Replace ' mi' with ' Miles'
-                    } else {
-                        // Convert km to miles if necessary
-                        $distanceValue = floatval(str_replace(' km', '', $distanceText));
-                        $distance = round($distanceValue * 0.621371, 2);
-                        $distanceText = $distance . ' Miles';
-                    }
+                if (isset($body['routes'][0]['distance'])) {
+                    $dis = $body['routes'][0]['distance']; // Distance in meters
+                    $distance = round($dis * 0.000621371, 2); // Convert meters to miles
                 }
             }
 
-            // Only include manufacturers within 50 miles
-            if ($dis !== null && $dis <= 400000) {
-
-                // Check if the manufacturer ID already exists in $data
-                $existing = $data->where('plant_id', $manufacturer->plant_id)->first();
-
-                if (!$existing) {
-
-                    $data->push([
-                        'plant_id' => $manufacturer->plant_id,
-
-                        'distance' => $distanceText, // Distance in miles
-                    ]);
-                }
+            // Only include plants within 300 miles
+            if ($distance !== null && $distance <= 300) {
+                $data->push([
+                    'plant_id' => $plant->plant_id,
+                    // Add more fields if needed
+                ]);
             }
         }
 
