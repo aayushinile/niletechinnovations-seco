@@ -88,6 +88,21 @@ button.btn-search {
 .pagination{
     --bs-pagination-active-bg: var(--pink) !important;
 }
+.btn-bl {
+    outline: none;
+    width: 100%;
+    padding: 10px 15px;
+    text-align: center;
+    display: inline-block;
+    color: var(--white);
+    font-size: 14px;
+    font-weight: 600;
+    border-radius: 5px;
+    border: none;
+    box-shadow: 0px 8px 13px 0px rgba(0, 0, 0, 0.05);
+    background: var(--pink);
+    margin-bottom: 5px;
+}
 </style> 
 @section('content')
 
@@ -99,7 +114,7 @@ button.btn-search {
                         <form action="{{route('manufacturer.enquiry')}}" method="POST">
                         @csrf
                             <div class="row g-1">
-                                <div class="col-md-4-1">
+                                <div class="col-md-3-1">
                                     <div class="form-group search-form-group">
                                         <input type="text"name="search" value="{{ $search ? $search : '' }}" class="form-control" placeholder="Search">
                                         <span class="search-icon"><img src="{{asset('images/search-icon.svg')}}"></span>
@@ -132,6 +147,12 @@ button.btn-search {
                                     <div class="form-group">
                                         <button type="submit" class="btn-search"><i class="fa fa-search" aria-hidden="true"></i></button>
                                     </div>
+                                </div>
+                                <div class="col-md-1">
+                                    <a href="{{ route('manufacturer.enquiry', array_merge(request()->all(), ['download' => 1])) }}" class="btn-bl" style="background-color:var(--green)">
+                                        <i class="fa fa-file-excel-o" aria-hidden="true"></i>
+                                    </a>
+
                                 </div>
                             </div> 
                         </form>  

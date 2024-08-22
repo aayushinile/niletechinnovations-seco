@@ -1,6 +1,24 @@
 @extends('admin.layouts')
 @push('css')
     <link rel="stylesheet" type="text/css" href="{{ asset('admin/css/communityowners.css') }}">
+    <style>
+       .password-wrapper {
+    position: relative;
+}
+
+        .password-wrapper .form-control {
+            padding-right: 40px; /* Adjust padding to make space for the icon */
+        }
+
+        .password-wrapper .toggle-password {
+            position: absolute;
+            top: 50%;
+            right: 10px; /* Adjust position to fit your design */
+            transform: translateY(-50%);
+            cursor: pointer;
+            z-index: 2; /* Ensure the icon is above the input field */
+        }
+    </style>
 @endpush
 @section('content')
     <div class="body-main-content">
@@ -17,6 +35,11 @@
                         </div>
                     </div>
                 </div>
+                <div class="plants-details-head" style="justify-content:end;">
+                <div class="plants-details-action">
+                    <a class="ChangePasswordbtn" data-bs-toggle="modal" data-bs-target="#ChangePassword" style="background: var(--green);color: var(--white);padding: 12px 20px;border-radius: 5px;font-size: 14px;box-shadow: 0 4px 10px #5f0f5845;display: inline-block;position: relative;cursor:pointer" data-plant-id="{{ $mfs['id'] }}">Reset Password</a>
+                </div>
+            </div>
             </div>
             <div class="card-body">
                 <div class="user-table-item">
@@ -110,4 +133,127 @@
             </div>
         </div>
     </div>
+
+    <div class="modal lm-modal fade" id="ChangePassword" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-body">
+                <div class="ss-modal-form">
+                    <h2>Reset Password</h2>
+                    <form id="changePasswordForm">
+                        @csrf
+                        <input type="hidden" id="plant-id" name="plant_id">
+                        <div class="row">
+
+                            <div class="col-md-12">
+                                <div class="form-group">
+                                    <div class="password-wrapper">
+                                        <input type="password" name="password" id="password" class="form-control" placeholder="Create New Password" required>
+                                        <span toggle="#password" class="eye-toggle fa fa-fw fa-eye field-icon toggle-password"></span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-md-12">
+                                <div class="form-group">
+                                    <div class="password-wrapper">
+                                        <input type="password" name="password_confirmation" id="password_confirmation" class="form-control" placeholder="Confirm New Password" required>
+                                        <span toggle="#password_confirmation" class="eye-toggle fa fa-fw fa-eye field-icon toggle-password"></span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-md-12">
+                                <div class="form-group">
+                                    <button type="submit" class="save-btn mb-2">Reset Password</button>
+                                    <button type="button" class="cancel-btn" data-bs-dismiss="modal" aria-label="Close">Cancel</button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                    <div id="changePasswordMessage"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
+<script>
+    
+document.addEventListener("DOMContentLoaded", function() {
+    let plantId = null;
+    document.querySelectorAll('.ChangePasswordbtn').forEach(function(button) {
+        button.addEventListener('click', function() {
+            plantId = this.getAttribute('data-plant-id');
+            document.getElementById('plant-id').value = plantId; // Set the hidden input field value
+        });
+    });
+    document.getElementById('changePasswordForm').addEventListener('submit', function(e) {
+        e.preventDefault(); // Prevent the default form submission
+        
+        var form = e.target;
+        var formData = new FormData(form);
+        var manufacturerId = document.getElementById('plant-id').value;
+        console.log(manufacturerId);
+        const url = `{{ route("admin.updatePassword", ["id" => ":id"]) }}`.replace(':id', plantId);
+
+
+        fetch(url, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                _token: '{{ csrf_token() }}',
+                 'Accept': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            var messageContainer = document.getElementById('changePasswordMessage');
+            let modal = new bootstrap.Modal(document.getElementById('ChangePassword'));
+
+            if (data.errors) {
+                messageContainer.innerHTML = '<div class="alert alert-danger">' + data.errors.join('<br>') + '</div>';
+            } else {
+                messageContainer.innerHTML = '<div class="alert alert-success">' + data.message + '</div>';
+                form.reset(); // Optionally reset the form
+                
+                // Hide the modal after displaying the success message
+                setTimeout(() => {
+                   modal.hide();
+                   window.location.reload();
+                }, 2000); // Adjust the delay as needed
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            var messageContainer = document.getElementById('changePasswordMessage');
+            let modal = new bootstrap.Modal(document.getElementById('ChangePassword'));
+
+            messageContainer.innerHTML = '<div class="alert alert-danger">An error occurred. Please try again.</div>';
+
+            // Hide the modal after displaying the error message
+            setTimeout(() => {
+               modal.hide();
+            }, 2000); // Adjust the delay as needed
+        });
+    });
+});
+
+
+document.querySelectorAll('.toggle-password').forEach(function(icon) {
+        icon.addEventListener('click', function() {
+            var input = document.querySelector(icon.getAttribute('toggle'));
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                input.type = 'password';
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            }
+        });
+    });
+</script>
 @endsection
+

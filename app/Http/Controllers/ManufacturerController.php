@@ -20,7 +20,8 @@ use Carbon\Carbon;
 use Mail;
 use App\Mail\ForgetPassword;
 use GuzzleHttp\Client;
-
+use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\ManufacturerEnquiriesExport;
 
 class ManufacturerController extends Controller
 {
@@ -976,13 +977,13 @@ class ManufacturerController extends Controller
 
     public function enquiries(Request $request) {
         $user = Auth::user();
-      // dd($request->all());
+       //dd($request->all());
         // $userSettings = DB::table('settings')->where('manufacturer_id', $user->id)->first();
         // $selectedCountry = $userSettings->country ?? 'United States'; 
         $search = $request->search ? $request->search : '';
         $date = $request->date ? $request->date : '';
         $statusFilter = $request->status_filter;
-        $new_enquiries = DB::table('contact_manufacturer')
+        $new_enquiriess = DB::table('contact_manufacturer')
                         ->leftJoin('plant', 'contact_manufacturer.plant_id', '=', 'plant.id')
                         ->leftJoin('plant_login','plant_login.id','=','plant.manufacturer_id')
                         ->where('plant_login.id', $user->id)
@@ -997,7 +998,8 @@ class ManufacturerController extends Controller
                         ->when($search, function ($query, $search) {
                             return $query->where(function ($query) use ($search) {
                                 $query->where('contact_manufacturer.user_name', 'like', '%' . $search . '%')
-                                      ->orWhere('contact_manufacturer.phone_no', 'like', '%' . $search . '%');
+                                      ->orWhere('contact_manufacturer.phone_no', 'like', '%' . $search . '%')
+                                      ->orWhere('plant.plant_name', 'like', '%' . $search . '%');
                             });
                         })
                         ->when($date, function ($query, $date) {
@@ -1014,13 +1016,19 @@ class ManufacturerController extends Controller
                             'contact_manufacturer.message',
                             'contact_manufacturer.status',
                             'contact_manufacturer.created_at',
+                            'contact_manufacturer.location',
                             'users.fullname',
                             'users.email',
                             'users.mobile',
                             'users.business_name',
-                        )
-                        ->paginate(10);
+                        );
+            $data = $new_enquiriess->get();
+            $new_enquiries = $new_enquiriess->paginate(10);
         //dd($new_enquiries);
+        if ($request->filled('download')) {
+            // dd($data_enquiries);
+             return Excel::download(new ManufacturerEnquiriesExport($data), 'enquiries.xls');
+         }
         return view('manufacturer.enquiry',compact('new_enquiries','user','search','date','statusFilter'));
     }
 

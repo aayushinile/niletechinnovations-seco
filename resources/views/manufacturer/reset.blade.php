@@ -62,7 +62,7 @@
         <div class="auth-bg-video">
             <img src="{{asset('images/backgoundhome.jpg')}}" id="background-media">
         </div>
-        <div class="auth-content-card wd35">
+        <div class="auth-content-card" style="width: 35% !important;">
             <div class="container">
                 <div class="auth-card">
                     <div class="row">

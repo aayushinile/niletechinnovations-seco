@@ -26,7 +26,7 @@
                             <form action="">
                                 <div class="form-group search-form-group">
                                     <input type="text" name="search" class="form-control"
-                                        placeholder="Search">
+                                        placeholder="Search" value ="{{$search}}">
                                     <span class="search-icon"><img src="images/search-icon.svg"></span>
                                 </div>
                             </form>

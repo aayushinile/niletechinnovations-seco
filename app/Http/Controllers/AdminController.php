@@ -465,19 +465,30 @@ class AdminController extends Controller
     // anshul coded this functions
     public function enquiries(Request $request)
     {
-       // dd($request->all());
-        $mergedData = ContactManufacturer::whereNotNull("user_id")
-        ->join('plant', 'contact_manufacturer.plant_id', '=', 'plant.id')
-            ->when($request->has('search'), function ($query) use ($request) {
-                $keyword = trim($request->search);
-                return $query->where("user_name", "LIKE", "%$keyword%")->orWhere("email", "LIKE", "%$keyword%")->orWhere("location", "LIKE", "%$keyword%")->orWhere("phone_no", "LIKE", "%$keyword%");
-            })->when($request->has('manufacturer_id'), function ($query) use ($request) {
-                $manufacturerName = trim($request->manufacturer_id);
-                return $query->where("plant.plant_name", "LIKE", "%$manufacturerName%");
-            })->when($request->has('date'), function ($query) use ($request) {
-
-                return $query->whereDate("created_at", $request->input('date'));
-            });
+        //dd($request->all());
+       $search = $request->search;
+       $date = $request->date;
+       $mergedData = ContactManufacturer::whereNotNull("user_id")
+       ->join('plant', 'contact_manufacturer.plant_id', '=', 'plant.id')
+       ->when($request->has('search'), function ($query) use ($request) {
+           $keyword = trim($request->search);
+           $query->where(function ($query) use ($keyword) {
+               $query->where("contact_manufacturer.user_name", "LIKE", "%$keyword%")
+                   ->orWhere("contact_manufacturer.email", "LIKE", "%$keyword%")
+                   ->orWhere("contact_manufacturer.location", "LIKE", "%$keyword%")
+                   ->orWhere("phone_no", "LIKE", "%$keyword%")
+                   ->orWhere("plant.plant_name", "LIKE", "%$keyword%");
+           });
+       })
+       ->when($request->has('manufacturer_id'), function ($query) use ($request) {
+           $manufacturerName = trim($request->manufacturer_id);
+           $query->where("plant.plant_name", "LIKE", "%$manufacturerName%");
+       })
+       ->when($request->has('date'), function ($query) use ($request) {
+           $query->whereDate("contact_manufacturer.created_at", $request->input('date'));
+       })
+       ->select('contact_manufacturer.*', 'plant.plant_name')
+       ->orderBy("contact_manufacturer.id", "desc");
            // dd($request->manufacturer_id);
         if ($request->has("search") || $request->has("manufacturer_id") || $request->has("date")) {
             $mergedData = $mergedData->orderBy("contact_manufacturer.id", "desc")->get();
@@ -486,7 +497,6 @@ class AdminController extends Controller
             $data_enquiries =  $mergedData->orderBy("contact_manufacturer.id", "desc")->get();
             $mergedData = $mergedData->orderBy("contact_manufacturer.id", "desc")->paginate(10);
         }
-
 
         foreach ($mergedData as $item) {
             $item->plant_name = Plant::find($item->plant_id) ? Plant::find($item->plant_id)->plant_name : "N/A";
@@ -516,7 +526,7 @@ class AdminController extends Controller
         ->groupBy('plant_name')        // Group by 'name' to avoid duplicates
         ->get();
         $total = ContactManufacturer::whereNotNull("user_id")->count();
-        return view('admin.enquiries', ['mergedData' => $mergedData, 'pls' => $pls, 'total' => $total]);
+        return view('admin.enquiries', ['mergedData' => $mergedData, 'pls' => $pls, 'total' => $total,'search' => $search]);
     }
     public function profile()
     {
