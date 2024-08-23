@@ -67,7 +67,7 @@ button.btn-search {
 
             <div class="body-main-content">
                 <div class="ss-heading-section">
-                    <h2>Manage Plant</h2>
+                    <h2>Manage Manufacturer/Plant</h2>
                     <div class="search-filter wd40">
                     <form action="{{route('manufacturer.manage-locations')}}" method="POST">
                     @csrf

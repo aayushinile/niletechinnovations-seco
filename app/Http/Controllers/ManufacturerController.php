@@ -1288,17 +1288,17 @@ class ManufacturerController extends Controller
                 $token = rand(100000, 999999);
                 session(['otp' => $token, 'time' => time()]);
                 
-                try {
-                    Mail::to($request->email)->send(new ForgetPassword($user, $token));
-                } catch (\Throwable $th) {
-                    // Log the error to see the issue
-                    dd($th);
-                    return response()->json([
-                        'message' => 'There was an issue sending the email. Please check your mail settings.',
-                        'status' => 500,
-                        'success' => false,
-                    ], 500);
-                }
+                // try {
+                //     Mail::to($request->email)->send(new ForgetPassword($user, $token));
+                // } catch (\Throwable $th) {
+                //     // Log the error to see the issue
+                //     dd($th);
+                //     return response()->json([
+                //         'message' => 'There was an issue sending the email. Please check your mail settings.',
+                //         'status' => 500,
+                //         'success' => false,
+                //     ], 500);
+                // }
                 // return redirect()->back()->with("success", "We have just sent you Verification Code for Password Reset");
                 return response()->json(['message' => 'We have just sent you an one time password for resetting the password.' . $token, 'redirect' => false, 'token' => $token, 'success' => true, 'status' => 200], 200);
             } else {

@@ -104,7 +104,7 @@
 @section('content')
     <div class="body-main-content">
         <div class="ss-heading-section">
-            <h2>Manage Plant/Manufacturer Details</h2>
+            <h2>Manage Manufacturer/Plant Details</h2>
             <div class="search-filter wd20">
             @php 
                         $plant_id = $plant['id'];
@@ -130,7 +130,7 @@
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <h5>Plant Name *</h5>
+                                    <h5>Manufacturer/Plant Name *</h5>
                                     <input type="text" class="form-control" name="plant_name" placeholder="Plant Name"
                                         value="{{ $plant['plant_name'] }}">
                                 </div>
@@ -195,7 +195,7 @@
 
                             <div class="col-md-12">
                                 <div class="form-group">
-                                    <h5>Description *</h5>
+                                    <h5>Manufacturer/Plant Description *</h5>
                                     <textarea class="form-control" placeholder="Description" name="description">{{ $plant['description'] ?? '' }}</textarea>
                                     @error('description')
                                         <div class="alert alert-danger">{{ $message }}</div>

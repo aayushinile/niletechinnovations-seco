@@ -3,7 +3,7 @@
 
     <div class="body-main-content">
         <div class="ss-heading-section">
-            <h2>Manage Plant/Manufacturer Details</h2>
+            <h2>Manage Manufacturer/Plant Details</h2>
         </div>
         <div class="listed-plants-section">
             <div class="plants-details-head">

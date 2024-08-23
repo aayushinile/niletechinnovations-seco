@@ -119,7 +119,7 @@
 @section('content')
     <div class="body-main-content">
         <div class="ss-heading-section">
-            <h2>Manage Plant/Manufacturer Details</h2>
+            <h2>Manage Manufacturer/Plant Details</h2>
             <div class="search-filter wd20">
                 <div class="row g-1  justify-content-end">
                     <div class="col-md-4">
@@ -143,8 +143,8 @@
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <h5>Plant/Manufacturer Name *</h5>
-                                    <input type="text" class="form-control" name="plant_name" placeholder="Plant/Manufacturer Name"
+                                    <h5>Manufacturer/Plant Name *</h5>
+                                    <input type="text" class="form-control" name="plant_name" placeholder="Manufacturer/Plant Name"
                                         value="{{ $plant['plant_type'] === 'plant_rep' ? $plant['plant_name'] : '' }}">
                                 </div>
                             </div>
@@ -181,7 +181,7 @@
                                     <h5>Location *</h5>
 
                                     <input id="geocoder" class="form-control" type="text"
-                                        placeholder="Plant/Mgf. Full Address" required value="{{ $plant['full_address'] }}">
+                                        placeholder="Mgf./Plant Full Address" required value="{{ $plant['full_address'] }}">
                                     <input type="hidden" id="full_address" name="full_address" required
                                         class="form-control" value="{{ $plant['full_address'] }}">
                                     <input type="hidden" id="latitude" name="latitude" value="{{ $plant['latitude'] }}">
@@ -213,7 +213,7 @@
 
                             <div class="col-md-12">
                                 <div class="form-group">
-                                    <h5>Description *</h5>
+                                    <h5>Manufacturer/Plant Description *</h5>
                                     <textarea class="form-control" placeholder="Description" name="description"></textarea>
                                     @error('description')
                                         <div class="alert alert-danger">{{ $message }}</div>

@@ -84,7 +84,7 @@ class CommunityOwnersExport implements FromCollection, WithHeadings, ShouldAutoS
         return [
             AfterSheet::class => function (AfterSheet $event) {
                 // Enable wrap text for the 'Contacted Plants' column (e.g., column D)
-                $contactedPlantsRange = 'D2:D' . $event->sheet->getHighestRow();
+                $contactedPlantsRange = 'F2:F' . $event->sheet->getHighestRow();
                 $event->sheet->getStyle($contactedPlantsRange)->getAlignment()->setWrapText(true);
             },
         ];
