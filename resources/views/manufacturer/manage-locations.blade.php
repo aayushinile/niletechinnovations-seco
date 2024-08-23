@@ -46,6 +46,21 @@ button.btn-search {
     line-height: 45px;
     border-radius: 5px;
 }
+.btn-bl {
+    outline: none;
+    width: 100%;
+    padding: 12px 11px;
+    text-align: center;
+    display: inline-block;
+    color: var(--white);
+    font-size: 14px;
+    font-weight: 600;
+    border-radius: 5px;
+    border: none;
+    box-shadow: 0px 8px 13px 0px rgba(0, 0, 0, 0.05);
+    background: var(--pink);
+    margin-bottom: 5px;
+}
 </style>
 
 @section('content')
@@ -71,7 +86,7 @@ button.btn-search {
                         </div>
                     @else 
                     <div class="row g-1">
-                            <div class="col-md-6">
+                            <div class="col-md-5">
                                 <div class="form-group search-form-group">
                                     <input type="text"  name="search" value="{{ $search ? $search : '' }}"
                                     class="form-control" placeholder="Search">
@@ -84,11 +99,20 @@ button.btn-search {
                                             class="fa fa-refresh" aria-hidden="true" style="margin-top: 12px;"></i></a>
                                 </div>
                             </div>
+                            
                             <div class="col-md-1">
                                 <div class="form-group">
                                     <button type="submit" class="btn-search"><i class="fa fa-search" aria-hidden="true"></i></button>
                                 </div>
                             </div>
+                            @if ($plants->isNotEmpty())
+                            <div class="col-md-1">
+                                <a href="{{ route('manufacturer.manage-locations', array_merge(request()->all(), ['download' => 1])) }}" class="btn-bl" style="background-color:var(--green)">
+                                    <i class="fa fa-file-excel-o" aria-hidden="true"></i>
+                                </a>
+
+                            </div>
+                            @endif
                             <div class="col-md-4">
                                 <div class="form-group">
                                     <a href="{{ url('add-plant') }}" class="addnewplant-btn" style="padding: 9px 21px;">Add Plant</a>

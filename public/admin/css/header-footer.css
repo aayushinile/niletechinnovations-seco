@@ -212,11 +212,6 @@ h6 {
 }
 
 
-
-
-
-
-
 .sidebar .nav .nav-item .nav-link-1 {
     display: -webkit-flex;
     display: flex;
@@ -287,8 +282,21 @@ h6 {
 
 .sidebar .nav .nav-item .nav-link span.dropdown-icon {
     position: absolute;
-    right: 5px;
+    right: 10px;
 }
+
+
+.sidebar .nav .nav-item ul{margin: 0; padding: 0; list-style: none;}
+
+.sidebar .nav .nav-item ul li a.dropdown-item {white-space: nowrap; padding:10px 15px 10px 50px; color: var(--gray); border-radius: 0px; font-size: 14px; }
+.sidebar .nav .nav-item ul li.active a.dropdown-item{background: var(--pink); color: var(--white);}
+.sidebar .nav .nav-item ul li:hover a.dropdown-item{background:#f9bbf3; color:  var(--pink);}
+
+.sidebar .nav .nav-item ul li.active a.dropdown-item svg path{stroke: var(--white);}
+
+.sidebar .nav .nav-item ul li:hover a.dropdown-item svg path{stroke: var(--pink);}
+
+
 
 /*----------------------------
    header      

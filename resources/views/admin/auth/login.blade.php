@@ -75,7 +75,7 @@
                                     <img src="images/logo.svg" alt="logo">
                                 </div>
                                 <h2>Administrator Login</h2>
-                                <p>To Get Into Show Search Control Panal</p>
+                                <p>To Get Into Show Search Control Panel</p>
                                 <form class="pt-4" method="post" id="signin_form"
                                     action="{{ route('admin.authenticate') }}">
                                     @csrf

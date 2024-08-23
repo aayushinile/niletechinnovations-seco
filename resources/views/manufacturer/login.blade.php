@@ -46,8 +46,8 @@
                                 <div class="brand-logo">
                                     <img src="{{asset('images/logo.svg')}}" alt="logo">
                                 </div>
-                                <h2>Manufacturer/Plant Login</h2>
-                                <p>To Get Into Show Search Control Panal</p>
+                                <h2>Manufacturer/Plant/Corporate Login</h2>
+                                <p>To Get Into Show Search Control Panel</p>
                                 <form class="pt-4" method="post" action="{{ url('manufacturer/login') }}">
                                     @csrf
                                     <div class="form-group">
@@ -60,7 +60,7 @@
                                     </div>
                                     <div class="form-group position-relative">
                                         <input type="password" name="password" id="password" required class="form-control @error('password') is-invalid @enderror" placeholder="Password">
-                                        <span toggle="#password" class="fa fa-fw fa-eye field-icon toggle-password"></span>
+                                        <span toggle="#password" class="fa fa-fw fa-eye-slash field-icon toggle-password"></span>
                                         @error('password')
                                             <span class="invalid-feedback" role="alert">
                                                 <strong>{{ $message }}</strong>
@@ -134,8 +134,8 @@
             togglePassword.addEventListener('click', function () {
                 const type = passwordField.getAttribute('type') === 'password' ? 'text' : 'password';
                 passwordField.setAttribute('type', type);
-                this.classList.toggle('fa-eye');
                 this.classList.toggle('fa-eye-slash');
+                this.classList.toggle('fa-eye');
             });
         });
     </script>

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\CorporatePlantsExport;
 use App\Models\Manufacturer;
 use App\Models\ManufacturerAttributes;
 use App\Models\PlantSalesManager;
@@ -22,6 +23,7 @@ use App\Mail\ForgetPassword;
 use GuzzleHttp\Client;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\ManufacturerEnquiriesExport;
+use Illuminate\Support\Facades\Log;
 
 class ManufacturerController extends Controller
 {
@@ -1085,6 +1087,10 @@ class ManufacturerController extends Controller
 
             $plant->images = $images;
         }
+        if ($request->filled('download')) {
+            // dd($data_enquiries);
+             return Excel::download(new CorporatePlantsExport($plants), 'plants.xls');
+         }
 
         // Pass the fetched data to the view 'manufacturer.manage-locations'
         return view('manufacturer.manage-locations', compact('plants', 'user','search'));
@@ -1285,8 +1291,13 @@ class ManufacturerController extends Controller
                 try {
                     Mail::to($request->email)->send(new ForgetPassword($user, $token));
                 } catch (\Throwable $th) {
-                    dd($th);
-                    return response()->json(['message' => $th, 'status' => 200, 'success' => false,], 200);
+                    // Log the error to see the issue
+                    Log::error('Mail Error: ' . $th->getMessage());
+                    return response()->json([
+                        'message' => 'There was an issue sending the email. Please check your mail settings.',
+                        'status' => 500,
+                        'success' => false,
+                    ], 500);
                 }
                 // return redirect()->back()->with("success", "We have just sent you Verification Code for Password Reset");
                 return response()->json(['message' => 'We have just sent you an one time password for resetting the password.' . $token, 'redirect' => false, 'token' => $token, 'success' => true, 'status' => 200], 200);
