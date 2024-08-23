@@ -248,11 +248,11 @@ class CommunityController extends Controller
                 'latitude' =>$request->latitude ?? $community->latitude,
                 // Add other fields you want to update similarly
                 'description' => $request->description !== null && trim($request->description) !== '' ? $request->description : '',
-                'no_of_lots' => $request->no_of_lots ?? $community->no_of_lots,
-                'no_of_new_homes' => $request->no_of_new_homes ?? $community->no_of_new_homes,
-                'vacant_lots' => $request->no_of_new_vacant_lots ?? $community->vacant_lots,
-                'no_of_home_needed' => $request->no_of_home_needed ?? $community->no_of_home_needed,
-                'homes_needed_per_year' => $request->homes_needed_per_year ?? $community->homes_needed_per_year,
+                'no_of_lots' => $request->no_of_lots ,
+                'no_of_new_homes' => $request->no_of_new_homes,
+                'vacant_lots' => $request->no_of_new_vacant_lots,
+                'no_of_home_needed' => $request->no_of_home_needed,
+                'homes_needed_per_year' => $request->homes_needed_per_year,
             ]);
 
             // Update community images

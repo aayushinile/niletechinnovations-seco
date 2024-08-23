@@ -11,10 +11,14 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Auth;
 use App\Models\ContactManufacturer;
 use App\Models\ShippingCost;
+use App\Models\Otp;
 use App\Models\Specifications;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\DB;
 use GuzzleHttp\Client;
+use Mail;
+use App\Mail\SendOTPMail;
+use Illuminate\Support\Facades\Log;
 
 class UserController extends Controller
 {
@@ -433,38 +437,6 @@ class UserController extends Controller
     //     }
     // }
 
-    public function getLocations(Request $request)
-    {
-        try {
-            $locations = DB::table('locations')->get();
-
-
-            $success['locations'] = $locations;
-            return response()->json(["status" => true, "message" => "Locations", "data" => $success]);
-        } catch (\Exception $e) {
-            return response()->json([
-                'message' => 'An error occurred!',
-                'error' => $e->getMessage()
-            ], 500);
-        }
-    }
-
-
-    public function LocationDetails(Request $request)
-    {
-        try {
-            $locations = DB::table('locations')->where('id', $request->id)->first();
-
-
-            $success['locations'] = $locations;
-            return response()->json(["status" => true, "message" => "Locations", "data" => $success]);
-        } catch (\Exception $e) {
-            return response()->json([
-                'message' => 'An error occurred!',
-                'error' => $e->getMessage()
-            ], 500);
-        }
-    }
 
 
     public function plantListing(Request $request)
@@ -751,9 +723,9 @@ class UserController extends Controller
                             'overview' => 'simplified',
                         ],
                     ]);
-    
+
                     $body = json_decode($response->getBody(), true);
-    
+
                     // Extract distance from response
                     if (isset($body['routes'][0]['distance'])) {
                         $dis = $body['routes'][0]['distance']; // Distance in meters
@@ -823,6 +795,233 @@ class UserController extends Controller
 
 
 
+    public function manufacturerListingm(Request $request)
+    {
+        try {
+            // Validate inputs
+            $validator = Validator::make($request->all(), [
+                'latitude' => 'nullable|numeric',
+                'longitude' => 'nullable|numeric',
+                'location' => 'nullable|string',
+                'bed' => 'nullable|string',
+                'bath' => 'nullable|string',
+                'sq_ft' => 'nullable|string',
+                'price_range' => 'nullable|string',
+                'distance_range' => 'nullable|numeric',
+                'type' => 'nullable|string',
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json(['error' => $validator->errors()], 400);
+            }
+
+            // Mapbox API Key
+            $apiKey = env('MAPBOX_ACESS_TOKEN');
+
+            // Get filter inputs
+            $latitude = $request->input('latitude');
+            $longitude = $request->input('longitude');
+            $location = $request->input('location');
+            $beds = $request->input('bed');
+            $baths = $request->input('bath');
+            $sq_ft = $request->input('sq_ft');
+            $type = $request->input('type');
+            $priceRange = $request->input('price_range');
+            $distance_miles = DB::table('miles_settings')->where('id', 1)->first();
+            $miles = isset($distance_miles->miles) ? $distance_miles->miles * 1609.34 : 482803;
+            $distanceRange = $request->input('distance_range') ?? $miles;
+
+            // Initialize Guzzle client
+            $client = new Client();
+
+            // Get the state from the latitude and longitude using Mapbox Geocoding API
+            $state = null;
+            if ($latitude && $longitude) {
+                $response = $client->request('GET', 'https://api.mapbox.com/geocoding/v5/mapbox.places/' . $longitude . ',' . $latitude . '.json', [
+                    'query' => [
+                        'access_token' => $apiKey,
+                        'types' => 'region',
+                    ],
+                ]);
+
+                $body = json_decode($response->getBody(), true);
+                if (isset($body['features'][0]['text'])) {
+                    $state = $body['features'][0]['text'];
+                }
+            }
+
+            // Initialize query
+            $query = DB::table('plant')
+                ->leftJoin('plant_login', 'plant.manufacturer_id', '=', 'plant_login.id')
+                ->leftJoin('plant_sales_manager', 'plant_sales_manager.plant_id', '=', 'plant.id')
+                ->leftJoin('plant_media', 'plant_media.plant_id', '=', 'plant.id')
+                ->leftJoin('specifications as baths_spec', function ($join) {
+                    $join->on('baths_spec.manufacturer_id', '=', 'plant_login.id')
+                        ->where('baths_spec.name', '=', 'Baths');
+                })
+                ->leftJoin('specifications as beds_spec', function ($join) {
+                    $join->on('beds_spec.manufacturer_id', '=', 'plant_login.id')
+                        ->where('beds_spec.name', '=', 'Beds');
+                })
+                ->leftJoin('specifications as sq_ft_spec', function ($join) {
+                    $join->on('sq_ft_spec.manufacturer_id', '=', 'plant_login.id')
+                        ->where('sq_ft_spec.name', '=', 'SQ Ft');
+                })
+                ->select(
+                    'plant.id as plant_id',
+                    'plant.plant_name as plant_name',
+                    'plant.phone as plant_phone',
+                    'plant_sales_manager.name as sales_manager_name',
+                    'plant_sales_manager.email as sales_manager_email',
+                    'plant_sales_manager.designation as sales_manager_designation',
+                    'plant_sales_manager.phone as sales_manager_phone',
+                    'plant_sales_manager.image as sales_manager_image',
+                    'plant.full_address as plant_location',
+                    'plant.type as plant_type',
+                    'plant.price_range as plant_price_range',
+                    'plant.from_price_range as plant_from_price_range',
+                    'plant.to_price_range as plant_to_price_range',
+                    'plant.latitude as plant_latitude',
+                    'plant.longitude as plant_longitude',
+                    'plant_media.image_url as plant_image_url',
+                    'plant.state as plant_state' // Ensure the state is being stored in the plants table
+                )
+                ->where('plant.manufacturer_id', '!=', null)
+                ->where('plant_login.status', 1)
+                ->when($state, function ($query, $state) {
+                    return $query->where('plant.state', $state);
+                })
+                ->when($location, function ($query, $location) {
+                    // Uncomment the following line if you want to filter by location
+                    // return $query->where('plant.full_address', 'like', '%' . $location . '%');
+                })
+                ->when($type, function ($query, $type) {
+                    return $query->where('plant.type', $type);
+                })
+                ->when($priceRange, function ($query, $priceRange) {
+                    if (intval($priceRange) != 0) {
+                        return $query->where('plant.from_price_range', '<=', intval($priceRange))->where('plant.to_price_range', '>=', intval($priceRange));
+                    }
+                })
+                ->when($baths, function ($query, $baths) {
+                    return $query->where('baths_spec.values', 'like', '%' . $baths . '%');
+                })
+                ->when($beds, function ($query, $beds) {
+                    if ($beds == "4+") {
+                        return $query->where('beds_spec.values', '>=', 4);
+                    } else {
+                        return $query->where('beds_spec.values', 'like', '%' . $beds . '%');
+                    }
+                })
+                ->when($sq_ft, function ($query, $sq_ft) {
+                    $sq_ft = explode('-', $sq_ft);
+                    $min = intval($sq_ft[0]);
+                    $max = intval($sq_ft[1]);
+
+                    return $query->where('sq_ft_spec.values', '>=', $min)
+                        ->where('sq_ft_spec.values', '<=', $max);
+                });
+
+            // Fetch manufacturers
+            $manufacturers = $query->orderBy('plant_login.id', 'DESC')->get();
+
+            if ($manufacturers->isEmpty()) {
+                return response()->json([
+                    'data' => [],
+                    'message' => 'Manufacturers not found',
+                    'status' => false,
+                ], 200);
+            }
+
+            // Structure the response data
+            $data = collect([]);
+
+            // Iterate through manufacturers to calculate distance and structure data
+            foreach ($manufacturers as $manufacturer) {
+                $distance = null;
+                $dis = null;
+                if ($latitude && $longitude && $manufacturer->plant_latitude && $manufacturer->plant_longitude) {
+                    // Make request to Mapbox Directions API
+                    $response = $client->request('GET', 'https://api.mapbox.com/directions/v5/mapbox/driving/' . $longitude . ',' . $latitude . ';' . $manufacturer->plant_longitude . ',' . $manufacturer->plant_latitude, [
+                        'query' => [
+                            'access_token' => $apiKey,
+                            'geometries' => 'geojson',
+                            'overview' => 'simplified',
+                        ],
+                    ]);
+
+                    $body = json_decode($response->getBody(), true);
+
+                    // Extract distance from response
+                    if (isset($body['routes'][0]['distance'])) {
+                        $dis = $body['routes'][0]['distance']; // Distance in meters
+                        $distance = round($dis * 0.000621371, 2); // Convert meters to miles
+                    }
+                }
+
+                // Only include manufacturers within the specified distance range
+                if ($dis !== null && $dis <= $distanceRange) {
+                    // Sales manager information
+                    $salesManager = [
+                        'name' => $manufacturer->sales_manager_name,
+                        'email' => $manufacturer->sales_manager_email,
+                        'phone' => "+1" . $manufacturer->sales_manager_phone,
+                        'designation' => $manufacturer->sales_manager_designation,
+                        'image' => $manufacturer->sales_manager_image ? asset('upload/sales-manager-images/' . $manufacturer->sales_manager_image) : null,
+                    ];
+
+                    // Check if the manufacturer ID already exists in $data
+                    $existing = $data->where('plant_id', $manufacturer->plant_id)->first();
+
+                    if (!$existing) {
+                        $plantType = $manufacturer->plant_type;
+                        switch ($plantType) {
+                            case 'sw':
+                                $plantType = 'Single Wide';
+                                break;
+                            case 'dw':
+                                $plantType = 'Double Wide';
+                                break;
+                            case 'sw_dw':
+                                $plantType = 'Single Wide & Double Wide';
+                                break;
+                        }
+
+                        $data->push([
+                            'plant_id' => $manufacturer->plant_id,
+                            'plant_name' => $manufacturer->plant_name,
+                            'plant_location' => $manufacturer->plant_location,
+                            'plant_phone' => $manufacturer->plant_phone ? '+1' . $manufacturer->plant_phone : 'N/A',
+                            'plant_image_url' => $manufacturer->plant_image_url ? asset('upload/manufacturer-image/' . $manufacturer->plant_image_url) : null,
+                            'plant_type' => $plantType,
+                            'plant_price_range' => '$' . $manufacturer->plant_from_price_range . ' - $' . $manufacturer->plant_to_price_range,
+                            'distance_value' => $distance,
+                            'distance' =>  round($distance) . ' Miles',
+                            'sales_manager' => $salesManager, // Initialize with the first sales manager
+                        ]);
+                    } else {
+                        // If the manufacturer ID already exists, append the sales manager
+                        $existing['sales_manager'][] = $salesManager;
+                    }
+                }
+            }
+
+            // Sort the data by distance in ascending order
+            $sortedData = $data->sortBy('distance_value');
+
+            return response()->json([
+                'data' => $sortedData->values()->toArray(), // Use values() to re-index the array
+                'message' => 'Manufacturers found',
+                'status' => true,
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+
+
+
     public function manufacturerListing(Request $request)
     {
         try {
@@ -838,14 +1037,14 @@ class UserController extends Controller
                 'distance_range' => 'nullable|numeric',
                 'type' => 'nullable|string',
             ]);
-    
+
             if ($validator->fails()) {
                 return response()->json(['error' => $validator->errors()], 400);
             }
-    
+
             // Mapbox API Key
-            $apiKey =  env('MAPBOX_ACESS_TOKEN');
-    
+            $apiKey = env('GOOGLE_API_KEY');
+
             // Get filter inputs
             $latitude = $request->input('latitude');
             $longitude = $request->input('longitude');
@@ -858,240 +1057,10 @@ class UserController extends Controller
             $distance_miles = DB::table('miles_settings')->where('id', 1)->first();
             $miles = isset($distance_miles->miles) ? $distance_miles->miles * 1609.34 : 482803;
             $distanceRange = $request->input('distance_range') ?? $miles;
-    
+
             // Initialize Guzzle client
             $client = new Client();
-    
-            // Get the state from the latitude and longitude using Mapbox Geocoding API
-            $state = null;
-            if ($latitude && $longitude) {
-                $response = $client->request('GET', 'https://api.mapbox.com/geocoding/v5/mapbox.places/' . $longitude . ',' . $latitude . '.json', [
-                    'query' => [
-                        'access_token' => $apiKey,
-                        'types' => 'region',
-                    ],
-                ]);
-    
-                $body = json_decode($response->getBody(), true);
-                if (isset($body['features'][0]['text'])) {
-                    $state = $body['features'][0]['text'];
-                }
-            }
-    
-            // Initialize query
-            $query = DB::table('plant')
-                ->leftJoin('plant_login', 'plant.manufacturer_id', '=', 'plant_login.id')
-                ->leftJoin('plant_sales_manager', 'plant_sales_manager.plant_id', '=', 'plant.id')
-                ->leftJoin('plant_media', 'plant_media.plant_id', '=', 'plant.id')
-                ->leftJoin('specifications as baths_spec', function ($join) {
-                    $join->on('baths_spec.manufacturer_id', '=', 'plant_login.id')
-                        ->where('baths_spec.name', '=', 'Baths');
-                })
-                ->leftJoin('specifications as beds_spec', function ($join) {
-                    $join->on('beds_spec.manufacturer_id', '=', 'plant_login.id')
-                        ->where('beds_spec.name', '=', 'Beds');
-                })
-                ->leftJoin('specifications as sq_ft_spec', function ($join) {
-                    $join->on('sq_ft_spec.manufacturer_id', '=', 'plant_login.id')
-                        ->where('sq_ft_spec.name', '=', 'SQ Ft');
-                })
-                ->select(
-                    'plant.id as plant_id',
-                    'plant.plant_name as plant_name',
-                    'plant.phone as plant_phone',
-                    'plant_sales_manager.name as sales_manager_name',
-                    'plant_sales_manager.email as sales_manager_email',
-                    'plant_sales_manager.designation as sales_manager_designation',
-                    'plant_sales_manager.phone as sales_manager_phone',
-                    'plant_sales_manager.image as sales_manager_image',
-                    'plant.full_address as plant_location',
-                    'plant.type as plant_type',
-                    'plant.price_range as plant_price_range',
-                    'plant.from_price_range as plant_from_price_range',
-                    'plant.to_price_range as plant_to_price_range',
-                    'plant.latitude as plant_latitude',
-                    'plant.longitude as plant_longitude',
-                    'plant_media.image_url as plant_image_url',
-                    'plant.state as plant_state' // Ensure the state is being stored in the plants table
-                )
-                ->where('plant.manufacturer_id', '!=', null)
-                ->where('plant_login.status', 1)
-                ->when($state, function ($query, $state) {
-                    return $query->where('plant.state', $state);
-                })
-                ->when($location, function ($query, $location) {
-                    // Uncomment the following line if you want to filter by location
-                    // return $query->where('plant.full_address', 'like', '%' . $location . '%');
-                })
-                ->when($type, function ($query, $type) {
-                    return $query->where('plant.type', $type);
-                })
-                ->when($priceRange, function ($query, $priceRange) {
-                    if (intval($priceRange) != 0) {
-                        return $query->where('plant.from_price_range', '<=', intval($priceRange))->where('plant.to_price_range', '>=', intval($priceRange));
-                    }
-                })
-                ->when($baths, function ($query, $baths) {
-                    return $query->where('baths_spec.values', 'like', '%' . $baths . '%');
-                })
-                ->when($beds, function ($query, $beds) {
-                    if ($beds == "4+") {
-                        return $query->where('beds_spec.values', '>=', 4);
-                    } else {
-                        return $query->where('beds_spec.values', 'like', '%' . $beds . '%');
-                    }
-                })
-                ->when($sq_ft, function ($query, $sq_ft) {
-                    $sq_ft = explode('-', $sq_ft);
-                    $min = intval($sq_ft[0]);
-                    $max = intval($sq_ft[1]);
-    
-                    return $query->where('sq_ft_spec.values', '>=', $min)
-                        ->where('sq_ft_spec.values', '<=', $max);
-                });
-    
-            // Fetch manufacturers
-            $manufacturers = $query->orderBy('plant_login.id', 'DESC')->get();
-    
-            if ($manufacturers->isEmpty()) {
-                return response()->json([
-                    'data' => [],
-                    'message' => 'Manufacturers not found',
-                    'status' => false,
-                ], 200);
-            }
-    
-            // Structure the response data
-            $data = collect([]);
-    
-            // Iterate through manufacturers to calculate distance and structure data
-            foreach ($manufacturers as $manufacturer) {
-                $distance = null;
-                $dis = null;
-                if ($latitude && $longitude && $manufacturer->plant_latitude && $manufacturer->plant_longitude) {
-                    // Make request to Mapbox Directions API
-                    $response = $client->request('GET', 'https://api.mapbox.com/directions/v5/mapbox/driving/' . $longitude . ',' . $latitude . ';' . $manufacturer->plant_longitude . ',' . $manufacturer->plant_latitude, [
-                        'query' => [
-                            'access_token' => $apiKey,
-                            'geometries' => 'geojson',
-                            'overview' => 'simplified',
-                        ],
-                    ]);
-    
-                    $body = json_decode($response->getBody(), true);
-    
-                    // Extract distance from response
-                    if (isset($body['routes'][0]['distance'])) {
-                        $dis = $body['routes'][0]['distance']; // Distance in meters
-                        $distance = round($dis * 0.000621371, 2); // Convert meters to miles
-                    }
-                }
-    
-                // Only include manufacturers within the specified distance range
-                if ($dis !== null && $dis <= $distanceRange) {
-                    // Sales manager information
-                    $salesManager = [
-                        'name' => $manufacturer->sales_manager_name,
-                        'email' => $manufacturer->sales_manager_email,
-                        'phone' => "+1" . $manufacturer->sales_manager_phone,
-                        'designation' => $manufacturer->sales_manager_designation,
-                        'image' => $manufacturer->sales_manager_image ? asset('upload/sales-manager-images/' . $manufacturer->sales_manager_image) : null,
-                    ];
-    
-                    // Check if the manufacturer ID already exists in $data
-                    $existing = $data->where('plant_id', $manufacturer->plant_id)->first();
-    
-                    if (!$existing) {
-                        $plantType = $manufacturer->plant_type;
-                        switch ($plantType) {
-                            case 'sw':
-                                $plantType = 'Single Wide';
-                                break;
-                            case 'dw':
-                                $plantType = 'Double Wide';
-                                break;
-                            case 'sw_dw':
-                                $plantType = 'Single Wide & Double Wide';
-                                break;
-                        }
-    
-                        $data->push([
-                            'plant_id' => $manufacturer->plant_id,
-                            'plant_name' => $manufacturer->plant_name,
-                            'plant_location' => $manufacturer->plant_location,
-                            'plant_phone' => $manufacturer->plant_phone ? '+1' . $manufacturer->plant_phone : 'N/A',
-                            'plant_image_url' => $manufacturer->plant_image_url ? asset('upload/manufacturer-image/' . $manufacturer->plant_image_url) : null,
-                            'plant_type' => $plantType,
-                            'plant_price_range' => '$' . $manufacturer->plant_from_price_range . ' - $' . $manufacturer->plant_to_price_range,
-                            'distance_value' => $distance,
-                            'distance' =>  round($distance) . ' Miles',
-                            'sales_manager' => $salesManager, // Initialize with the first sales manager
-                        ]);
 
-                        
-                    } else {
-                        // If the manufacturer ID already exists, append the sales manager
-                        $existing['sales_manager'][] = $salesManager;
-                    }
-                }
-            }
-    
-            // Sort the data by distance in ascending order
-            $sortedData = $data->sortBy('distance_value');
-    
-            return response()->json([
-                'data' => $sortedData->values()->toArray(), // Use values() to re-index the array
-                'message' => 'Manufacturers found',
-                'status' => true,
-            ], 200);
-    
-        } catch (\Exception $e) {
-            return response()->json(['error' => $e->getMessage()], 500);
-        }
-    }
-
-
-
-
-    public function manufacturerListingg(Request $request)
-    {
-        try {
-            // Validate inputs
-            $validator = Validator::make($request->all(), [
-                'latitude' => 'nullable|numeric',
-                'longitude' => 'nullable|numeric',
-                'location' => 'nullable|string',
-                'bed' => 'nullable|string',
-                'bath' => 'nullable|string',
-                'sq_ft' => 'nullable|string',
-                'price_range' => 'nullable|string',
-                'distance_range' => 'nullable|numeric',
-                'type' => 'nullable|string',
-            ]);
-    
-            if ($validator->fails()) {
-                return response()->json(['error' => $validator->errors()], 400);
-            }
-    
-            // Mapbox API Key
-            $apiKey =  env('GOOGLE_API_KEY');
-    
-            // Get filter inputs
-            $latitude = $request->input('latitude');
-            $longitude = $request->input('longitude');
-            $location = $request->input('location');
-            $beds = $request->input('bed');
-            $baths = $request->input('bath');
-            $sq_ft = $request->input('sq_ft');
-            $type = $request->input('type');
-            $priceRange = $request->input('price_range');
-            $distance_miles = DB::table('miles_settings')->where('id', 1)->first();
-            $miles = isset($distance_miles->miles) ? $distance_miles->miles * 1609.34 : 482803;
-            $distanceRange = $request->input('distance_range') ?? $miles;
-    
-            // Initialize Guzzle client
-            $client = new Client();
-    
             // Get the state from the latitude and longitude using Mapbox Geocoding API
             $state = null;
             if ($latitude && $longitude) {
@@ -1101,7 +1070,7 @@ class UserController extends Controller
                         'key' => $apiKey,
                     ],
                 ]);
-    
+
                 $body = json_decode($response->getBody(), true);
                 //dd($body);
                 if (isset($body['results'][0]['address_components'])) {
@@ -1113,8 +1082,8 @@ class UserController extends Controller
                     }
                 }
             }
-            
-    
+
+
             // Initialize query
             $query = DB::table('plant')
                 ->leftJoin('plant_login', 'plant.manufacturer_id', '=', 'plant_login.id')
@@ -1165,15 +1134,21 @@ class UserController extends Controller
                 })
                 ->when($priceRange, function ($query, $priceRange) {
                     if (intval($priceRange) != 0) {
-                        return $query->where('plant.from_price_range', '<=', intval($priceRange))->where('plant.to_price_range', '>=', intval($priceRange));
+                        return $query->where('plant.to_price_range', '<=', intval($priceRange));
                     }
                 })
                 ->when($baths, function ($query, $baths) {
-                    return $query->where('baths_spec.values', 'like', '%' . $baths . '%');
+
+                    if ($baths == "4+") {
+                        return $query->whereRaw('CAST(baths_spec.values AS UNSIGNED) >= ?', [4]);
+                    } else {
+                        return $query->where('baths_spec.values', 'like', '%' . $baths . '%');
+                    }
                 })
                 ->when($beds, function ($query, $beds) {
-                    if ($beds == "4+") {
-                        return $query->where('beds_spec.values', '>=', 4);
+                    if ($beds == "5+") {
+
+                        return $query->whereRaw('CAST(beds_spec.values AS UNSIGNED) >= ?', [5]);
                     } else {
                         return $query->where('beds_spec.values', 'like', '%' . $beds . '%');
                     }
@@ -1182,14 +1157,14 @@ class UserController extends Controller
                     $sq_ft = explode('-', $sq_ft);
                     $min = intval($sq_ft[0]);
                     $max = intval($sq_ft[1]);
-    
+
                     return $query->where('sq_ft_spec.values', '>=', $min)
                         ->where('sq_ft_spec.values', '<=', $max);
                 });
-    
+
             // Fetch manufacturers
             $manufacturers = $query->orderBy('plant_login.id', 'DESC')->get();
-    
+
             if ($manufacturers->isEmpty()) {
                 return response()->json([
                     'data' => [],
@@ -1197,10 +1172,10 @@ class UserController extends Controller
                     'status' => false,
                 ], 200);
             }
-    
+
             // Structure the response data
             $data = collect([]);
-    
+
             // Iterate through manufacturers to calculate distance and structure data
             foreach ($manufacturers as $manufacturer) {
                 $distance = null;
@@ -1215,16 +1190,16 @@ class UserController extends Controller
                             'mode' => 'driving',
                         ],
                     ]);
-    
+
                     $body = json_decode($response->getBody(), true);
-    
+
                     // Extract distance from response
                     if (isset($body['rows'][0]['elements'][0]['distance']['value'])) {
                         $dis = $body['rows'][0]['elements'][0]['distance']['value']; // Distance in meters
                         $distance = round($dis * 0.000621371, 2); // Convert meters to miles
                     }
                 }
-    
+
                 // Only include manufacturers within the specified distance range
                 if ($dis !== null && $dis <= $distanceRange) {
                     // Sales manager information
@@ -1235,10 +1210,10 @@ class UserController extends Controller
                         'designation' => $manufacturer->sales_manager_designation,
                         'image' => $manufacturer->sales_manager_image ? asset('upload/sales-manager-images/' . $manufacturer->sales_manager_image) : null,
                     ];
-    
+
                     // Check if the manufacturer ID already exists in $data
                     $existing = $data->where('plant_id', $manufacturer->plant_id)->first();
-    
+
                     if (!$existing) {
                         $plantType = $manufacturer->plant_type;
                         switch ($plantType) {
@@ -1252,7 +1227,7 @@ class UserController extends Controller
                                 $plantType = 'Single Wide & Double Wide';
                                 break;
                         }
-    
+
                         $data->push([
                             'plant_id' => $manufacturer->plant_id,
                             'plant_name' => $manufacturer->plant_name,
@@ -1265,24 +1240,21 @@ class UserController extends Controller
                             'distance' =>  round($distance) . ' Miles',
                             'sales_manager' => $salesManager, // Initialize with the first sales manager
                         ]);
-
-                        
                     } else {
                         // If the manufacturer ID already exists, append the sales manager
                         $existing['sales_manager'][] = $salesManager;
                     }
                 }
             }
-    
+
             // Sort the data by distance in ascending order
             $sortedData = $data->sortBy('distance_value');
-    
+
             return response()->json([
                 'data' => $sortedData->values()->toArray(), // Use values() to re-index the array
                 'message' => 'Manufacturers found',
                 'status' => true,
             ], 200);
-    
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], 500);
         }
@@ -1296,157 +1268,157 @@ class UserController extends Controller
 
 
     public function getManufacturerDetails(Request $request)
-{
-    try {
-        $id = $request->id;
-        $plant_id = $request->plant_id;
-        $latitude = $request->input('latitude');
-        $longitude = $request->input('longitude');
-        $apiKey =  env('MAPBOX_ACESS_TOKEN');
-        // Fetch the specified plant for the manufacturer
-        $plants = DB::table('plant')
-            ->where('id', $plant_id) // Filter by plant_id
-            ->select(
-                'id as plant_id',
-                'plant_name',
-                'description as plant_description',
-                'full_address',
-                'zipcode',
-                'price_range',
-                'from_price_range',
-                'to_price_range',
-                'price_range',
-                'type',
-                'phone',
-                'shipping_cost',
-                'latitude',
-                'longitude',
-                'specification'
-            )
-            ->get();
+    {
+        try {
+            $id = $request->id;
+            $plant_id = $request->plant_id;
+            $latitude = $request->input('latitude');
+            $longitude = $request->input('longitude');
+            $apiKey = env('MAPBOX_ACESS_TOKEN');
+            // Fetch the specified plant for the manufacturer
+            $plants = DB::table('plant')
+                ->where('id', $plant_id) // Filter by plant_id
+                ->select(
+                    'id as plant_id',
+                    'plant_name',
+                    'description as plant_description',
+                    'full_address',
+                    'zipcode',
+                    'price_range',
+                    'from_price_range',
+                    'to_price_range',
+                    'price_range',
+                    'type',
+                    'phone',
+                    'shipping_cost',
+                    'latitude',
+                    'longitude',
+                    'specification'
+                )
+                ->get();
 
-        // Check if plant exists
-        if ($plants->isEmpty()) {
-            return response()->json([
-                'message' => 'Plant not found',
-                'status' => false,
-            ], 200);
-        }
+            // Check if plant exists
+            if ($plants->isEmpty()) {
+                return response()->json([
+                    'message' => 'Plant not found',
+                    'status' => false,
+                ], 200);
+            }
 
-        // Initialize Guzzle client for Mapbox API
-        $client = new Client();
+            // Initialize Guzzle client for Mapbox API
+            $client = new Client();
 
-        // Initialize empty data array
-        $data = [];
+            // Initialize empty data array
+            $data = [];
 
-        // Iterate through each plant to calculate distance and structure data
-        foreach ($plants as $plantItem) {
-            $distance = null;
-            if ($latitude && $longitude && $plantItem->latitude && $plantItem->longitude) {
-                // Make request to Mapbox Directions API
-                $response = $client->request('GET', 'https://api.mapbox.com/directions/v5/mapbox/driving/' . $longitude . ',' . $latitude . ';' . $plantItem->longitude . ',' . $plantItem->latitude, [
-                   'query' => [
+            // Iterate through each plant to calculate distance and structure data
+            foreach ($plants as $plantItem) {
+                $distance = null;
+                if ($latitude && $longitude && $plantItem->latitude && $plantItem->longitude) {
+                    // Make request to Mapbox Directions API
+                    $response = $client->request('GET', 'https://api.mapbox.com/directions/v5/mapbox/driving/' . $longitude . ',' . $latitude . ';' . $plantItem->longitude . ',' . $plantItem->latitude, [
+                        'query' => [
                             'access_token' => $apiKey,
                             'geometries' => 'geojson',
                             'overview' => 'simplified',
                         ],
                     ]);
 
-                $body = json_decode($response->getBody(), true);
+                    $body = json_decode($response->getBody(), true);
 
-                // Extract distance from response
-                if (isset($body['routes'][0]['distance'])) {
-                    $dis = $body['routes'][0]['distance']; // Distance in meters
-                    $distance = round($dis * 0.000621371, 2); // Convert meters to miles
+                    // Extract distance from response
+                    if (isset($body['routes'][0]['distance'])) {
+                        $dis = $body['routes'][0]['distance']; // Distance in meters
+                        $distance = round($dis * 0.000621371, 2); // Convert meters to miles
+                    }
                 }
+
+                // Fetch sales managers for the specified plant
+                $salesManagers = DB::table('plant_sales_manager')
+                    ->where('plant_id', $plant_id) // Filter by plant_id
+                    ->select('plant_id', 'name', 'email', 'phone', 'designation', 'image')
+                    ->get();
+
+                // Fetch plant images
+                $plantImages = DB::table('plant_media')
+                    ->where('plant_id', $plant_id)
+                    ->select('id', 'image_url')
+                    ->get();
+
+                $plantImagesWithAssets = $plantImages->map(function ($image) {
+                    return [
+                        'id' => $image->id,
+                        'media_url' => !empty($image->image_url) ? asset('upload/manufacturer-image/' . $image->image_url) : null,
+                    ];
+                });
+
+                // Explode specification IDs into an array
+                $specificationIds = explode(',', $plantItem->specification);
+
+                // Fetch specifications based on IDs
+                $specifications = DB::table('specifications')
+                    ->whereIn('id', $specificationIds)
+                    ->get();
+
+                // Convert type to readable format
+                $typeReadable = match ($plantItem->type) {
+                    'sw' => 'Single Wide',
+                    'dw' => 'Double Wide',
+                    'sw_dw' => 'Single Wide & Double Wide',
+                    default => null,
+                };
+
+                // Fetch shipping cost based on plant type
+                $shippingCostRecord = ShippingCost::where('type', $plantItem->type)->first();
+                $shippingCost = $shippingCostRecord ? $shippingCostRecord->shipping_cost : 0;
+                $totalShippingCost = $shippingCost * $distance;
+
+                // Prepare plant data with specifications array
+                $plantData = [
+                    'plant_id' => $plantItem->plant_id,
+                    'plant_name' => $plantItem->plant_name,
+                    'plant_phone' => $plantItem->phone ? '+1' . $plantItem->phone : null,
+                    'plant_description' => $plantItem->plant_description,
+                    'full_address' => $plantItem->full_address,
+                    'zipcode' => $plantItem->zipcode,
+                    'price_range' => $plantItem->from_price_range . "-" . $plantItem->to_price_range,
+                    'shipping_cost_per_mile' => '$' . $shippingCost,
+                    'total_shipping_charges' => '$' . number_format($totalShippingCost, 2),
+                    'type' => $typeReadable,
+                    'latitude' => $plantItem->latitude,
+                    'longitude' => $plantItem->longitude,
+                    'distance' => $distance . ' Miles',
+                    'plant_images' => $plantImagesWithAssets,
+                    'images_count' => count($plantImagesWithAssets),
+                    'sales_managers' => [], // Initialize sales managers array
+                    'specifications' => $specifications,
+                ];
+
+                // Add each sales manager to the plant data
+                foreach ($salesManagers as $salesManager) {
+                    $plantData['sales_managers'][] = [
+                        'name' => $salesManager->name,
+                        'email' => $salesManager->email,
+                        'phone' => '+1' . $salesManager->phone,
+                        'designation' => $salesManager->designation,
+                        'image' => $salesManager->image ? asset('upload/sales-manager-images/' . $salesManager->image) : null,
+                    ];
+                }
+
+                $data = $plantData;
             }
 
-            // Fetch sales managers for the specified plant
-            $salesManagers = DB::table('plant_sales_manager')
-                ->where('plant_id', $plant_id) // Filter by plant_id
-                ->select('plant_id', 'name', 'email', 'phone', 'designation', 'image')
-                ->get();
-
-            // Fetch plant images
-            $plantImages = DB::table('plant_media')
-                ->where('plant_id', $plant_id)
-                ->select('id', 'image_url')
-                ->get();
-
-            $plantImagesWithAssets = $plantImages->map(function ($image) {
-                return [
-                    'id' => $image->id,
-                    'media_url' => !empty($image->image_url) ? asset('upload/manufacturer-image/' . $image->image_url) : null,
-                ];
-            });
-
-            // Explode specification IDs into an array
-            $specificationIds = explode(',', $plantItem->specification);
-
-            // Fetch specifications based on IDs
-            $specifications = DB::table('specifications')
-                ->whereIn('id', $specificationIds)
-                ->get();
-
-            // Convert type to readable format
-            $typeReadable = match ($plantItem->type) {
-                'sw' => 'Single Wide',
-                'dw' => 'Double Wide',
-                'sw_dw' => 'Single Wide & Double Wide',
-                default => null,
-            };
-
-            // Fetch shipping cost based on plant type
-            $shippingCostRecord = ShippingCost::where('type', $plantItem->type)->first();
-            $shippingCost = $shippingCostRecord ? $shippingCostRecord->shipping_cost : 0;
-            $totalShippingCost = $shippingCost * $distance;
-
-            // Prepare plant data with specifications array
-            $plantData = [
-                'plant_id' => $plantItem->plant_id,
-                'plant_name' => $plantItem->plant_name,
-                'plant_phone' => $plantItem->phone ? '+1' . $plantItem->phone : null,
-                'plant_description' => $plantItem->plant_description,
-                'full_address' => $plantItem->full_address,
-                'zipcode' => $plantItem->zipcode,
-                'price_range' => $plantItem->from_price_range . "-" . $plantItem->to_price_range,
-                'shipping_cost_per_mile' => '$' . $shippingCost,
-                'total_shipping_charges' => '$' . number_format($totalShippingCost, 2),
-                'type' => $typeReadable,
-                'latitude' => $plantItem->latitude,
-                'longitude' => $plantItem->longitude,
-                'distance' => $distance . ' Miles',
-                'plant_images' => $plantImagesWithAssets,
-                'images_count' => count($plantImagesWithAssets),
-                'sales_managers' => [], // Initialize sales managers array
-                'specifications' => $specifications,
-            ];
-
-            // Add each sales manager to the plant data
-            foreach ($salesManagers as $salesManager) {
-                $plantData['sales_managers'][] = [
-                    'name' => $salesManager->name,
-                    'email' => $salesManager->email,
-                    'phone' => '+1' . $salesManager->phone,
-                    'designation' => $salesManager->designation,
-                    'image' => $salesManager->image ? asset('upload/sales-manager-images/' . $salesManager->image) : null,
-                ];
-            }
-
-            $data = $plantData;
+            return response()->json([
+                'data' => $data,
+                'status' => true,
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'An error occurred while fetching the manufacturer details',
+                'error' => $e->getMessage(),
+            ], 500);
         }
-
-        return response()->json([
-            'data' => $data,
-            'status' => true,
-        ], 200);
-    } catch (\Exception $e) {
-        return response()->json([
-            'message' => 'An error occurred while fetching the manufacturer details',
-            'error' => $e->getMessage(),
-        ], 500);
     }
-}
 
     public function filter_static_data()
     {
@@ -1469,7 +1441,8 @@ class UserController extends Controller
             [
                 'title' => '04',
                 'value' => '4'
-            ],  [
+            ],
+            [
                 'title' => '05+',
                 'value' => '5+'
             ],
@@ -1501,10 +1474,12 @@ class UserController extends Controller
             [
                 'title' => '500-1000',
                 'value' => '500-1000'
-            ], [
+            ],
+            [
                 'title' => '1000-2000',
                 'value' => '1000-2000'
-            ], [
+            ],
+            [
                 'title' => '2500+',
                 'value' => '2500-10000'
             ],
@@ -1513,14 +1488,15 @@ class UserController extends Controller
         $distance_range = [
             [
                 'title' => '100',
-                'value' => 160934
+                'value' => 100
             ],
             [
                 'title' => '200',
-                'value' => 321869
-            ], [
+                'value' => 200
+            ],
+            [
                 'title' => '300',
-                'value' => 482803
+                'value' => 300
             ]
 
         ];
@@ -1533,7 +1509,8 @@ class UserController extends Controller
             [
                 'title' => 'Double Wide',
                 'value' => 'dw'
-            ], [
+            ],
+            [
                 'title' => 'Both',
                 'value' => 'sw_dw'
             ]
@@ -1560,5 +1537,142 @@ class UserController extends Controller
             'data' => $data,
             'status' => true,
         ], 200);
+    }
+
+
+
+
+
+    public function forgetpassword(Request $request) 
+    {
+        try {
+            // Validation of the email field
+            $validator = Validator::make($request->all(), [
+                'email' => 'required|email',
+            ]);
+
+            // Return error if validation fails
+            if ($validator->fails()) {
+                return errorMsg($validator->errors()->first());
+            }
+
+            $email = $request->email;
+
+            // Check if the user exists with the given email and status 1
+            $user = User::where('email', $email)->where('status', 1)->first();
+            // dd($user);
+
+            if (!$user) {
+                // User does not exist, return an error response
+                return response()->json([
+                    'status' => false,
+                    'message' => 'This email is not registered with Seco',
+                ]);
+            }
+
+            // Check if OTP already exists for this email
+            $exist = Otp::where('email', $email)->first();
+            $code = rand(1000, 9999); // Generate a four-digit OTP code
+
+            if ($exist) {
+                // Update the existing OTP
+                $exist->update(['otp' => $code]);
+            } else {
+                // Create a new OTP entry
+                Otp::create([
+                    'email' => $email,
+                    'otp' => $code,
+                    'user_id' => $user->id,
+                ]);
+            }
+
+            // Prepare data for the response and email
+            $data = [
+                'status' => true,
+                'message' => 'Verification code has been sent',
+                'code' => $code,
+                'email' => $user->email,
+            ];
+
+            $mailData = [
+                'body' => 'You have requested to change your password. Please find the below details to do the same.',
+                'code' => 'Your One Time Password to change your password is ' . $code,
+                'email' => $email,
+                'name' => $user->fullname,
+            ];
+
+            $subject = 'Reset Your Password';
+
+            // Attempt to send the email
+            // try {
+            //     Mail::to($email)->send(new SendOTPMail($mailData, $subject));
+            // } catch (\Exception $mailException) {
+            // }
+
+            // Return a success response with the OTP data
+            return response()->json($data);
+
+        } catch (\Exception $e) {
+            return errorMsg("Exception -> " . $e->getMessage());
+        }
+    }
+
+
+
+    public function verifyotp(Request $request) 
+    {
+        try {
+            $data=array();
+            $otp = $request->otp;
+            $validator = Validator::make($request->all() , [
+                'email' => 'required|email',
+                'otp' => 'required|digits:4|numeric',
+            ]);
+            if ($validator->fails())
+            {
+                return errorMsg($validator->errors()->first());
+            }
+        
+            $user = Otp::where('email',$request->email)->orderBy('id','DESC')->first();
+            if(!empty($user))
+            {
+                $user_detail = User::where('email',$request->email)->where('status',1)->orderBy('id','DESC')->first();
+                if(!empty($user_detail))
+                {
+                    $remember_token = $user_detail->remember_token;
+                }else{
+                    $remember_token = '';
+                }
+                if($user->otp == $otp)
+                {
+                    $validTill = strtotime($user->updated_at) + (24*60*60);
+                    if (strtotime("now") > $validTill) {
+                        $data['status']=true;
+                        $data['message'] = "OTP has expired.";
+                        $data['user_id'] = '';
+                        $data['token'] = '';
+                        return response()->json($data);
+                    }else{
+                        $data['status']=true;
+                        $data['message']="OTP verified";
+                        $data['user_id'] = $user->user_id;
+                        $data['token'] = $remember_token;
+                        return response()->json($data);
+                    }
+                }else{
+                    $data['status']=false;
+                    $data['message']="Please enter valid OTP";
+                    $data['user_id'] = '';
+                    $data['token'] = '';
+                    return response()->json($data);
+                }
+            }else{
+                $data['status'] = false;
+                $data['message'] = 'Otp does not exits';
+                return response()->json($data);
+            }
+        } catch (\Exception $e) {
+            return errorMsg("Exception -> " . $e->getMessage());
+        }
     }
 }

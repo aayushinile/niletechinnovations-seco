@@ -1292,7 +1292,7 @@ class ManufacturerController extends Controller
                     Mail::to($request->email)->send(new ForgetPassword($user, $token));
                 } catch (\Throwable $th) {
                     // Log the error to see the issue
-                    Log::error('Mail Error: ' . $th->getMessage());
+                    dd($th);
                     return response()->json([
                         'message' => 'There was an issue sending the email. Please check your mail settings.',
                         'status' => 500,

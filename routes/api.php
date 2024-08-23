@@ -19,7 +19,9 @@ use App\Http\Controllers\ManufacturerController;
 
 Route::post('/register', [UserController::class, 'register']);
 Route::post('/login', [UserController::class, 'login']);
+Route::post('/forget-password', [UserController::class, 'forgetpassword']);
 Route::post('/change-password', [UserController::class, 'change_password']);
+Route::post('/verify-otp', [UserController::class, 'verifyotp']);
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [UserController::class, 'logout']);
     Route::get('/profile', [UserController::class, 'userDetails']);
@@ -45,6 +47,5 @@ Route::post('/plant', [ManufacturerController::class, 'savePlant']);
 Route::get('/plants', [UserController::class, 'plantListing']);
 Route::post('/plant-details', [UserController::class, 'plantDetails']);
 Route::post('/manufacturers', [UserController::class, 'manufacturerListing']);
-Route::post('/manufacturers2', [UserController::class, 'manufacturerListing2']);
 Route::post('/manufacturers-details', [UserController::class, 'getManufacturerDetails']);
 Route::get('/filter_static_data', [UserController::class, 'filter_static_data']);
