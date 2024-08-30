@@ -30,6 +30,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/get-notifications', [UserController::class, 'getNotification']);
     Route::post('/clear-notifications', [UserController::class, 'ClearNotification']);
 });
+Route::post('/save-locations', [UserController::class, 'saveLocationDetails']);
 Route::post('/community-details', [CommunityController::class, 'getCommunityDetails']);
 Route::post('/delete-community-image', [CommunityController::class, 'deleteCommunityPhoto']);
 
@@ -40,8 +41,8 @@ Route::post('/contact-manufacturers', [UserController::class, 'contactManufactur
 Route::post('/add-community', [CommunityController::class, 'addCommunity']);
 Route::post('/communities-listing', [CommunityController::class, 'communityListing']);
 Route::post('/update-community', [CommunityController::class, 'updateCommunity']);
-Route::get('/get-locations', [UserController::class, 'getLocations']);
-Route::get('/location-details', [UserController::class, 'LocationDetails']);
+Route::post('/get-locations', [UserController::class, 'getLocations']);
+Route::post('/delete-location', [UserController::class, 'deleteLocation']);
 Route::post('/manufacturers', [ManufacturerController::class, 'saveManufacturer']);
 Route::post('/plant', [ManufacturerController::class, 'savePlant']);
 Route::get('/plants', [UserController::class, 'plantListing']);
@@ -49,3 +50,4 @@ Route::post('/plant-details', [UserController::class, 'plantDetails']);
 Route::post('/manufacturers', [UserController::class, 'manufacturerListing']);
 Route::post('/manufacturers-details', [UserController::class, 'getManufacturerDetails']);
 Route::get('/filter_static_data', [UserController::class, 'filter_static_data']);
+Route::get('/dropdown-values', [UserController::class, 'DropdownValues']);

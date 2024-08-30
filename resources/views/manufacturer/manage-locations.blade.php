@@ -197,6 +197,9 @@ button.btn-search {
                         </div>
                         @endforeach
                         @endif
+                        <div class="ss-table-pagination">
+                                {{ $plants->links('pagination::bootstrap-4') }}
+                            </div>
                     </div>
                 </div>
             </div>

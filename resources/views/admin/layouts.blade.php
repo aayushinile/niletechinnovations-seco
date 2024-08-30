@@ -15,7 +15,6 @@
     <script src="{{ asset('admin/plugins/fancybox/fancybox.umd.js') }}" type="text/javascript"></script>
     <script src="{{ asset('admin/js/function.js') }}" type="text/javascript"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <link rel="stylesheet" type="text/css" href="{{ asset('css/profile.css') }}">
     <link rel="stylesheet" type="text/css" href="{{ asset('css/managelocations.css') }}">
     
 
@@ -26,7 +25,6 @@
     <script src="{{ asset('plugins/select2/select2.min.js') }}" type="text/javascript"></script>
     <link rel="stylesheet" type="text/css" href="{{ asset('plugins/select2/select2.min.css') }}">
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-    <script src="{{ asset('js/function.js') }}" type="text/javascript"></script>
     <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/smoothness/jquery-ui.css">
     <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
     @stack('css')
@@ -200,7 +198,7 @@
                                             stroke-linecap="round" stroke-linejoin="round" />
                                     </svg>
                                 </span>
-                                <span class="menu-title">Enquiries</span>
+                                <span class="menu-title">Inquiries</span>
                             </a>
                         </li>
 

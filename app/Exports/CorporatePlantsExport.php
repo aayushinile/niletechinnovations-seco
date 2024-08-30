@@ -36,13 +36,13 @@ class CorporatePlantsExport implements FromCollection, WithHeadings, ShouldAutoS
                 'country' => $plant->country,
                 'email' => $plant->email,
                 'phone' => $this->formatPhone($plant->phone),
-                'price_range' => $this->getPriceRange($plant->id),
-                'shipping cost' => $this->getShippingCost($plant->id),
+                // 'price_range' => $this->getPriceRange($plant->id),
+                // 'shipping cost' => $this->getShippingCost($plant->id),
                 'type' => $this->getType($plant->id),
                 'sales_managers' => $this->getSalesManagers($plant->id),
                
                 'contacted_owners' => $this->getContactedOwners($plant->id),
-                'specifications' => $this->getSpecifications($plant->id),
+                // 'specifications' => $this->getSpecifications($plant->id),
                 'created_at' => $this->formatDate($plant->created_at),
             ];
         });
@@ -292,12 +292,12 @@ class CorporatePlantsExport implements FromCollection, WithHeadings, ShouldAutoS
             'Country',
             'Email',
             'Phone',
-            'Price Range ($)',
-            'Shipping Cost ($)',
+            //'Price Range ($)',
+            //'Shipping Cost ($)',
             'Type',
             'Sales Personnel',
             'Contacted Community Owners',
-            'Specifications',
+            //'Specifications',
             'Date',
         ];
     }
@@ -309,11 +309,11 @@ class CorporatePlantsExport implements FromCollection, WithHeadings, ShouldAutoS
         return [
             AfterSheet::class => function(AfterSheet $event) {
                 // Enable wrap text for the 'Sales Personnel' column (e.g., column K)
-                $salesManagersRange = 'K2:K' . $event->sheet->getHighestRow();
+                $salesManagersRange = 'I2:I' . $event->sheet->getHighestRow();
                 $event->sheet->getStyle($salesManagersRange)->getAlignment()->setWrapText(true);
 
                 // Enable wrap text for the 'Contacted Community Owners' column (e.g., column L)
-                $contactedOwnersRange = 'L2:L' . $event->sheet->getHighestRow();
+                $contactedOwnersRange = 'J2:J' . $event->sheet->getHighestRow();
                 $event->sheet->getStyle($contactedOwnersRange)->getAlignment()->setWrapText(true);
             },
         ];

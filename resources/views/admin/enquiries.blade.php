@@ -19,7 +19,7 @@
     <div class="body-main-content">
         <div class="ss-card">
             <div class="card-header">
-                <h2>Enquiries</h2>
+                <h2>Inquiries ({{$count}})</h2>
                 <div class="search-filter wd6" style="width: 60%">
                     <div class="row g-1">
                         <div class="col-md-4">
@@ -57,23 +57,21 @@
                                     @foreach ($pls as $item)
                                     
                                         <option value="{{ $item->plant_name }}"
-                                            @if (request()->has('manufacturer_id') && request('manufacturer_id') === $item->id) selected @endif>{{ $item->plant_name }}
+                                            @if (request()->has('manufacturer_id') && request('manufacturer_id') === $item->plant_name) selected @endif>{{ $item->plant_name }}
                                         </option>
                                     @endforeach
                                 </select>
                             </div>
                         </div>
-                        <div class="col-md-1">
+                        <div class="col-md-2">
                             <div class="form-group">
-                                <a href="{{ route('admin.enquiries') }}" class="btn-refresh"><i class="fa fa-refresh"
-                                        aria-hidden="true" style="margin-top: 12px;"></i></a>
+                                <a href="{{ route('admin.enquiries') }}" class="btnrefresh"><i class="fa fa-refresh"
+                                        aria-hidden="true"></i></a>
+                            
+                                <a href="{{ route('admin.enquiries', array_merge(request()->all(), ['download' => 1])) }}" class="btnDownloadExcel">
+                                    <i class="fa fa-file-excel-o" aria-hidden="true"></i>
+                                </a>
                             </div>
-                        </div>
-                        <div class="col-md-1">
-                            <a href="{{ route('admin.enquiries', array_merge(request()->all(), ['download' => 1])) }}" class="btn-bl" style="background-color:var(--green)">
-                                <i class="fa fa-file-excel-o" aria-hidden="true"></i>
-                            </a>
-
                         </div>
                     </div>
                 </div>

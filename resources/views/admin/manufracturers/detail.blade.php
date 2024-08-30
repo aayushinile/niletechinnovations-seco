@@ -39,7 +39,7 @@
                     @endif
 
                     @if($mfs->plant_type == 'plant_rep')
-                    <a class="ChangePasswordbtn" data-bs-toggle="modal" data-bs-target="#ChangePassword" style="background: var(--green);color: var(--white);padding: 12px 20px;border-radius: 5px;font-size: 14px;box-shadow: 0 4px 10px #5f0f5845;display: inline-block;position: relative;cursor:pointer" data-plant-id="{{ $mfs['id'] }}">Reset Password</a>
+                    <a class="ChangePasswordbtn" data-bs-toggle="modal" data-bs-target="#ChangePassword" style="background: var(--green);color: var(--white);padding: 12px 20px;border-radius: 5px;font-size: 14px;box-shadow: 0 4px 10px #5f0f5845;display: inline-block;position: relative;cursor:pointer" data-plant-id="{{ $mfs['id'] }}" data-email-id="{{ $mfs['email'] }}">Reset Credentials</a>
                     @endif
                 </div>
             </div>
@@ -79,7 +79,6 @@
                                     </div>
                                 </div>
                             </div>
-
                             <div class="col-md-4">
                                 <div class="user-contact-info">
                                     <div class="user-contact-info-icon">
@@ -161,7 +160,7 @@
                     @if ($specifications->isNotEmpty())
 
                             @foreach ($specifications as $specification)
-                                <div class="col-md-2">
+                                <div class="col-md-2 d-none">
                                     <div class="plants-amenities-info"
                                         style="position: relative;width: 100%;border-radius: 0;padding: 0;display: flex;gap: 10px;margin-bottom: 0rem;">
 
@@ -181,7 +180,7 @@
                                 </div>
                             @endforeach
                         @else
-                            <div class="col-md-2">
+                            <div class="col-md-2 d-none">
                                 <div class="plants-amenities-info">
                                     <div class="plants-amenities-info-content">
                                         <p>N/A</p>
@@ -218,7 +217,7 @@
                     <div class="row">
                         <div class="col-md-12">
                             <div class="pricing-host-box">
-                                <div class="pricing-info">
+                                <div class="pricing-info d-none">
                                     <div class="plants-pricing-item">
                                     @if(isset($plant['from_price_range']) && isset($plant['to_price_range']))
                                         <h2>Price Range : ${{ $plant['from_price_range'] }} - ${{ $plant['to_price_range'] }}</h2>
@@ -375,12 +374,17 @@
         <div class="modal-content">
             <div class="modal-body">
                 <div class="ss-modal-form">
-                    <h2>Reset Password</h2>
+                    <h2>Reset Credentials</h2>
                     <form id="changePasswordForm">
                         @csrf
                         <input type="hidden" id="plant-id" name="plant_id">
                         <div class="row">
-
+                        <div class="col-md-12">
+                            <div class="form-group">
+                                <label for="email">Email</label> <!-- Label for the email field -->
+                                <input type="email" name="email" id="email" class="form-control"> <!-- Read-only email input field -->
+                            </div>
+                        </div>
                             <div class="col-md-12">
                                 <div class="form-group">
                                     <div class="password-wrapper">
@@ -401,7 +405,7 @@
 
                             <div class="col-md-12">
                                 <div class="form-group">
-                                    <button type="submit" class="save-btn mb-2">Reset Password</button>
+                                    <button type="submit" class="save-btn mb-2">Reset</button>
                                     <button type="button" class="cancel-btn" data-bs-dismiss="modal" aria-label="Close">Cancel</button>
                                 </div>
                             </div>
@@ -413,6 +417,16 @@
         </div>
     </div>
 </div>
+<script>
+    $(document).on('click', '.ChangePasswordbtn', function() {
+        var plantId = $(this).data('plant-id');
+        var emailId = $(this).data('email-id');
+
+        // Set the plant ID and email in the modal
+        $('#plant-id').val(plantId);
+        $('#email').val(emailId); // Set the email in the new input field
+    });
+</script>
 
         <script>
             $(document).ready(function() {
@@ -478,8 +492,10 @@ document.addEventListener("DOMContentLoaded", function() {
         var form = e.target;
         var formData = new FormData(form);
         var manufacturerId = document.getElementById('plant-id').value;
+        var email = document.getElementById('email').value;
+        formData.append('email', email);
         const url = `{{ route("admin.updatePassword", ["id" => ":id"]) }}`.replace(':id', manufacturerId);
-
+        
 
         fetch(url, {
             method: 'POST',

@@ -27,6 +27,8 @@ class User extends Authenticatable
         'business_state',
         'business_zipcode',
         'community_owner',
+        'no_of_mhs',
+        "no_of_communities",
         'location',
         'mailverified',
         'password',

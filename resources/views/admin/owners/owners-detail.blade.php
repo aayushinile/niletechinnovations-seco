@@ -142,6 +142,43 @@
                             </div>
                         </div>
                     </div>
+
+                    <div class="col-md-4">
+                            <div class="contacted-manufacturer-card">
+                            <div class="contacted-manufacturer-head row align-items-center">
+            <div class="col-md-8">
+                <h2>Saved Locations({{ count($saved_locations) }})</h2>
+            </div>
+                                @if ($saved_locations->isNotEmpty())
+                                <div class="contacted-manufacturer-body">
+                                    @foreach ($saved_locations as $item)
+                                        <div class="contacted-manufacturer-item">
+                                            <div class="contacted-manufacturer-item-image">
+                                                <img src="{{ asset('images/location.svg') }}">
+                                            </div>
+                                            <div class="contacted-manufacturer-item-text">
+                                                <h4>{{ $item->location }}</h4>
+                                                <h4>{{$item->city}},{{$item->state}}</h4>
+                                            </div>
+                                        </div>
+                                    @endforeach
+
+
+                                </div>
+                                @else 
+                                <div class="contacted-manufacturer-body">
+                                        <div class="contacted-manufacturer-item">
+                                            <div class="contacted-manufacturer-item-text">
+                                                <p>No Data Found</p>
+                                            </div>
+                                        </div>
+
+
+                                </div>
+                                @endif
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

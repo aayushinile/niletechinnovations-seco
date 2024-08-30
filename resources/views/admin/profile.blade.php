@@ -29,14 +29,21 @@
         <div class="listed-plants-section">
             <div class="profile-info-item">
                 <div class="profile-info-item-media">
-                    <a href="#"><img
-                            src="{{ $admin->profile_image ? asset($admin->profile_image) : asset('admin/images/profile.png') }}"></a>
-                </div>
-                <div class="profile-info-item-content">
-                    @auth('admin')
+                @auth('admin')
                         @php
                             $admin = auth('admin')->user(); // Fetch currently authenticated admin
                         @endphp
+                    <a href="#"><img
+                            src="{{ $admin->profile_image ? asset($admin->profile_image) : asset('admin/images/profile.png') }}"></a>
+                         @if ($admin->profile_image != null)
+                        <div class="profile-media-action">
+                            <a  data-bs-toggle="modal"
+                            data-bs-target="#activePlant"><i class="fa-regular fa-trash-can"></i></a>
+                        </div>
+                        @endif
+                </div>
+                <div class="profile-info-item-content">
+                    
                         @if ($admin)
                             <h2>{{ $admin->name }}</h2>
                             <div class="profile-info-point">
@@ -74,10 +81,6 @@
                         <p>You are not logged in as an admin.</p>
                     @endauth
                     <div class="profile-info-item-action">
-                        @if ($admin->profile_image != null)
-                            <a class="EditProfilebtn" style="background-color: var(--red);" data-bs-toggle="modal"
-                                data-bs-target="#activePlant"> Remove Profile Picture</a>
-                        @endif
 
                         <a class="EditProfilebtn" data-bs-toggle="modal" data-bs-target="#EditProfile" style="cursor: pointer;"> Edit Profile</a>
                         <a class="ChangePasswordbtn" data-bs-toggle="modal" data-bs-target="#ChangePassword" style="cursor: pointer;"> Change
@@ -184,8 +187,18 @@
 
                                 <div class="col-md-12">
                                     <div class="form-group">
-                                        <input type="file" name="file" class="form-control">
+                                        <input type="file" name="file" class="form-control"  onchange="previewImage(event)">
                                     </div>
+                                    <div class="upload-file-item" style="display: none;">
+                                                <div class="upload-file-item-content">
+                                                    <div class="upload-file-media">
+                                                        <img id="preview_image" src="">
+                                                    </div>
+                                                </div>
+                                                <div class="upload-file-action">
+                                                    <a class="delete-btn" href="#" onclick="deleteImage(event)"><img src="{{ asset('images/close-circle.svg') }}"></a>
+                                                </div>
+                                            </div>
                                 </div>
 
 
@@ -239,5 +252,40 @@
 
 
         $(":input").inputmask();
+    </script>
+    <script>
+        function previewImage(event) {
+        var input = event.target;
+        var preview = document.getElementById('preview_image');
+
+        if (input.files && input.files[0]) {
+            var reader = new FileReader();
+
+            reader.onload = function(e) {
+                preview.src = e.target.result;
+                // Show the upload-file-item div if an image is selected
+                document.querySelector('.upload-file-item').style.display = 'block';
+            }
+
+            reader.readAsDataURL(input.files[0]);
+        } else {
+            preview.src = "";
+            // Hide the upload-file-item div if no image is selected
+            document.querySelector('.upload-file-item').style.display = 'none';
+        }
+    }
+
+        function deleteImage(event) {
+            event.preventDefault();
+            var preview = document.getElementById('preview_image');
+            var input = document.querySelector('input[name="file"]');
+
+            // Clear the input value
+            input.value = "";
+            // Clear the preview image
+            preview.src = "";
+            // Hide the upload-file-item div
+            document.querySelector('.upload-file-item').style.display = 'none';
+        }
     </script>
 @endsection

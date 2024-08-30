@@ -48,8 +48,8 @@
                 <div class="listed-plants-section">
                     <div class="profile-info-item">
                         <div class="profile-info-item-media">
-                        @if (!empty($attributes->attribute_value))
-                            <a href="#"><img src="{{ asset('upload/manufacturer-image/'.$attributes->attribute_value) }}"></a>
+                        @if (!empty($users->image))
+                            <a href="#"><img src="{{ asset('upload/manufacturer-image/'.$users->image) }}"></a>
                         @else
                             <a href="#"><img src="{{ asset('images/defaultuser.png') }}"></a>
                         @endif
@@ -121,7 +121,7 @@
                             </div>
 
                             <div class="profile-info-item-action" style="cursor: pointer;">
-                                <!-- <a class="EditProfilebtn" data-bs-toggle="modal" data-bs-target="#EditProfile">Edit Profile</a> -->
+                                <a class="EditProfilebtn" data-bs-toggle="modal" data-bs-target="#EditProfile">Edit Profile</a>
                                 <a class="ChangePasswordbtn" data-bs-toggle="modal" data-bs-target="#ChangePassword">Change Password</a>
                             </div>
                         </div>
@@ -192,28 +192,29 @@
                     <form method="POST" action="{{ route('manufacturers.update', $users->id) }}" enctype="multipart/form-data">
                         @csrf
                         @method('PUT')
+                        
                         <div class="row">
-                            <div class="col-md-12">
+                        <div class="col-md-12">
                                 <div class="form-group" style="margin-bottom: 0rem !important;">
-                                    <label for="full_name">Full Name</label>
-                                    <input type="text" id="full_name" name="full_name" required class="form-control" placeholder="Full Name" value="{{$user->full_name}}">
+                                    <label for="business_name"></label>
+                                    <input type="text" id="business_name" name="business_name"class="form-control" placeholder="Business Name" value="{{$users->business_name}}">
                                 </div>
                             </div>
 
                             <div class="col-md-6">
                                 <div class="form-group" style="margin-bottom: 0rem !important;">
-                                    <label for="email">Email Address</label>
-                                    <input type="email" id="email" name="email" required class="form-control" placeholder="Email Address" value="{{$user->email}}">
+                                    <label for="email" ></label>
+                                    <input type="email" id="email" name="email"  class="form-control" placeholder="Email Address" value="{{$users->email}}" readonly disabled style="background-color:#00000017;">
                                 </div>
                             </div>
 
                             <div class="col-md-6">
                                 <div class="form-group" style="margin-bottom: 0rem !important;">
-                                    <label for="phone">Phone Number</label>
+                                    <label for="phone"></label>
                                     <div class="form-group-phone">
                                                 <span class="input-group-text">+1</span>
                                                 <div class="input-group-form-control">
-                                    <input type="text" id="phone" name="phone" required class="form-control phone" placeholder="Phone Number" value="{{$user->mobile}}" maxlength="10"> 
+                                    <input type="text" id="phone" name="phone" required class="form-control phone" placeholder="Phone Number" value="{{$users->phone}}" maxlength="10"> 
                                     <div class="invalid-feedback">Please enter a 10-digit phone number.</div>
                                     </div>
                                     
@@ -224,27 +225,23 @@
                                 @enderror
                             </div>
                                              
-                            <div class="col-md-12">
-                                <div class="form-group" style="margin-bottom: 0rem !important;">
-                                    <label for="manufacturer_name">Business Name</label>
-                                    <input type="text" id="manufacturer_name" name="manufacturer_name" required class="form-control" placeholder="Business Name" value="{{$user->manufacturer_name}}">
-                                </div>
-                            </div>
+                            
 
                             <div class="col-md-12">
                                 <div class="form-group" style="margin-bottom: 0rem !important;">
-                                    <label for="manufacturer_logo">Business Logo</label>
+                                    <label for="manufacturer_logo"></label>
                                     <input type="file" id="manufacturer_logo" name="manufacturer_image" class="form-control" placeholder="Business Logo" onchange="previewImage(event)">
                                 </div>
-                                @if (!empty($attributes->attribute_value))
-                                <div class="upload-file-item" >
+
+                                @if (!empty($users->image))
+                                <div class="upload-file-item">
                                     <div class="upload-file-item-content">
                                         <div class="upload-file-media">
-                                            <img id="preview_image" src="{{ asset('upload/manufacturer-image/'.$attributes->attribute_value) }}">
+                                            <img id="preview_image" src="{{ asset('upload/manufacturer-image/'.$users->image) }}">
                                         </div>
                                     </div>
                                     <div class="upload-file-action">
-                                        <a class="delete-btn" href="#" data-image-id="{{ $attributes->id }}"><img src="{{ asset('images/close-circle.svg') }}"></a>
+                                        <a class="delete-btn" href="#" data-image-id="{{ $users->id }}"><img src="{{ asset('images/close-circle.svg') }}"></a>
                                     </div>
                                 </div>
                                 @else 
@@ -254,20 +251,31 @@
                                             <img id="preview_image" src="">
                                         </div>
                                     </div>
-                                    <!-- <div class="upload-file-action">
-                                        <a class="delete-btn" href="#"><img src="{{ asset('images/close-circle.svg') }}"></a>
-                                    </div> -->
+                                    <div class="upload-file-action">
+                                        <a class="delete-btn-preview" href="#" onclick="deletePreviewImage(event)"><img src="{{ asset('images/close-circle.svg') }}"></a>
+                                    </div>
                                 </div>
                                 @endif
                             </div>
 
-                            <div class="col-md-12">
+
+                            <div class="col-md-12 mb-4 mt-2">
+                                <div class="form-group">
+                                    <label for="description" style="color: #4f5168;">About Company</label>
+                                    <textarea id="description" name="description" class="form-control" placeholder="About The Company">{{ $users['about'] ?? '' }}</textarea>
+                                </div>
+                                @error('description')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+
+                            <!-- <div class="col-md-12 d-none">
                                 <div class="form-group form-group-icon" >
                                     <label for="location">Location</label>
                                     <input id="geocoder" type="search" id="location" name="location" required class="form-control" placeholder="Search for location" value="{{$user->manufacturer_address}}">
                                     <span class="form-input-icon"><img src="{{ asset('images/location.svg') }}" style="margin-top: 25px;"></span>
                                 </div>
-                            </div>
+                            </div> -->
 
                             <!-- <div class="col-md-12">
                                 <div class="form-group">
@@ -445,25 +453,37 @@ document.addEventListener("DOMContentLoaded", function() {
 </script>
 <script>
       function previewImage(event) {
-        var input = event.target;
-        var preview = document.getElementById('preview_image');
+    var input = event.target;
+    var preview = document.getElementById('preview_image');
 
-        if (input.files && input.files[0]) {
-            var reader = new FileReader();
+    if (input.files && input.files[0]) {
+        var reader = new FileReader();
 
-            reader.onload = function(e) {
-                preview.src = e.target.result;
-                // Show the upload-file-item div if an image is selected
-                document.querySelector('.upload-file-item').style.display = 'block';
-            }
-
-            reader.readAsDataURL(input.files[0]);
-        } else {
-            preview.src = "";
-            // Hide the upload-file-item div if no image is selected
-            document.querySelector('.upload-file-item').style.display = 'none';
+        reader.onload = function(e) {
+            preview.src = e.target.result;
+            // Show the upload-file-item div if an image is selected
+            document.querySelector('.upload-file-item').style.display = 'block';
         }
+
+        reader.readAsDataURL(input.files[0]);
+    } else {
+        preview.src = "";
+        // Hide the upload-file-item div if no image is selected
+        document.querySelector('.upload-file-item').style.display = 'none';
     }
+}
+
+function deletePreviewImage(event) {
+    event.preventDefault();
+
+    // Clear the file input
+    document.getElementById('manufacturer_logo').value = "";
+    // Remove the preview image
+    document.getElementById('preview_image').src = "";
+    // Hide the upload-file-item div
+    document.querySelector('.upload-file-item').style.display = 'none';
+}
+
 </script>
 <script>
     // JavaScript to toggle password visibility
@@ -491,6 +511,7 @@ document.addEventListener("DOMContentLoaded", function() {
             e.preventDefault();
             
             const imageId = this.getAttribute('data-image-id');
+            console.log(imageId);
             const imageElement = this.closest('.upload-file-item');
             
             try {

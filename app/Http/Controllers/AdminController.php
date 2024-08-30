@@ -195,6 +195,11 @@ class AdminController extends Controller
         ->whereIn('plant.id', $manufracturers)
         ->get();
 
+        $saved_locations = DB::table('locations')
+        ->where('user_id', $id)
+        ->get();
+
+
         foreach ($contact_m as  $item) {
 
             $image_attribute = ManufacturerAttributes::where("manufacturer_id", $item->id)->where("attribute_name", "image")->first();
@@ -204,7 +209,7 @@ class AdminController extends Controller
                 $item->image = null;
             }
         }
-        return view("admin.owners.owners-detail", compact('community', 'owner', 'contact_m'));
+        return view("admin.owners.owners-detail", compact('community', 'owner', 'contact_m','saved_locations'));
     }
 
 
@@ -251,6 +256,7 @@ class AdminController extends Controller
 
     public function manufracturers(Request $request)
     {
+        //dd($request->all());
         $manufracturers = Plant::whereNotNull("plant_name")
         ->whereHas('plantLogin', function ($query) {
             $query->where('plant_type', 'plant_rep');
@@ -269,6 +275,20 @@ class AdminController extends Controller
         })
         ->when($request->has('date'), function ($query) use ($request) {
             return $query->whereDate("created_at", $request->date);
+        })
+        ->when($request->has('status'), function ($query) use ($request) {
+            $status = $request->status;
+            if ($status !== '2') {
+                // Filter by status if it's not 'SHOW ALL'
+                return $query->whereHas('plantLogin', function ($subQuery) use ($status) {
+                    $subQuery->where('status', $status);
+                });
+            } else {
+                // If 'SHOW ALL' is selected, show both Active and Inactive records
+                return $query->whereHas('plantLogin', function ($subQuery) {
+                    $subQuery->whereIn('status', [0, 1]);
+                });
+            }
         })
         ->orderBy("id", "desc");
 
@@ -324,6 +344,16 @@ class AdminController extends Controller
             })
             ->when($request->has('date'), function ($query) use ($request) {
                 return $query->whereDate("created_at", $request->date);
+            })
+            ->when($request->has('status'), function ($query) use ($request) {
+                $status = $request->status;
+                if ($status !== '2') {
+                    // Filter by status if it's not 'SHOW ALL'
+                    return $query->where("status", $status);
+                } else {
+                    // If 'SHOW ALL' is selected, show both Active and Inactive records
+                    return $query->WhereIn("status", [0,1]);
+                }
             })
             ->orderBy("id", "desc");
 
@@ -471,6 +501,7 @@ class AdminController extends Controller
         //dd($request->all());
        $search = $request->search;
        $date = $request->date;
+       $count = ContactManufacturer::whereNotNull("user_id")->count();
        $mergedData = ContactManufacturer::whereNotNull("user_id")
        ->join('plant', 'contact_manufacturer.plant_id', '=', 'plant.id')
        ->when($request->has('search'), function ($query) use ($request) {
@@ -521,15 +552,15 @@ class AdminController extends Controller
         // return view('enquiries', ['developers' => $developers]);
         if ($request->filled('download')) {
            // dd($data_enquiries);
-            return Excel::download(new EnquiriesExport($data_enquiries), 'enquiries.xls');
+           $fileName = $request->manufacturer_id ? $request->manufacturer_id . '_inquiries.xls' : 'inquiries.xls';
+            return Excel::download(new EnquiriesExport($data_enquiries), $fileName);
         }
-        $pls = Plant::select('plant_name') // Select only the 'name' column
-        ->distinct()             // Ensure the names are distinct
-        ->orderBy('id', 'desc')  // Order by 'id' in descending order
-        ->groupBy('plant_name')        // Group by 'name' to avoid duplicates
-        ->get();
+        $pls = Plant::select('plant_name')
+            ->groupBy('plant_name')          // Group by 'plant_name' to avoid duplicates
+            ->orderBy('plant_name', 'asc')   // Order by 'plant_name' in ascending order (alphabetical)
+            ->get();
         $total = ContactManufacturer::whereNotNull("user_id")->count();
-        return view('admin.enquiries', ['mergedData' => $mergedData, 'pls' => $pls, 'total' => $total,'search' => $search]);
+        return view('admin.enquiries', ['mergedData' => $mergedData, 'pls' => $pls, 'total' => $total,'search' => $search,'count' => $count]);
     }
     public function profile()
     {
@@ -601,19 +632,35 @@ class AdminController extends Controller
     {
         $rules = [
             'password' => 'required|string|min:6|confirmed',
+            'email' => 'nullable|email', // Validate the email format
         ];
-
+    
         $validator = Validator::make($request->all(), $rules);
-
+    
         if ($validator->fails()) {
             return response()->json(['errors' => $validator->errors()->all()], 422);
         }
-
+    
         $manufacturer = PlantLogin::findOrFail($request->id);
-
-        $manufacturer->password = bcrypt($request->input('password'));
+        $password = $request->input('password');
+        $email = $request->input('email');
+    
+        // Update email and password
+        if ($email) {
+            $manufacturer->email = $email;
+        }
+    
+        $manufacturer->password = bcrypt($password);
         $manufacturer->save();
-
+    
+        // Send the email if the email address is present
+        // if ($email) {
+        //     Mail::send('admin.testmail', ['user' => $manufacturer, 'password' => $password], function ($message) use ($email) {
+        //         $message->to($email);
+        //         $message->subject('Your Password Has Been Updated');
+        //     });
+        // }
+    
         return response()->json(['message' => 'Password updated successfully'], 200);
     }
     public function settings()
@@ -768,17 +815,16 @@ class AdminController extends Controller
                 //     return response()->json(['message' => 'Unable to send email. Please check SMTP details', 'status' => 200, 'success' => false,], 200);
                 // }
                 // return redirect()->back()->with("success", "We have just sent you Verification Code for Password Reset");
-                // try {
-                //     Mail::to($request->email)->send(new ForgetPassword($user, $token));
-                // } catch (\Throwable $th) {
-                //     // Log the error to see the issue
-                //     dd($th);
-                //     return response()->json([
-                //         'message' => 'There was an issue sending the email. Please check your mail settings.',
-                //         'status' => 500,
-                //         'success' => false,
-                //     ], 500);
-                // }
+                try {
+                    Mail::to($request->email)->send(new ForgetPassword($user, $token));
+                } catch (\Throwable $th) {
+                    // Log the error to see the issue
+                    return response()->json([
+                        'message' => 'There was an issue sending the email. Please check your mail settings.',
+                        'status' => 500,
+                        'success' => false,
+                    ], 500);
+                }
                 return response()->json(['message' => 'We have just sent you an one time password for resetting the password.' . $token, 'redirect' => false, 'token' => $token, 'success' => true, 'status' => 200], 200);
             } else {
                 // return redirect()->back()->with("error", "User does not exist in our records.");

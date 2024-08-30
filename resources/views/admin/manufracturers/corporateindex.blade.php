@@ -53,8 +53,8 @@
         <div class="ss-card">
             <div class="card-header">
                 <h2>Corporate Representatives({{ $total }})</h2>
-                <div class="search-filter wd70">
-                    <div class="row g-2">
+                <div class="search-filter" style="width:77%">
+                    <div class="row g-1">
 
                         <div class="col-md-3  d-none">
                             <div class="form-group">
@@ -76,7 +76,7 @@
                         </div>
 
 
-                        <div class="col-md-6">
+                        <div class="col-md-8">
                             <div class="search-form-refresh-group">
                                 <div class="search-form-input-group">
                                     <form action="" method="get">
@@ -90,18 +90,27 @@
                                         </div>
                                     </form>
                                 </div>
+                                <div class="col-md-3">
+                                     <div class="form-group">
+                                        <select name="status" class="form-control"  onchange="changeStatus(this.value)">
+                                        <option value="2" {{ request('status') == '2' ? 'selected' : '' }}>SHOW ALL</option>
+                                        <option value="1" {{ request('status') == '1' ? 'selected' : '' }}>Active</option>
+                                        <option value="0" {{ request('status') == '0' ? 'selected' : '' }}>Inactive</option>
+                                        </select> 
+                                    </div> 
+                                </div>
                                 <div class="search-form-refresh-action">
                                     <a class="btn-refresh" href="{{ route('admin.manufracturers.corporate') }}"> <i class="fa fa-refresh"
-                                    aria-hidden="true"></i></a>    
+                                    aria-hidden="true"></i></a>   
+
+                                    <a href="{{ route('admin.manufracturers.corporate', array_merge(request()->all(), ['download' => 1])) }}" class="btnDownloadExcel">
+                                        <i class="fa fa-file-excel-o" aria-hidden="true"></i>
+                                    </a> 
                                 </div>
                             </div> 
                         </div>
                       
-                        <div class="col-md-2">
-                            <a href="{{ route('admin.manufracturers.corporate', array_merge(request()->all(), ['download' => 1])) }}" class="btnDownloadExcel">
-                                <i class="fa fa-file-excel-o" aria-hidden="true"></i>
-                            </a>
-                        </div>
+                      
                         <div class="col-md-2">
                             <div class="form-group">
                                 <a class="btn-bl" href="" style="background-color: var(--green);"
@@ -124,7 +133,7 @@
                     <div class="user-table-list">
                         @forelse ($manufracturers as $item)
                         @php 
-                        $manufacturer = \App\Models\PlantLogin::where('id',$item->manufacturer_id)->first();
+                        $manufacturer = \App\Models\PlantLogin::where('id',$item->id)->first();
                         @endphp
                             <div class="user-table-item">
                                 <div class="row g-1 align-items-center">
@@ -145,7 +154,13 @@
                                             @endphp
                                             <div class="user-profile-item">
                                                 <div class="user-profile-media">
+                                                    @if($manufacturer->image)
+                                                    <img
+                                                    src="{{ asset('upload/manufacturer-image/' . $manufacturer['image']) }}">
+                                                    @else 
+
                                                         <img src="{{ asset('images/defaultuser.png') }}">
+                                                    @endif
                                                 </div>
                                                 <div class="user-profile-text">
                                                     <h2>{{ $item->business_name ?? 'N/A' }}</h2>
@@ -408,5 +423,21 @@
             // Reload the page with the new URL
             window.location.href = currentUrl.toString();
         });
+
+        function changeStatus(val) {
+            var selectedValue = val;
+            var currentUrl = new URL(window.location.href);
+            console.log(selectedValue);
+            // If the selected value is empty, remove the 'status' parameter
+            if (selectedValue === '') {
+                currentUrl.searchParams.delete('status');
+            } else {
+                // Otherwise, set the 'status' parameter to the selected value
+                currentUrl.searchParams.set('status', selectedValue);
+            }
+
+            // Reload the page with the new URL
+            window.location.href = currentUrl.toString();
+        }
     </script>
 @endsection

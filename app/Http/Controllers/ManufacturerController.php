@@ -90,7 +90,7 @@ class ManufacturerController extends Controller
 
         // Count plants
         $count = DB::table('plant')->where('manufacturer_id', $user->id)->count();
-        $plants = DB::table('plant')->where('manufacturer_id', $user->id)->get();
+        $plants = DB::table('plant')->where('manufacturer_id', $user->id)->take(3)->get();
 
         // Fetch country flags from config
         $countryFlags = config('country_flags');
@@ -281,13 +281,14 @@ class ManufacturerController extends Controller
             'full_name' => 'nullable|string|max:255',
             'phone' => 'nullable|',
             'email' => 'nullable|email|max:255',
-            'manufacturer_name' => 'nullable|string|max:255',
+            'business_name' => 'nullable|string|max:255',
             'manufacturer_address' => 'nullable|string|max:255',
             'city' => 'nullable|string|max:255',
             'state' => 'nullable|string|max:255',
             'zipcode' => 'nullable|string|max:10',
             'manufacturer_type' => 'nullable|string|max:255',
             'manufacturer_image' => 'nullable|',
+            'description' => 'nullable',
         ];
 
         // Validate the request
@@ -301,25 +302,27 @@ class ManufacturerController extends Controller
         //dd($request->all());
         $user = Auth::user();
         // Update manufacturer
-        $manufacturer = Manufacturer::where('plant_id',$user->id)->first();
+        $manufacturer = PlantLogin::where('id',$user->id)->first();
         //dd($manufacturer);
-        $manufacturer->full_name = $request->input('full_name');
-        $manufacturer->mobile = $request->input('phone'); // Update 'mobile' from 'phone' input field
-        $manufacturer->email = $request->input('email');
-        $manufacturer->manufacturer_name = $request->input('manufacturer_name');
-        $manufacturer->manufacturer_address = $request->input('location'); // Update 'manufacturer_address' from 'location' input field
-        $manufacturer->city = $request->input('city');
-        $manufacturer->state = $request->input('state');
-        $manufacturer->zipcode = $request->input('zipcode');
-        $manufacturer->manufacturer_type = $request->input('manufacturer_type');
+        // $manufacturer->full_name = $request->input('full_name');
+        $manufacturer->phone = $request->input('phone'); // Update 'mobile' from 'phone' input field
+        $manufacturer->email = $user->email;
+        $manufacturer->business_name = $request->input('business_name');
+        $manufacturer->about = $request->input('description');
+        //$manufacturer->manufacturer_address = $request->input('location'); // Update 'manufacturer_address' from 'location' input field
+        // $manufacturer->city = $request->input('city');
+        // $manufacturer->state = $request->input('state');
+        // $manufacturer->zipcode = $request->input('zipcode');
+        // $manufacturer->manufacturer_type = $request->input('manufacturer_type');
         
         // Update password if provided
-        if ($request->filled('new_password') && $request->input('new_password') === $request->input('confirm_password')) {
-            $manufacturer->password = bcrypt($request->input('new_password'));
-        }
+        // if ($request->filled('new_password') && $request->input('new_password') === $request->input('confirm_password')) {
+        //     $manufacturer->password = bcrypt($request->input('new_password'));
+        // }
 
         if ($request->hasFile('manufacturer_image')) {
-            $image = DB::table('manufacturer_attributes')->where('manufacturer_id',$manufacturer->id)->delete();
+            $plant = DB::table('plant_login')->where('id',$manufacturer->id)->first();
+            // $plant['image']->delete();
             // Delete old image if exists
             if (!empty($manufacturer->manufacturer_image)) {
                 $oldImagePath = public_path('upload/manufacturer-image/' . $manufacturer->manufacturer_image);
@@ -335,17 +338,14 @@ class ManufacturerController extends Controller
             $file->move(public_path('upload/manufacturer-image'), $name);
     
             // Update image attribute in database
-            $Attributes = ManufacturerAttributes::create([
-                'manufacturer_id' => $manufacturer->id,
-                'attribute_type' => 'Image',
-                'attribute_name' => $name,
-                'attribute_value' => $name, // Optionally, you can save the value here
-            ]);
+            DB::table('plant_login')
+            ->where('id', $id)
+            ->update(['image' => $name]);
         }
 
         $manufacturer->save();
 
-        return redirect()->route('profile')->with('success', 'Manufacturer updated successfully');
+        return redirect()->route('profile')->with('success', 'Profile updated successfully');
     }
 
 
@@ -356,7 +356,7 @@ class ManufacturerController extends Controller
                 'plant_name' => 'nullable|string',
                 'email' => 'nullable|string',
                 'phone' => 'nullable|string',
-                'description' => 'required|string',
+                'description' => 'nullable|string',
                 'full_address' => 'nullable|string',
                 'latitude' => 'required_with:full_address|numeric',
                 'longitude' => 'required_with:full_address|numeric',
@@ -375,6 +375,7 @@ class ManufacturerController extends Controller
                 'to_price_range' => 'nullable|string',
                 'specification' => 'nullable|string',
                 'type' => 'nullable|string',
+                'web_link' => 'nullable',
                 'images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             ]);
 
@@ -443,6 +444,7 @@ class ManufacturerController extends Controller
                 'to_price_range' => $request->to_price_range,
                 'specification' => $specifications,
                 'type' => $request->type,
+                'web_link' => $request->web_link,
                 'manufacturer_id' => Auth::user()->id,
                 'shipping_cost'=> $request->shipping_cost,
             ]);
@@ -522,7 +524,7 @@ class ManufacturerController extends Controller
                 'plant_name' => 'required|string|max:255',
                 'email' => 'required|string|email|max:255',
                 'phone' => 'nullable|string|max:255',
-                'description' => 'required|string',
+                'description' => 'nullable|string',
                 'full_address' => 'nullable|string',
                 'latitude' => 'nullable|numeric',
                 'longitude' => 'nullable|numeric',
@@ -530,6 +532,7 @@ class ManufacturerController extends Controller
                 'to_price_range' => 'nullable|string',
                 'from_price_range' => 'nullable|string',
                 'type' => 'nullable|string',
+                'web_link' => 'nullable|string',
                 'specification' => 'nullable|string',
                 'shipping_cost' => 'nullable|string',
                 'sales_manager.name.*' => 'nullable|string',
@@ -544,7 +547,7 @@ class ManufacturerController extends Controller
                 return redirect()->back()->withErrors($validator)->withInput();
             }
             $validated = $validator->validated();
-    
+            //dd($request->all());
             // Find the plant by ID
             $plant = Plant::findOrFail($id);
     
@@ -607,6 +610,7 @@ class ManufacturerController extends Controller
                 'to_price_range' => $request->to_price_range,
                 'specification' => $specifications,
                 'type' => $request->type,
+                'web_link' => $request->web_link,
                 'shipping_cost' => $request->shipping_cost,
             ]);
     
@@ -886,6 +890,7 @@ class ManufacturerController extends Controller
                 'plant.manufacturer_id',
                 'plant.shipping_cost',
                 'plant.created_at',
+                'plant.web_link',
                 'plant.updated_at',
                 'plant_sales_manager.id as manager_id',
                 'plant_sales_manager.name as manager_name',
@@ -923,6 +928,7 @@ class ManufacturerController extends Controller
                     'specification' => $data->specification, // Assuming this is a comma-separated string of specification IDs
                     'type' => $data->type,
                     'manufacturer_id' => $data->manufacturer_id,
+                    'web_link' => $data->web_link,
                     'shipping_cost' => $data->shipping_cost,
                     'created_at' => $data->created_at,
                     'updated_at' => $data->updated_at,
@@ -984,7 +990,8 @@ class ManufacturerController extends Controller
         // $selectedCountry = $userSettings->country ?? 'United States'; 
         $search = $request->search ? $request->search : '';
         $date = $request->date ? $request->date : '';
-        $statusFilter = $request->status_filter;
+        $statusFilter = $request->status;
+        $manufacturer = $request->manufacturer_id;
         $new_enquiriess = DB::table('contact_manufacturer')
                         ->leftJoin('plant', 'contact_manufacturer.plant_id', '=', 'plant.id')
                         ->leftJoin('plant_login','plant_login.id','=','plant.manufacturer_id')
@@ -1007,6 +1014,9 @@ class ManufacturerController extends Controller
                         ->when($date, function ($query, $date) {
                             return $query->whereDate('contact_manufacturer.created_at', $date);
                         })
+                        ->when($manufacturer, function ($query, $manufacturer) {
+                            return $query->where('plant.plant_name', 'like', '%' . $manufacturer . '%');
+                        })
                         ->orderBy('contact_manufacturer.id', 'DESC')
                         ->select(
                             'contact_manufacturer.id as enquiry_id',
@@ -1026,12 +1036,14 @@ class ManufacturerController extends Controller
                         );
             $data = $new_enquiriess->get();
             $new_enquiries = $new_enquiriess->paginate(10);
+            $plants = DB::table('plant')->where('manufacturer_id',$user->id) ->orderBy('plant_name', 'asc')->get();
         //dd($new_enquiries);
         if ($request->filled('download')) {
             // dd($data_enquiries);
-             return Excel::download(new ManufacturerEnquiriesExport($data), 'enquiries.xls');
+            $fileName = $manufacturer ? $manufacturer . '_inquiries.xls' : 'plant_inquiries.xls';
+             return Excel::download(new ManufacturerEnquiriesExport($data), $fileName);
          }
-        return view('manufacturer.enquiry',compact('new_enquiries','user','search','date','statusFilter'));
+        return view('manufacturer.enquiry',compact('new_enquiries','user','search','date','statusFilter','plants'));
     }
 
 
@@ -1046,7 +1058,7 @@ class ManufacturerController extends Controller
         if ($request->filled('search')) { 
             $plants->Where('plant_name', 'LIKE', '%' . $request->search . '%');
         }
-        $plants = $plants->get();
+        $plants = $plants->paginate(10);
         // Loop through each plant to fetch state and country based on latitude and longitude
         foreach ($plants as $plant) {
             $lat = $plant->latitude;
@@ -1193,16 +1205,18 @@ class ManufacturerController extends Controller
     {
         try {
             // Find the image by ID
-            $image = ManufacturerAttributes::findOrFail($id);
-            
-            // Delete the image file from the storage
-            $imagePath = public_path('upload/manufacturer-image/' . $image->attribute_value);
-            if (file_exists($imagePath)) {
+            $plantLogin = PlantLogin::findOrFail($id);
+
+            // Path to the image file
+            $imagePath = public_path('upload/manufacturer-image/' . $plantLogin->image);
+
+            // Delete the image file from the storage if it exists
+            if (file_exists($imagePath) && !empty($plantLogin->image)) {
                 unlink($imagePath);
             }
-
-            // Delete the image record from the database
-            $image->delete();
+            $plantLogin->image = null;
+            // Update the image field to null in the database
+            $plantLogin->save();
 
             // Return a success response
             return response()->json(['success' => true]);
@@ -1288,17 +1302,17 @@ class ManufacturerController extends Controller
                 $token = rand(100000, 999999);
                 session(['otp' => $token, 'time' => time()]);
                 
-                // try {
-                //     Mail::to($request->email)->send(new ForgetPassword($user, $token));
-                // } catch (\Throwable $th) {
-                //     // Log the error to see the issue
-                //     dd($th);
-                //     return response()->json([
-                //         'message' => 'There was an issue sending the email. Please check your mail settings.',
-                //         'status' => 500,
-                //         'success' => false,
-                //     ], 500);
-                // }
+                try {
+                    Mail::to($request->email)->send(new ForgetPassword($user, $token));
+                } catch (\Throwable $th) {
+                    // Log the error to see the issue
+                    //dd($th);
+                    return response()->json([
+                        'message' => 'There was an issue sending the email. Please check your mail settings.',
+                        'status' => 500,
+                        'success' => false,
+                    ], 500);
+                }
                 // return redirect()->back()->with("success", "We have just sent you Verification Code for Password Reset");
                 return response()->json(['message' => 'We have just sent you an one time password for resetting the password.' . $token, 'redirect' => false, 'token' => $token, 'success' => true, 'status' => 200], 200);
             } else {

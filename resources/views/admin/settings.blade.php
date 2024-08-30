@@ -26,7 +26,7 @@
 
                     <div class="add-plants-form">
                     <div class="row">
-                        <div class="col-md-6">
+                        <div class="col-md-6 d-none">
                             <div class="form-group">
                                 <h5>Shipping Cost of Single Wide (in $)</h5>
                                 <input type="text" class="form-control" name="single_wide_cost"
@@ -35,7 +35,7 @@
                             </div>
                         </div>
 
-                        <div class="col-md-6">
+                        <div class="col-md-6 d-none">
                             <div class="form-group">
                                 <h5>Shipping Cost of Double Wide (in $)</h5>
                                 <input type="text" class="form-control" name="double_wide_cost"
@@ -45,7 +45,7 @@
                             </div>
                         </div>
 
-                        <div class="col-md-6">
+                        <div class="col-md-6 d-none">
                             <div class="form-group">
                                 <h5>Shipping Cost of Single Wide & Double Wide (in $)</h5>
                                 <input type="text" class="form-control" name="single_double_wide_cost"

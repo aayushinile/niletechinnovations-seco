@@ -109,41 +109,53 @@ button.btn-search {
             <div class="body-main-content">
                 <div class="lp-card">
                     <div class="card-header">
-                        <h2>Enquiries</h2>
+                        <h2>Inquiries({{count($new_enquiries)}})</h2>
                         <div class="search-filter wd6">
                         <form action="{{route('manufacturer.enquiry')}}" method="POST">
                         @csrf
                             <div class="row g-1">
-                                <div class="col-md-3-1">
+                                <div class="col-md-2">
                                     <div class="form-group search-form-group">
                                         <input type="text"name="search" value="{{ $search ? $search : '' }}" class="form-control" placeholder="Search">
                                         <span class="search-icon"><img src="{{asset('images/search-icon.svg')}}"></span>
                                     </div> 
                                 </div>
-                                <div class="col-md-3-1">
+                                <div class="col-md-2">
                                     <div class="form-group">
                                         <input type="date" name="date" value="{{ $date ? $date : '' }}" class="form-control">
                                     </div> 
                                 </div>
                                 
-
-                                <div class="col-md-3-1">
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <select class="form-control" id="manufacturer_id" onchange="changeManu(this.value)">
+                                            <option value="0">Show All Plants</option>
+                                            @foreach ($plants as $item)
+                                            
+                                                <option value="{{ $item->plant_name }}"
+                                                    @if (request()->has('manufacturer_id') && request('manufacturer_id') === $item->plant_name) selected @endif>{{ $item->plant_name }}
+                                                </option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-2">
                                      <div class="form-group">
-                                        <select name="status_filter" class="form-control" >
+                                        <select name="status_filter" class="form-control"  onchange="changeStatus(this.value)">
                                         <option value="">SHOW ALL</option>
-                                        <option value="read" {{ request('status_filter') == 'read' ? 'selected' : '' }}>Mark As Read</option>
-                                        <option value="unread" {{ request('status_filter') == 'unread' ? 'selected' : '' }}>Mark As Unread</option>
+                                        <option value="read" {{ request('status') == 'read' ? 'selected' : '' }}>Mark As Read</option>
+                                        <option value="unread" {{ request('status') == 'unread' ? 'selected' : '' }}>Mark As Unread</option>
                                         </select> 
                                     </div> 
                                 </div>
 
-                                <div class="col-md-1-1">
+                                <div class="col-md-1">
                                     <div class="form-group">
                                         <a href="{{route('manufacturer.enquiry')}}" class="btn-refresh"><i
                                                 class="fa fa-refresh" aria-hidden="true" style="margin-top: 12px;"></i></a>
                                     </div>
                                 </div>
-                                <div class="col-md-1-1">
+                                <div class="col-md-1">
                                     <div class="form-group">
                                         <button type="submit" class="btn-search"><i class="fa fa-search" aria-hidden="true"></i></button>
                                     </div>
@@ -171,7 +183,7 @@ button.btn-search {
                                         @if($type->plant_type == 'corp_rep')
                                         <th>Plant Name</th>
                                         @endif
-                                        <th>Name</th>
+                                        <th>CO/Retailer Name</th>
                                         <th>Email</th>
                                         <th>Phone</th>
                                         <th>Message</th>
@@ -300,7 +312,34 @@ button.btn-search {
     });
 });
 
+function changeManu(val) {
+            var selectedValue = val;
+            var currentUrl = new URL(window.location.href);
 
+            // Add or update the 'run_id' parameter
+            currentUrl.searchParams.set('manufacturer_id', selectedValue);
+            if (val == 0) {
+                currentUrl.searchParams.delete('manufacturer_id');
+
+            }
+            // Reload the page with the new URL
+            window.location.href = currentUrl.toString();
+        }
+
+
+        function changeStatus(val) {
+            var selectedValue = val;
+            var currentUrl = new URL(window.location.href);
+
+            // Add or update the 'run_id' parameter
+            currentUrl.searchParams.set('status', selectedValue);
+            if (val == 0) {
+                currentUrl.searchParams.delete('status');
+
+            }
+            // Reload the page with the new URL
+            window.location.href = currentUrl.toString();
+        }
     </script>
     @endsection
                                

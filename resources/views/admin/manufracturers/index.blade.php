@@ -76,7 +76,7 @@
                         </div>
 
 
-                        <div class="col-md-6">
+                        <div class="col-md-8">
                             <div class="search-form-refresh-group">
                                 <div class="search-form-input-group">
                                     <form action="" method="get">
@@ -90,21 +90,29 @@
                                         </div>
                                     </form>
                                 </div>
+                                <div class="col-md-3">
+                                     <div class="form-group">
+                                        <select name="status" class="form-control"  onchange="changeStatus(this.value)">
+                                        <option value="2" {{ request('status') == '2' ? 'selected' : '' }}>SHOW ALL</option>
+                                        <option value="1" {{ request('status') == '1' ? 'selected' : '' }}>Active</option>
+                                        <option value="0" {{ request('status') == '0' ? 'selected' : '' }}>Inactive</option>
+                                        </select> 
+                                    </div> 
+                                </div>
                                 <div class="search-form-refresh-action">
                                     <a class="btn-refresh" href="{{ route('admin.manufracturers') }}"> <i class="fa fa-refresh"
-                                    aria-hidden="true"></i></a>    
+                                    aria-hidden="true"></i></a>
+
+                                    <a href="{{ route('admin.manufracturers', array_merge(request()->all(), ['download' => 1])) }}" class="btnDownloadExcel">
+                                        <i class="fa fa-file-excel-o" aria-hidden="true"></i>
+                                    </a>    
                                 </div>
                             </div> 
                         </div>
                       
                         <div class="col-md-2">
-                            <a href="{{ route('admin.manufracturers', array_merge(request()->all(), ['download' => 1])) }}" class="btnDownloadExcel">
-                                <i class="fa fa-file-excel-o" aria-hidden="true"></i>
-                            </a>
-                        </div>
-                        <div class="col-md-2">
                             <div class="form-group">
-                                <a class="btn-bl" href="" style="background-color: var(--green);"
+                                <a class="btn-bl"  style="background-color: var(--green);"
                                     data-bs-toggle="modal" id="open-activate-modal">Mark
                                     As Active</a>
                             </div>
@@ -146,9 +154,12 @@
                                             @endphp
                                             <div class="user-profile-item">
                                                 <div class="user-profile-media">
-                                                    @if ($image)
+                                                    @if ($manufacturer->image)
                                                         <img
-                                                            src="{{ asset('upload/manufacturer-image/' . $image['image_url']) }}">
+                                                            src="{{ asset('upload/manufacturer-image/' . $manufacturer['image']) }}">
+                                                    @elseif($image)
+                                                    <img
+                                                    src="{{ asset('upload/manufacturer-image/' . $image['image_url']) }}">
                                                     @else
                                                         <img src="{{ asset('images/defaultuser.png') }}">
                                                     @endif
@@ -423,5 +434,21 @@
             // Reload the page with the new URL
             window.location.href = currentUrl.toString();
         });
+
+        function changeStatus(val) {
+            var selectedValue = val;
+            var currentUrl = new URL(window.location.href);
+            console.log(selectedValue);
+            // If the selected value is empty, remove the 'status' parameter
+            if (selectedValue === '') {
+                currentUrl.searchParams.delete('status');
+            } else {
+                // Otherwise, set the 'status' parameter to the selected value
+                currentUrl.searchParams.set('status', selectedValue);
+            }
+
+            // Reload the page with the new URL
+            window.location.href = currentUrl.toString();
+        }
     </script>
 @endsection

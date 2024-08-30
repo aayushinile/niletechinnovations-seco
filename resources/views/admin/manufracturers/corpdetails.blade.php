@@ -37,7 +37,7 @@
                 </div>
                 <div class="plants-details-head" style="justify-content:end;">
                 <div class="plants-details-action">
-                    <a class="ChangePasswordbtn" data-bs-toggle="modal" data-bs-target="#ChangePassword" style="background: var(--green);color: var(--white);padding: 12px 20px;border-radius: 5px;font-size: 14px;box-shadow: 0 4px 10px #5f0f5845;display: inline-block;position: relative;cursor:pointer" data-plant-id="{{ $mfs['id'] }}">Reset Password</a>
+                    <a class="ChangePasswordbtn" data-bs-toggle="modal" data-bs-target="#ChangePassword" style="background: var(--green);color: var(--white);padding: 12px 20px;border-radius: 5px;font-size: 14px;box-shadow: 0 4px 10px #5f0f5845;display: inline-block;position: relative;cursor:pointer" data-plant-id="{{ $mfs['id'] }}" data-email-id="{{ $mfs['email'] }}">Reset Credentials</a>
                 </div>
             </div>
             </div>
@@ -139,12 +139,17 @@
         <div class="modal-content">
             <div class="modal-body">
                 <div class="ss-modal-form">
-                    <h2>Reset Password</h2>
+                    <h2>Reset Credentials</h2>
                     <form id="changePasswordForm">
                         @csrf
                         <input type="hidden" id="plant-id" name="plant_id">
                         <div class="row">
-
+                        <div class="col-md-12">
+                            <div class="form-group">
+                                <label for="email">Email</label> <!-- Label for the email field -->
+                                <input type="email" name="email" id="email" class="form-control"> <!-- Read-only email input field -->
+                            </div>
+                        </div>
                             <div class="col-md-12">
                                 <div class="form-group">
                                     <div class="password-wrapper">
@@ -165,7 +170,7 @@
 
                             <div class="col-md-12">
                                 <div class="form-group">
-                                    <button type="submit" class="save-btn mb-2">Reset Password</button>
+                                    <button type="submit" class="save-btn mb-2">Reset</button>
                                     <button type="button" class="cancel-btn" data-bs-dismiss="modal" aria-label="Close">Cancel</button>
                                 </div>
                             </div>
@@ -178,6 +183,16 @@
     </div>
 </div>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
+<script>
+    $(document).on('click', '.ChangePasswordbtn', function() {
+        var plantId = $(this).data('plant-id');
+        var emailId = $(this).data('email-id');
+
+        // Set the plant ID and email in the modal
+        $('#plant-id').val(plantId);
+        $('#email').val(emailId); // Set the email in the new input field
+    });
+</script>
 <script>
     
 document.addEventListener("DOMContentLoaded", function() {
@@ -195,6 +210,8 @@ document.addEventListener("DOMContentLoaded", function() {
         var formData = new FormData(form);
         var manufacturerId = document.getElementById('plant-id').value;
         console.log(manufacturerId);
+        var email = document.getElementById('email').value;
+        formData.append('email', email);
         const url = `{{ route("admin.updatePassword", ["id" => ":id"]) }}`.replace(':id', plantId);
 
 

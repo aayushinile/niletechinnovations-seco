@@ -85,12 +85,12 @@
                                         @php
                                         $type = \App\Models\PlantLogin::where('id',$user->id)->first();
                                         @endphp
-                                        @if($type->plant_type = 'corp_rep')
+                                        @if($type->plant_type == 'corp_rep')
                                         <a href="{{route('manufacturer.manage-locations')}}">
                                         @endif
                                         <div class="overview-location-content">
                                             <div class="overview-location-content-text">
-                                                <p>Total listed Plant/Manufacturer</p>
+                                                <p>Total listed Manufacturer/Plant</p>
                                                 <h2>{{$count}}</h2>
                                             </div>    
                                             <div class="overview-location-content-icon">

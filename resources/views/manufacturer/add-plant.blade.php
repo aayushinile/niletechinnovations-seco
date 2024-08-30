@@ -145,7 +145,7 @@
                                 <div class="form-group">
                                     <h5>Manufacturer/Plant Name *</h5>
                                     <input type="text" class="form-control" name="plant_name" placeholder="Manufacturer/Plant Name"
-                                        value="{{ $plant['plant_type'] === 'plant_rep' ? $plant['plant_name'] : '' }}">
+                                        value="{{ $plant['plant_type'] === 'plant_rep' ? $plant['plant_name'] : '' }}" required>
                                 </div>
                             </div>
 
@@ -153,7 +153,7 @@
                                 <div class="form-group">
                                     <h5>Email *</h5>
                                     <input type="email" class="form-control email" name="email"
-                                        placeholder="Email Address" value="{{ $plant['plant_type'] === 'plant_rep' ? $plant['email'] : '' }}" >
+                                        placeholder="Email Address" value="{{ $plant['plant_type'] === 'plant_rep' ? $plant['email'] : '' }}" required>
                                     <span id="emailError" class="error-message"></span>
                                 </div>
                             </div>
@@ -213,15 +213,15 @@
 
                             <div class="col-md-12">
                                 <div class="form-group">
-                                    <h5>Manufacturer/Plant Description *</h5>
-                                    <textarea class="form-control" placeholder="Description" name="description"></textarea>
+                                    <h5>About Our Homes *</h5>
+                                    <textarea class="form-control" placeholder="Description" name="description" required></textarea>
                                     @error('description')
                                         <div class="alert alert-danger">{{ $message }}</div>
                                     @enderror
                                 </div>
                             </div>
 
-                            <div class="col-md-4">
+                            <div class="col-md-6">
                                 <div class="form-group">
                                     <h5>Type *</h5>
                                     <select class="form-control" name="type">
@@ -232,10 +232,19 @@
                                 </div>
                             </div>
 
-                            <div class="col-md-4">
+
+                            <div class="col-md-6">
+                                <div class="form-group form-group-icon">
+                                    <h5>Website Link</h5>
+                                    <input type="text" name="web_link"  class="form-control"
+                                            placeholder="abc.com" >
+                                </div>
+                            </div>
+
+                            <div class="col-md-4 d-none">
                                 <div class="form-group form-group-icon">
                                     <h5>From Price Range *</h5>
-                                    <input type="number" name="from_price_range" required class="form-control"
+                                    <input type="number" name="from_price_range"  class="form-control"
                                             placeholder="$0.00" >
                                     <span class="form-input-icon"><img
                                             src="{{ asset('images/dollar-circle.png') }}"></span>
@@ -243,10 +252,10 @@
                             </div>
 
 
-                            <div class="col-md-4">
+                            <div class="col-md-4 d-none">
                                 <div class="form-group form-group-icon">
                                     <h5>To Price Range *</h5>
-                                    <input type="number" name="to_price_range" required="" class="form-control"
+                                    <input type="number" name="to_price_range"  class="form-control"
                                         placeholder="$0. 00">
                                     <span class="form-input-icon"><img
                                             src="{{ asset('images/dollar-circle.png') }}"></span>
@@ -393,7 +402,7 @@
                     </div>
                 </div>
 
-                <div class="add-plants-item">
+                <div class="add-plants-item d-none">
                     <div class="sales-add-card">
                         <div class="sales-add-head">
                             <h2>Specification *</h2>

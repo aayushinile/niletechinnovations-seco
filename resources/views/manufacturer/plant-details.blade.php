@@ -47,16 +47,16 @@
                 </div>
             </div>
             <div class="plants-about-section">
-                <h2>About Us</h2>
+                <h2>About Our Homes</h2>
                 <p>{!! nl2br(e($plant['description'])) !!}</p>
             </div>
 
             <div class="amenities-section">
-                <h4 style="color: var(--pink);">Specifications</h4>
+                <h4 style="color: var(--pink);">Home Specifications</h4>
                 <div class="row">
                     @if (!empty($plant['specifications']))
                         @foreach ($plant['specifications'] as $specification)
-                            <div class="col-md-3">
+                            <div class="col-md-3 d-none">
                                 <div class="plants-amenities-info"
                                     style="position: relative;width: 100%;border-radius: 0;padding: 0;display: flex;gap: 10px;margin-bottom: 0rem;">
 
@@ -75,7 +75,7 @@
                             </div>
                         @endforeach
                     @else
-                        <div class="col-md-3">
+                        <div class="col-md-3 d-none">
                             <div class="plants-amenities-info">
                                 <div class="plants-amenities-info-content">
                                     <h2>Specifications</h2>
@@ -109,7 +109,7 @@
                 <div class="row">
                     <div class="col-md-12">
                         <div class="pricing-host-box">
-                            <div class="pricing-info">
+                            <div class="pricing-info d-none">
                                 <div class="plants-pricing-item">
                                 @if (!empty($plant['price_range']))
                                     <h2>Price Range : ${{ $plant['price_range'] }}</h2>
@@ -230,7 +230,7 @@
                     success: function(response) {
                         $('#deleteplants').modal('hide');
                         window.location.href =
-                            'https://www.niletechinnovations.com/projects/seco/public/manufacturer/manage-locations'; // Reload the page after deletion
+                            'https://showsearch.net/manufacturer/manage-locations'; // Reload the page after deletion
                     },
                     error: function(error) {
                         console.error('Error deleting plant:', error);
