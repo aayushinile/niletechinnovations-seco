@@ -35,6 +35,8 @@ class User extends Authenticatable
         'status',
         'device_token',
         'type',
+        'image',
+        'company_image',
     ];
 
     /**

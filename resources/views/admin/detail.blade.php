@@ -289,6 +289,9 @@
                 </div>
             </div>
         </div>
+        <div class="loader-container" id="loader">
+                <div class="loader"></div>
+            </div>
 
         <script>
             $(document).ready(function() {

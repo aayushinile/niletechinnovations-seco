@@ -67,7 +67,7 @@
                                 <div class="brand-logo">
                                     <img src="images/logo.svg" alt="logo">
                                 </div>
-                                <h2>Forgot Passowrd?</h2>
+                                <h2>Forgot Password?</h2>
                                 <form class="pt-4" method="post" action="{{ route('admin.forget.password.post') }}"
                                     id="signin_form">
                                     @csrf

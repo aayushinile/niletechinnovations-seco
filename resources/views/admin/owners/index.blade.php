@@ -87,10 +87,16 @@
                                 <div class="row g-1 align-items-center">
                                     <div class="col-md-4">
                                         <div class="user-profile-item">
-                                            <div class="user-profile-media"><img
-                                                    src="{{ asset('images/defaultuser.png') }}"></div>
+                                            <div class="user-profile-media">
+                                                @if(empty($item->image))
+                                                <img
+                                                    src="{{ asset('images/defaultuser.png') }}">
+                                                @else 
+                                                <img src="{{ asset('upload/profile-image/' . $item->image) }}">
+                                                @endif
+                                                </div>
                                             <div class="user-profile-text">
-                                                <h2>{{ $item->business_name }}</h2>
+                                                <h2>{{ $item->fullname }}</h2>
                                                 <div
                                                     class="status-text   {{ $item->status == 1 ? 'status-active' : 'status-inactive' }}">
                                                     {{ $item->status == 1 ? 'Active' : 'Inactive' }}</div>

@@ -31,8 +31,11 @@ class CommunityOwnersExport implements FromCollection, WithHeadings, ShouldAutoS
                 $owner->email,
                 $owner->mobile,
                 $owner->business_address,
+                $owner->no_of_mhs ?? 'N/A',
+                $owner->no_of_communities ?? 'N/A',
                 'contacted_plants' => $this->getContactedOwners($owner->id),
-                 'type' => $owner->type == 1 ? 'Retail Sales Lot' : 'Community Owner'
+                'saved_locations' => $this->getSavedLocations($owner->id),
+                 'type' => $owner->type == 1 ? 'Retailer' : 'Community Owner'
             ];
         });
     }
@@ -66,6 +69,34 @@ class CommunityOwnersExport implements FromCollection, WithHeadings, ShouldAutoS
         return $formattedContacts->implode("\n\n");
     }
 
+
+    private function getSavedLocations($ownerId)
+    {
+        // Fetch the plants contacted by the owner
+        $manufracturers = ContactManufacturer::where("user_id", $ownerId)->pluck("plant_id")->toArray();
+        $contact_m = DB::table('locations')
+        ->where('user_id', $ownerId)
+        ->get();
+
+        // Check if contacts exist
+        if ($contact_m->isEmpty()) {
+            return 'N/A'; // Return 'N/A' if no contacts found
+        }
+
+        // Format each plant's details with name on the first line and address on the second line
+        $formattedContacts = $contact_m->map(function ($contact) {
+            return sprintf(
+                "%s\n%s\n%s",
+                $contact->location,
+                $contact->city,
+                $contact->state
+            );
+        });
+
+        // Join all formatted contacts with double line breaks
+        return $formattedContacts->implode("\n\n");
+    }
+
     public function headings(): array
     {
         return [
@@ -74,7 +105,10 @@ class CommunityOwnersExport implements FromCollection, WithHeadings, ShouldAutoS
             'Email',
             'Phone',
             'Business Address',
+            'No.of new MHS',
+            'No.of Communities or Sales Lot',
             'Contacted Plants',
+            'Saved Locations',
             'Type'
         ];
     }
@@ -84,8 +118,11 @@ class CommunityOwnersExport implements FromCollection, WithHeadings, ShouldAutoS
         return [
             AfterSheet::class => function (AfterSheet $event) {
                 // Enable wrap text for the 'Contacted Plants' column (e.g., column D)
-                $contactedPlantsRange = 'F2:F' . $event->sheet->getHighestRow();
+                $contactedPlantsRange = 'H2:H' . $event->sheet->getHighestRow();
                 $event->sheet->getStyle($contactedPlantsRange)->getAlignment()->setWrapText(true);
+
+                $savedLocationRange = 'I2:I' . $event->sheet->getHighestRow();
+                $event->sheet->getStyle($savedLocationRange)->getAlignment()->setWrapText(true);
             },
         ];
     }

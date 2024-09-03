@@ -1,6 +1,17 @@
 @extends('admin.layouts')
 @push('css')
     <link rel="stylesheet" type="text/css" href="{{ asset('admin/css/communityowners.css') }}">
+    <style>
+        .contacted-manufacturer-body.scrollable {
+    max-height: 300px; /* Adjust this value as needed */
+    overflow-y: auto;
+    padding-right: 15px; /* Optional: to avoid cutting off content when scrolling */
+}
+
+.contacted-manufacturer-item {
+    margin-bottom: 10px; /* Adjust spacing between items */
+}
+    </style>
 @endpush
 @section('content')
     <div class="body-main-content">
@@ -23,10 +34,16 @@
                     <div class="row g-1 align-items-center">
                         <div class="col-md-4">
                             <div class="user-profile-item">
-                                <div class="user-profile-media"><img src="{{ asset('images/defaultuser.png') }}">
+                                <div class="user-profile-media">
+                                @if(empty($owner->image))
+                                <img
+                                    src="{{ asset('images/defaultuser.png') }}">
+                                @else 
+                                <img src="{{ asset('upload/profile-image/' . $owner->image) }}">
+                                @endif
                                 </div>
                                 <div class="user-profile-text">
-                                    <h2>{{ $owner->business_name }}</h2>
+                                    <h2>{{ $owner->fullname }}</h2>
                                     <div
                                         class="status-text  {{ $owner->status == 1 ? 'status-active' : 'status-inactive' }}">
                                         {{ $owner->status == 1 ? 'Active' : 'Inactive' }}</div>
@@ -66,39 +83,112 @@
 
                 <div class="added-comminity-section">
                     <div class="row">
-                        <div class="col-md-8">
-                            <div class="added-comminity-card">
-                                <div class="added-comminity-head">
-                                    <h2>Added Community ({{ count($community) }})</h2>
+                    <div class="col-md-4">
+                            <div class="contacted-manufacturer-card">
+                            <div class="contacted-manufacturer-head row align-items-center">
+                                <div class="col-md-8">
+                                    <h2 style="color:#5f0f58">Saved Locations({{ count($saved_locations) }})</h2>
                                 </div>
-                                <div class="added-comminity-body">
-                                    @foreach ($community as $item)
-                                        <div class="added-comminity-item">
-                                            <div class="added-comminity-item-image">
-                                            <img src="{{ $item->value ? asset('upload/community_image/' . $item->value) : asset('images/defaultuser.png') }}">
+                                @if ($saved_locations->isNotEmpty())
+                                <div class="contacted-manufacturer-body {{ count($saved_locations) > 3 ? 'scrollable' : '' }}">
+                                    @foreach ($saved_locations as $item)
+                                        <div class="contacted-manufacturer-item">
+                                            <div class="contacted-manufacturer-item-image">
+                                                <img src="{{ asset('images/location.svg') }}">
                                             </div>
-                                            <div class="added-comminity-item-text">
-                                                <h4>{{ $item->community_name }}</h4>
-                                                <div class="added-comminity-location"><img
-                                                        src="{{ asset('admin/images/location.svg') }}">
-                                                    {{ $item->community_address }}</div>
-                                                <p>{{ $item->description }}.</p>
-                                                <a class="Viewbtn"
-                                                    href="{{ route('admin.community.show', encrypt($item->community_id)) }}">View</a>
+                                            <div class="contacted-manufacturer-item-text">
+                                                <h4>{{ $item->location }}</h4>
+                                                <h4>{{$item->city}},{{$item->state}}</h4>
                                             </div>
                                         </div>
                                     @endforeach
 
 
+                                </div>
+                                @else 
+                                <div class="contacted-manufacturer-body">
+                                        <div class="contacted-manufacturer-item">
+                                            <div class="contacted-manufacturer-item-text">
+                                                <p class="no-data">No Data Found</p>
+                                            </div>
+                                        </div>
+
+
+                                </div>
+                                @endif
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                            <div class="contacted-manufacturer-card">
+                            <div class="contacted-manufacturer-head row align-items-center">
+                            <div class="row align-items-center">
+    <div class="col-md-2">
+        <div class="user-profile-media">
+            @if(empty($owner->company_image))
+                <img src="{{ asset('images/defaultuser.png') }}" alt="Default User">
+            @else 
+                <img src="{{ asset('upload/profile-image/' . $owner->company_image) }}" alt="User Image">
+            @endif
+        </div>
+    </div>
+    <div class="col-md-10">
+        <h2 style="color:#5f0f58">Business Info</h2>
+    </div>
+</div>
+                                <div class="contacted-manufacturer-body">
+                                        <div class="contacted-manufacturer-item">
+                                            <div class="contacted-manufacturer-item-text">
+                                            <h4>Type :  
+                                                @if($owner->type == 1)
+                                                    Retailer
+                                                @else
+                                                    Community Owner
+                                                @endif
+                                            </h4>
+                                            
+
+                                                <div class="contacted-manufacturer-item">
+                                                    <div class="contacted-manufacturer-item-image">
+                                                        <img src="https://showsearch.net/images/location.svg">
+                                                    </div>
+                                                    <div>
+                                                        <p>Business Name : {{$owner->business_name ?? 'N/A'}}</p>
+                                                        <p>{{$owner->business_address ?? 'N/A'}}</p>
+                                                    </div>
+                                                </div>
+
+                                                <div class="contacted-manufacturer-item">
+                                                    <div class="contacted-manufacturer-item-image">
+                                                        <img src="https://showsearch.net/images/ic-receipt-edit.svg">
+                                                    </div>
+                                                    <div>
+                                                        <p>No. of new MHs you want to buy per year : {{$owner->no_of_mhs ?? 'N/A'}}</p>
+                                                    </div>
+                                                </div>
+
+                                                <div class="contacted-manufacturer-item">
+                                                    <div class="contacted-manufacturer-item-image">
+                                                        <img src="https://showsearch.net/images/ic-receipt-edit.svg">
+                                                    </div>
+                                                    <div>
+                                                        <p> No. of Communities or Sales lot you have : {{$owner->no_of_communities ?? 'N/A'}}</p>
+                                                    </div>
+                                                </div>
+                                                
+                                            </div>
+                                        </div>
+
 
                                 </div>
                             </div>
                         </div>
+                    </div>
                         <div class="col-md-4">
                             <div class="contacted-manufacturer-card">
                             <div class="contacted-manufacturer-head row align-items-center">
             <div class="col-md-8">
-                <h2>Contacted Manufacturer ({{ count($contact_m) }})</h2>
+                <h2 style="color:#5f0f58">Contacted Manufacturer ({{ count($contact_m) }})</h2>
             </div>
             @if ($contact_m->isNotEmpty())
                                 <div class="col-md-4 text-right">
@@ -132,7 +222,7 @@
                                 <div class="contacted-manufacturer-body">
                                         <div class="contacted-manufacturer-item">
                                             <div class="contacted-manufacturer-item-text">
-                                                <p>No Data Found</p>
+                                                <p class="no-data">No Data Found</p>
                                             </div>
                                         </div>
 
@@ -143,42 +233,7 @@
                         </div>
                     </div>
 
-                    <div class="col-md-4">
-                            <div class="contacted-manufacturer-card">
-                            <div class="contacted-manufacturer-head row align-items-center">
-            <div class="col-md-8">
-                <h2>Saved Locations({{ count($saved_locations) }})</h2>
-            </div>
-                                @if ($saved_locations->isNotEmpty())
-                                <div class="contacted-manufacturer-body">
-                                    @foreach ($saved_locations as $item)
-                                        <div class="contacted-manufacturer-item">
-                                            <div class="contacted-manufacturer-item-image">
-                                                <img src="{{ asset('images/location.svg') }}">
-                                            </div>
-                                            <div class="contacted-manufacturer-item-text">
-                                                <h4>{{ $item->location }}</h4>
-                                                <h4>{{$item->city}},{{$item->state}}</h4>
-                                            </div>
-                                        </div>
-                                    @endforeach
-
-
-                                </div>
-                                @else 
-                                <div class="contacted-manufacturer-body">
-                                        <div class="contacted-manufacturer-item">
-                                            <div class="contacted-manufacturer-item-text">
-                                                <p>No Data Found</p>
-                                            </div>
-                                        </div>
-
-
-                                </div>
-                                @endif
-                            </div>
-                        </div>
-                    </div>
+                    
                 </div>
             </div>
         </div>

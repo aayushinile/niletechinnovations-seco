@@ -35,6 +35,7 @@ use App\Exports\EnquiriesExport;
 use App\Exports\CorporateManufacturersExport;
 use Mail;
 use App\Mail\ForgetPassword;
+use App\Mail\ResetCredentials;
 use Illuminate\Support\Facades\Log;
 
 class AdminController extends Controller
@@ -654,14 +655,11 @@ class AdminController extends Controller
         $manufacturer->save();
     
         // Send the email if the email address is present
-        // if ($email) {
-        //     Mail::send('admin.testmail', ['user' => $manufacturer, 'password' => $password], function ($message) use ($email) {
-        //         $message->to($email);
-        //         $message->subject('Your Password Has Been Updated');
-        //     });
-        // }
+        if ($email) {
+            Mail::to($email)->send(new ResetCredentials($password,$email));
+        }
     
-        return response()->json(['message' => 'Password updated successfully'], 200);
+        return response()->json(['message' => 'Credentials updated successfully'], 200);
     }
     public function settings()
     {
@@ -844,6 +842,6 @@ class AdminController extends Controller
         $ADMIN = Admin::find(auth("admin")->user()->id);
         $ADMIN->profile_image = null;
         $ADMIN->save();
-        return back()->with('success', "Profile Picture removed successfully");
+        return back()->with('success', "Profile picture removed successfully");
     }
 }

@@ -111,7 +111,7 @@
 
                                         <div class="col-md-12">
                                             <div class="form-group">
-                                                <input type="text" name="manufacturer_name" class="form-control @error('manufacturer_name') is-invalid @enderror" placeholder="Business Name" value="{{ old('manufacturer_name') }}">
+                                                <input type="text" name="manufacturer_name" class="form-control @error('manufacturer_name') is-invalid @enderror" placeholder="Business Name *" value="{{ old('manufacturer_name') }}" required>
                                                 @error('manufacturer_name')
                                                     <span class="invalid-feedback" role="alert">
                                                         <strong>{{ $message }}</strong>

@@ -25,7 +25,7 @@ Route::post('/verify-otp', [UserController::class, 'verifyotp']);
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [UserController::class, 'logout']);
     Route::get('/profile', [UserController::class, 'userDetails']);
-
+    Route::delete('/delete-image', [UserController::class, 'deleteProfileImage']);
     Route::post('update-profile', [UserController::class, 'updateProfile']);
     Route::get('/get-notifications', [UserController::class, 'getNotification']);
     Route::post('/clear-notifications', [UserController::class, 'ClearNotification']);

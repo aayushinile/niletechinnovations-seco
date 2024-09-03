@@ -18,6 +18,52 @@
     cursor: pointer;
     z-index: 2; /* Ensure the icon is above the input field */
 }
+
+.loader-container {
+        position: fixed;
+        z-index: 9999;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        /* Semi-transparent black overlay */
+        display: none;
+        /* Initially hidden */
+        justify-content: center;
+        align-items: center;
+    }
+
+    .loader {
+        border: 8px solid #f3f3f3;
+        /* Light grey */
+        border-top: 8px solid #3498db;
+        /* Blue */
+        border-radius: 50%;
+        width: 50px;
+        height: 50px;
+        animation: spin 1s linear infinite;
+        position: relative;
+        top: 46%;
+        left: 46%;
+
+
+    }
+
+    .loader-container.show {
+        display: flex;
+    }
+
+
+    @keyframes spin {
+        0% {
+            transform: rotate(0deg);
+        }
+
+        100% {
+            transform: rotate(360deg);
+        }
+    }
     </style>
 @endpush
 @section('content')
@@ -249,6 +295,9 @@
                                 <div class="contact-item-info">
                                     <img src="{{ asset('images/sms.svg') }}"> {{ $mfs['email'] ?? 'N/A' }}
                                 </div>
+                                <div class="contact-item-info">
+                                    <img src="{{ asset('images/ic-website.svg') }}"> {{ $plant['web_link'] ?? 'N/A' }}
+                                </div>
                             </div>
                         </div>
                         @if ($sales_managers->isNotEmpty())
@@ -382,7 +431,7 @@
                         <div class="col-md-12">
                             <div class="form-group">
                                 <label for="email">Email</label> <!-- Label for the email field -->
-                                <input type="email" name="email" id="email" class="form-control"> <!-- Read-only email input field -->
+                                <input type="email" name="email" id="email" class="form-control" required> <!-- Read-only email input field -->
                             </div>
                         </div>
                             <div class="col-md-12">
@@ -417,6 +466,9 @@
         </div>
     </div>
 </div>
+<div class="loader-container" id="loader">
+                <div class="loader"></div>
+            </div>
 <script>
     $(document).on('click', '.ChangePasswordbtn', function() {
         var plantId = $(this).data('plant-id');
@@ -488,6 +540,7 @@
 document.addEventListener("DOMContentLoaded", function() {
     document.getElementById('changePasswordForm').addEventListener('submit', function(e) {
         e.preventDefault(); // Prevent the default form submission
+        document.getElementById('loader').style.display = 'block';
         
         var form = e.target;
         var formData = new FormData(form);
@@ -507,12 +560,15 @@ document.addEventListener("DOMContentLoaded", function() {
         })
         .then(response => response.json())
         .then(data => {
+            document.getElementById('loader').style.display = 'none';
             var messageContainer = document.getElementById('changePasswordMessage');
             let modal = new bootstrap.Modal(document.getElementById('ChangePassword'));
 
             if (data.errors) {
+                document.getElementById('loader').style.display = 'none';
                 messageContainer.innerHTML = '<div class="alert alert-danger">' + data.errors.join('<br>') + '</div>';
             } else {
+                document.getElementById('loader').style.display = 'none';
                 messageContainer.innerHTML = '<div class="alert alert-success">' + data.message + '</div>';
                 form.reset(); // Optionally reset the form
                 
@@ -520,10 +576,12 @@ document.addEventListener("DOMContentLoaded", function() {
                 setTimeout(() => {
                     modal.hide();
                     window.location.reload();
+                    
                 }, 2000); // Adjust the delay as needed
             }
         })
         .catch(error => {
+            document.getElementById('loader').style.display = 'none';
             console.error('Error:', error);
             var messageContainer = document.getElementById('changePasswordMessage');
             let modal = new bootstrap.Modal(document.getElementById('ChangePassword'));

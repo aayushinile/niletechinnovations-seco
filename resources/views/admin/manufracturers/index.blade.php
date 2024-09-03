@@ -182,7 +182,7 @@
                                                         <img src="{{ asset('images/location.svg') }}">
                                                     </div>
                                                     <div class="user-contact-info-content">
-                                                        <h2>Location</h2>
+                                                        <h2>Mgf. Location</h2>
                                                         <p>{{ $item->full_address ?? 'N/A' }}</p>
                                                     </div>
                                                 </div>

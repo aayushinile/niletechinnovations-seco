@@ -71,7 +71,7 @@
                                 <div class="brand-logo">
                                     <img src="{{asset('images/logo.svg')}}" alt="logo">
                                 </div>
-                                <h2>Reset Passowrd?</h2>
+                                <h2>Reset Password?</h2>
                                 <form class="pt-4" method="post" action="{{ route('manufacturer.reset.password.post') }}"
                                     id="signin_form">
                                     @csrf

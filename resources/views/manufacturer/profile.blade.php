@@ -214,7 +214,7 @@
                                     <div class="form-group-phone">
                                                 <span class="input-group-text">+1</span>
                                                 <div class="input-group-form-control">
-                                    <input type="text" id="phone" name="phone" required class="form-control phone" placeholder="Phone Number" value="{{$users->phone}}" maxlength="10"> 
+                                    <input type="text" id="phone" name="phone" class="form-control phone" placeholder="Phone Number" value="{{$users->phone}}" maxlength="10"> 
                                     <div class="invalid-feedback">Please enter a 10-digit phone number.</div>
                                     </div>
                                     
@@ -230,7 +230,7 @@
                             <div class="col-md-12">
                                 <div class="form-group" style="margin-bottom: 0rem !important;">
                                     <label for="manufacturer_logo"></label>
-                                    <input type="file" id="manufacturer_logo" name="manufacturer_image" class="form-control" placeholder="Business Logo" onchange="previewImage(event)">
+                                    <input type="file" id="manufacturer_logo" name="manufacturer_image" class="form-control" placeholder="Business Logo" onchange="previewImage(event)" accept=".jpg,.jpeg,.png">
                                 </div>
 
                                 @if (!empty($users->image))

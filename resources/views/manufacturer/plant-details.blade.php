@@ -135,6 +135,10 @@
                             <div class="contact-item-info">
                                 <img src="{{ asset('images/sms.svg') }}"> {{ $plant['email'] ?? '' }}
                             </div>
+
+                            <div class="contact-item-info">
+                                    <img src="{{ asset('images/ic-website.svg') }}"> {{ $plant['web_link'] ?? 'N/A' }}
+                            </div>
                         </div>
                     </div>
 

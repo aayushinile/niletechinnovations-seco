@@ -12,13 +12,17 @@ use Illuminate\Support\Facades\Auth;
 use App\Models\ContactManufacturer;
 use App\Models\ShippingCost;
 use App\Models\Otp;
+use App\Models\Plant;
 use App\Models\Specifications;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\DB;
 use GuzzleHttp\Client;
 use Mail;
 use App\Mail\SendOTPMail;
+use App\Mail\ContactManufacturerMail;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Http;
+use Carbon\Carbon;
 
 class UserController extends Controller
 {
@@ -34,6 +38,8 @@ class UserController extends Controller
             'password' => 'required|string|min:8|confirmed',
             'password_confirmation' => 'required_with:password|same:password',
             'status' => 'nullable|string|max:10',
+            'no_of_communities_sales_lot' => 'nullable',
+            'no_of_mhs' => 'nullable',
             'device_token' => 'nullable|string',
             'type' => 'nullable|integer|in:1,2',
         ], [
@@ -59,12 +65,14 @@ class UserController extends Controller
             'business_state' => null,
             'business_zipcode' => null,
             'community_owner' => null,
-            'location' => 1,
+            'location' => null,
             'mailverified' => true,
             'password' => Hash::make($request->password),
             'status' => $request->status ?? '1',
+            'no_of_communities' => $request->no_of_communities_sales_lot,
+            'no_of_mhs' => $request->no_of_mhs,
             'device_token' => $request->device_token,
-            'type' => $request->type ?? 2,
+            'type' => $request->type ?? 2, //1-retailer,2-community owner
         ]);
         $token = $user->createToken('seco')->plainTextToken;
         // Return a response
@@ -96,7 +104,7 @@ class UserController extends Controller
         $user = User::where('email', $request->email)->first();
 
         if (!$user || !Hash::check($request->password, $user->password)) {
-            return response()->json(['message' => 'Invalid credentials', 'status' => 0], 200);
+            return response()->json(['message' => 'Invalid credentials', 'status' => false], 200);
         }
 
         // Create a new personal access token
@@ -108,7 +116,7 @@ class UserController extends Controller
             'access_token' => $token,
             'token_type' => 'Bearer',
             'user' => $user,
-            'status' => 1,
+            'status' => true,
         ]);
     }
 
@@ -160,6 +168,10 @@ class UserController extends Controller
                     : null;
                 return $manufacturer;
             });
+
+            $userLocations = DB::table('locations')
+            ->where('user_id', $user->id)
+            ->get();
             // Create an array of objects format for user details
             $userDetails =
                 (object) [
@@ -175,15 +187,20 @@ class UserController extends Controller
                     'community_owner' => $user->community_owner,
                     'location' => $user->location,
                     'mailverified' => $user->mailverified,
+                    'no_of_mhs' => $user->no_of_mhs,
+                    'no_of_communities' => $user->no_of_communities,
                     'status' => $user->status,
                     'device_token' => $user->device_token,
                     'type' => $user->type == 1 ? 'Retail Sales Lot' : 'Community Owner',
+                    'profile_image' => $user->image ? asset('upload/profile-image/' . $user->image) : asset('images/defaultuser.png'),
+                    'company_image' => $user->company_image ? asset('upload/profile-image/' . $user->company_image) : asset('images/defaultuser.png'),
                     'created_at' => $user->created_at,
                     'updated_at' => $user->updated_at,
                 ];
             return response()->json([
                 'user' => $userDetails,
                 'contacted_manufacturers' => $processedManufacturers,
+                'locations' => $userLocations,
                 'status' => true,
             ], 200);
         } catch (Exception $e) {
@@ -236,7 +253,8 @@ class UserController extends Controller
                 'manufacturer_id' => 'nullable|string|max:255',
                 'message' => 'nullable|string',
                 'plant_id' => 'nullable',
-                'location' => 'nullable'
+                'location' => 'nullable',
+                'user_id' => 'nullable',
             ]);
 
             // Check if validation fails
@@ -260,6 +278,23 @@ class UserController extends Controller
                 'email' => $request->email,
                 'status' => 0,
             ]);
+
+            try {
+                $plant = Plant::where('id',$request->plant_id)->first();
+                // Send email to the plant
+                $plantEmail = $plant->email;// Replace with actual plant email or retrieve from the database
+                    // dd($plantEmail);
+                Mail::to($plantEmail)->send(new ContactManufacturerMail($contact));
+            } catch (\Exception $e) {
+                dd($e);
+                // Handle any errors during the email sending
+                return response()->json([
+                    'message' => 'Contact request submitted, but failed to send email',
+                    'status' => true,
+                    'contact' => $contact,
+                    'email_error' => $e->getMessage(),
+                ], 201);
+            }
 
             // Return a response
             return response()->json([
@@ -289,8 +324,12 @@ class UserController extends Controller
                 'business_state' => 'nullable|string|max:255',
                 'business_zipcode' => 'nullable|string|max:255',
                 'community_owner' => 'nullable|boolean',
+                'no_of_mhs' =>'nullable',
+                'no_of_communities' => 'nullable',
                 'location' => 'nullable|integer|in:1,2,3,4',
                 'status' => 'nullable|string|max:10',
+                'image' => 'nullable',
+                'company_image' => 'nullable',
             ]);
 
             // Check if validation fails
@@ -303,7 +342,46 @@ class UserController extends Controller
 
             // Update the authenticated user's profile
             $user = Auth::user();
-            $user->fill($request->except(['password', 'device_token', 'type', 'mailverified', 'email']));
+            $user->fill($request->except(['password', 'device_token']));
+            
+
+            if ($request->hasFile('image')) {
+                if ($user->image) {
+                    // Define the image path
+                    $imagePath = public_path('upload/profile-image/' . $user->image);
+    
+                    // Check if the file exists and delete it
+                    if (file_exists($imagePath)) {
+                        unlink($imagePath); // Delete the old image file
+                    }
+                }
+    
+                // Upload the new profile image
+                $file = $request->file('image');
+                $imageName = 'IMG_' . date('YmdHis') . '_' . rand(1000, 9999) . '.' . $file->getClientOriginalExtension();
+                $file->move(public_path('upload/profile-image'), $imageName);
+                $user->image = $imageName; // Update the user's profile image field
+            }
+    
+            // Handle the company image
+            if ($request->hasFile('company_image')) {
+                if ($user->company_image) {
+                    // Define the company image path
+                    $companyImagePath = public_path('upload/profile-image/' . $user->company_image);
+    
+                    // Check if the file exists and delete it
+                    if (file_exists($companyImagePath)) {
+                        unlink($companyImagePath); // Delete the old company image file
+                    }
+                }
+    
+                // Upload the new company image
+                $companyFile = $request->file('company_image');
+                $companyImageName = 'COMP_IMG_' . date('YmdHis') . '_' . rand(1000, 9999) . '.' . $companyFile->getClientOriginalExtension();
+                $companyFile->move(public_path('upload/profile-image'), $companyImageName);
+                $user->company_image = $companyImageName; // Update the user's company image field
+            }
+    
             $user->save();
 
             // Return a response
@@ -315,6 +393,49 @@ class UserController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'An error occurred while updating profile',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+
+
+    public function deleteProfileImage(Request $request)
+    {
+        try {
+            // Get the authenticated user
+            $user = Auth::user();
+
+            // Check if the user has an image
+            if ($user->image) {
+                // Define the image path
+                $imagePath = public_path('upload/profile-image/' . $user->image);
+
+                // Check if the file exists and delete it
+                if (file_exists($imagePath)) {
+                    unlink($imagePath); // Delete the old image file
+                }
+
+                // Remove the image reference from the database
+                $user->image = null;
+                $user->save();
+
+                // Return a success response
+                return response()->json([
+                    'message' => 'Profile image deleted successfully',
+                    'status' => true,
+                ], 200);
+            } else {
+                // Return a response indicating no image was found
+                return response()->json([
+                    'message' => 'No profile image found',
+                    'status' => false,
+                ], 404);
+            }
+        } catch (\Exception $e) {
+            // Return an error response
+            return response()->json([
+                'message' => 'An error occurred while deleting profile image',
                 'error' => $e->getMessage()
             ], 500);
         }
@@ -437,6 +558,264 @@ class UserController extends Controller
     //     }
     // }
 
+    public function getLocations(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'user_id' => 'required|integer'
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Validation failed',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        $userId = $request->user_id;
+
+        try {
+            // Check if the user_id is provided and is not empty
+            if (empty($userId)) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'User ID is required',
+                    'data' => []
+                ], 200);
+            }
+
+            // Fetch locations based on user_id
+            $locations = DB::table('locations')->where('user_id', $userId)->orderby('id','desc')->get();
+
+            if ($locations->isEmpty()) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'No locations found',
+                    'data' => []
+                ], 200);
+            }
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Locations retrieved successfully',
+                'data' => ['locations' => $locations]
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => false,
+                'message' => 'An error occurred!',
+                'error' => $e->getMessage(),
+                'data' => []
+            ], 500);
+        }
+    }
+
+
+
+    public function deleteLocation(Request $request)
+    {
+        // Validate the incoming request
+        $validator = Validator::make($request->all(), [
+            'user_id' => 'required|integer',
+            'id' => 'required|integer'
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Validation failed',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        $userId = $request->user_id;
+        $locationId = $request->id;
+
+        try {
+            // Check if the location exists for the given user_id and id
+            $location = DB::table('locations')
+            ->where('id', $locationId)
+                ->where('user_id', $userId)
+                ->first();
+
+            if (!$location) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Location not found or does not belong to the user',
+                    'data' => []
+                ], 200);
+            }
+
+            // Delete the location
+            DB::table('locations')
+                ->where('user_id', $userId)
+                ->where('id', $locationId)
+                ->delete();
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Location deleted successfully',
+                'data' => []
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => false,
+                'message' => 'An error occurred!',
+                'error' => $e->getMessage(),
+                'data' => []
+            ], 500);
+        }
+    }
+
+
+    public function LocationDetails(Request $request)
+    {
+        try {
+            // Retrieve the location based on the provided ID
+            $location = DB::table('locations')->where('id', $request->id)->first();
+            
+            // Check if location exists
+            if (!$location) {
+                return response()->json(["status" => false, "message" => "Location not found!"], 404);
+            }
+            
+            // Call the manufacturerListing function with the retrieved latitude and longitude
+            return $this->manufacturerListing(new Request([
+                'latitude' => $location->latitude,
+                'longitude' => $location->longitude
+            ]));
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'An error occurred!',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+
+
+    public function saveLocationDetails(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'location_name' => 'required|string',
+            'lat' => 'required|numeric',
+            'long' => 'required|numeric',
+            'user_id' => 'nullable|integer',
+            'unsave' => 'nullable|boolean',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['status' => false, 'message' => 'Validation failed', 'errors' => $validator->errors()], 422);
+        }
+
+        $lat = $request->lat;
+        $long = $request->long;
+        $locationName = $request->location_name;
+        $userId = $request->user_id;
+        $unsave = $request->unsave;
+
+
+        if (empty($userId)) {
+            return response()->json(['status' => false, 'message' => 'Please log in first', 'data' => []], 200);
+        }
+
+        if (empty($userId)) {
+            return response()->json(['status' => false, 'message' => 'User ID is required', 'data' => []], 200);
+        }
+        try {
+
+
+
+            
+            $existingLocation = DB::table('locations')
+            ->where('user_id', $userId)
+            ->where('latitude', $lat)
+            ->where('longitude', $long)
+            ->first();
+
+
+            if ($unsave) {
+                if ($existingLocation) {
+                    DB::table('locations')
+                        ->where('user_id', $userId)
+                        ->where('latitude', $lat)
+                        ->where('longitude', $long)
+                        ->delete();
+    
+                    return response()->json(['status' => true, 'message' => 'Location unsaved successfully', 'data' => []], 200);
+                } else {
+                    return response()->json(['status' => false, 'message' => 'Location not found to unsave', 'data' => []], 404);
+                }
+            }
+
+            if ($existingLocation) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Location already saved',
+                    'data' => []
+                ], 200);
+            }
+            // Fetch location details from Mapbox
+            $mapboxToken = env('MAPBOX_ACESS_TOKEN');
+            $response = Http::get("https://api.mapbox.com/geocoding/v5/mapbox.places/{$long},{$lat}.json", [
+                'access_token' => $mapboxToken
+            ]);
+
+            if ($response->successful()) {
+                $data = json_decode($response->getBody(), true);
+                $features = $data['features'][0];
+
+                // Extract city, state, and country from the response
+                $city = $features['text'] ?? ''; // Use the main text as city if context doesn't have it
+                $state = '';
+                $country = '';
+
+        
+
+                if ($features) {
+                    foreach ($features['context'] as $context) {
+                        if (strpos($context['id'], 'place') === 0) {
+                            $city = $context['text'];
+                        } elseif (strpos($context['id'], 'region') === 0) {
+                            $state = $context['text'];
+                        } elseif (strpos($context['id'], 'country') === 0) {
+                            $country = $context['text'];
+                        }
+                    }
+
+                    // Save the location details
+                    $locationData = [
+                    'location' => $locationName,
+                    'latitude' => $lat,
+                    'longitude' => $long,
+                    'city' => $city,
+                    'state' => $state,
+                    'country' => $country,
+                    'user_id' => $userId,
+                    'created_at'=> Carbon::now(),
+                ];
+
+                // Save the location details
+                DB::table('locations')->insert($locationData);
+
+                    return response()->json(['status' => true, 'message' => 'Location details saved successfully','data' => $locationData]);
+                } else {
+                    return response()->json(['status' => false, 'message' => 'Location not found'], 404);
+                }
+            } else {
+                return response()->json(['status' => false, 'message' => 'Mapbox API request failed'], 500);
+            }
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => false,
+                'message' => 'An error occurred!',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
 
 
     public function plantListing(Request $request)
@@ -795,7 +1174,7 @@ class UserController extends Controller
 
 
 
-    public function manufacturerListingm(Request $request)
+    public function manufacturerListing(Request $request)
     {
         try {
             // Validate inputs
@@ -809,6 +1188,7 @@ class UserController extends Controller
                 'price_range' => 'nullable|string',
                 'distance_range' => 'nullable|numeric',
                 'type' => 'nullable|string',
+                'user_id'=> 'nullable',
             ]);
 
             if ($validator->fails()) {
@@ -830,6 +1210,19 @@ class UserController extends Controller
             $distance_miles = DB::table('miles_settings')->where('id', 1)->first();
             $miles = isset($distance_miles->miles) ? $distance_miles->miles * 1609.34 : 482803;
             $distanceRange = $request->input('distance_range') ?? $miles;
+            $user_id = $request->input('user_id');
+
+            $isSaved = false;
+
+             if ($user_id && $latitude && $longitude) {
+                    $existingLocation = DB::table('locations')
+                        ->where('user_id', $user_id)
+                        ->where('latitude', $latitude)
+                        ->where('longitude', $longitude)
+                        ->first();
+
+                    $isSaved = $existingLocation ? true : false;
+                }
 
             // Initialize Guzzle client
             $client = new Client();
@@ -884,7 +1277,11 @@ class UserController extends Controller
                     'plant.latitude as plant_latitude',
                     'plant.longitude as plant_longitude',
                     'plant_media.image_url as plant_image_url',
-                    'plant.state as plant_state' // Ensure the state is being stored in the plants table
+                    'plant.state as plant_state',
+                    'plant.city as plant_city', // Ensure the state is being stored in the plants table
+                    'plant_login.image as plant_login_image',
+                    'plant.web_link',
+                    'plant_login.business_name as business_name',
                 )
                 ->where('plant.manufacturer_id', '!=', null)
                 ->where('plant_login.status', 1)
@@ -988,16 +1385,21 @@ class UserController extends Controller
                         }
 
                         $data->push([
+                            'logo_image' => $manufacturer->plant_login_image ? asset('upload/manufacturer-image/' . $manufacturer->plant_login_image) : asset('images/defaultuser.png'),
                             'plant_id' => $manufacturer->plant_id,
+                            'website' => $manufacturer->web_link,
+                            'business_name'=> $manufacturer->business_name,
                             'plant_name' => $manufacturer->plant_name,
                             'plant_location' => $manufacturer->plant_location,
+                            'plant_city_state' => $manufacturer->plant_city.','. $manufacturer->plant_state,
                             'plant_phone' => $manufacturer->plant_phone ? '+1' . $manufacturer->plant_phone : 'N/A',
                             'plant_image_url' => $manufacturer->plant_image_url ? asset('upload/manufacturer-image/' . $manufacturer->plant_image_url) : null,
                             'plant_type' => $plantType,
                             'plant_price_range' => '$' . $manufacturer->plant_from_price_range . ' - $' . $manufacturer->plant_to_price_range,
                             'distance_value' => $distance,
                             'distance' =>  round($distance) . ' Miles',
-                            'sales_manager' => $salesManager, // Initialize with the first sales manager
+                            'sales_manager' => $salesManager, // Initialize with the first sales manager,
+                            
                         ]);
                     } else {
                         // If the manufacturer ID already exists, append the sales manager
@@ -1010,6 +1412,8 @@ class UserController extends Controller
             $sortedData = $data->sortBy('distance_value');
 
             return response()->json([
+                'user_id' => $user_id ?? '',
+                'is_saved' => $isSaved,
                 'data' => $sortedData->values()->toArray(), // Use values() to re-index the array
                 'message' => 'Manufacturers found',
                 'status' => true,
@@ -1022,7 +1426,7 @@ class UserController extends Controller
 
 
 
-    public function manufacturerListing(Request $request)
+    public function manufacturerListingg(Request $request)
     {
         try {
             // Validate inputs
@@ -1118,7 +1522,11 @@ class UserController extends Controller
                     'plant.latitude as plant_latitude',
                     'plant.longitude as plant_longitude',
                     'plant_media.image_url as plant_image_url',
-                    'plant.state as plant_state' // Ensure the state is being stored in the plants table
+                    'plant.state as plant_state', // Ensure the state is being stored in the plants table
+                    'plant.city as plant_city',
+                    'plant_login.image as plant_login_image',
+                    'plant.web_link',
+                    'plant_login.business_name as business_name',
                 )
                 ->where('plant.manufacturer_id', '!=', null)
                 ->where('plant_login.status', 1)
@@ -1229,9 +1637,13 @@ class UserController extends Controller
                         }
 
                         $data->push([
+                            'logo_image' => $manufacturer->plant_login_image ? asset('upload/manufacturer-image/' . $manufacturer->plant_login_image) : asset('images/defaultuser.png'),
                             'plant_id' => $manufacturer->plant_id,
+                            'website' => $manufacturer->web_link,
+                            'business_name'=> $manufacturer->business_name,
                             'plant_name' => $manufacturer->plant_name,
                             'plant_location' => $manufacturer->plant_location,
+                            'plant_city_state' => $manufacturer->plant_city.','. $manufacturer->plant_state,
                             'plant_phone' => $manufacturer->plant_phone ? '+1' . $manufacturer->plant_phone : 'N/A',
                             'plant_image_url' => $manufacturer->plant_image_url ? asset('upload/manufacturer-image/' . $manufacturer->plant_image_url) : null,
                             'plant_type' => $plantType,
@@ -1272,6 +1684,7 @@ class UserController extends Controller
         try {
             $id = $request->id;
             $plant_id = $request->plant_id;
+            $distance = $request->input('distance');
             $latitude = $request->input('latitude');
             $longitude = $request->input('longitude');
             $apiKey = env('MAPBOX_ACESS_TOKEN');
@@ -1291,12 +1704,21 @@ class UserController extends Controller
                     'type',
                     'phone',
                     'shipping_cost',
+                    'web_link',
                     'latitude',
                     'longitude',
-                    'specification'
+                    'specification',
+                    'manufacturer_id',
+                    'state',
+                    'city',
                 )
                 ->get();
-
+                if (!$plants->isEmpty()) {
+                    $firstPlant = $plants->first();
+                    $plant_login = DB::table('plant_login')
+                        ->where('id', $firstPlant->manufacturer_id)
+                        ->first();
+                }
             // Check if plant exists
             if ($plants->isEmpty()) {
                 return response()->json([
@@ -1307,31 +1729,31 @@ class UserController extends Controller
 
             // Initialize Guzzle client for Mapbox API
             $client = new Client();
-
+           // dd($distance);
             // Initialize empty data array
             $data = [];
 
             // Iterate through each plant to calculate distance and structure data
             foreach ($plants as $plantItem) {
-                $distance = null;
-                if ($latitude && $longitude && $plantItem->latitude && $plantItem->longitude) {
-                    // Make request to Mapbox Directions API
-                    $response = $client->request('GET', 'https://api.mapbox.com/directions/v5/mapbox/driving/' . $longitude . ',' . $latitude . ';' . $plantItem->longitude . ',' . $plantItem->latitude, [
-                        'query' => [
-                            'access_token' => $apiKey,
-                            'geometries' => 'geojson',
-                            'overview' => 'simplified',
-                        ],
-                    ]);
+                //$distance = null;
+                // if ($latitude && $longitude && $plantItem->latitude && $plantItem->longitude) {
+                //     // Make request to Mapbox Directions API
+                //     $response = $client->request('GET', 'https://api.mapbox.com/directions/v5/mapbox/driving/' . $longitude . ',' . $latitude . ';' . $plantItem->longitude . ',' . $plantItem->latitude, [
+                //         'query' => [
+                //             'access_token' => $apiKey,
+                //             'geometries' => 'geojson',
+                //             'overview' => 'simplified',
+                //         ],
+                //     ]);
 
-                    $body = json_decode($response->getBody(), true);
+                //     $body = json_decode($response->getBody(), true);
 
-                    // Extract distance from response
-                    if (isset($body['routes'][0]['distance'])) {
-                        $dis = $body['routes'][0]['distance']; // Distance in meters
-                        $distance = round($dis * 0.000621371, 2); // Convert meters to miles
-                    }
-                }
+                //     // Extract distance from response
+                //     if (isset($body['routes'][0]['distance'])) {
+                //         $dis = $body['routes'][0]['distance']; // Distance in meters
+                //         $distance = round($dis * 0.000621371, 2); // Convert meters to miles
+                //     }
+                // }
 
                 // Fetch sales managers for the specified plant
                 $salesManagers = DB::table('plant_sales_manager')
@@ -1376,10 +1798,12 @@ class UserController extends Controller
                 // Prepare plant data with specifications array
                 $plantData = [
                     'plant_id' => $plantItem->plant_id,
+                    'website' => $plantItem->web_link,
                     'plant_name' => $plantItem->plant_name,
                     'plant_phone' => $plantItem->phone ? '+1' . $plantItem->phone : null,
                     'plant_description' => $plantItem->plant_description,
                     'full_address' => $plantItem->full_address,
+                    'city_state' => $plantItem->city.','.$plantItem->state,
                     'zipcode' => $plantItem->zipcode,
                     'price_range' => $plantItem->from_price_range . "-" . $plantItem->to_price_range,
                     'shipping_cost_per_mile' => '$' . $shippingCost,
@@ -1387,11 +1811,14 @@ class UserController extends Controller
                     'type' => $typeReadable,
                     'latitude' => $plantItem->latitude,
                     'longitude' => $plantItem->longitude,
-                    'distance' => $distance . ' Miles',
+                    'distance' => round($distance) > 0 ? round($distance) . ' miles' : '0 miles',
                     'plant_images' => $plantImagesWithAssets,
                     'images_count' => count($plantImagesWithAssets),
                     'sales_managers' => [], // Initialize sales managers array
                     'specifications' => $specifications,
+                    'about_the_company' => $plant_login->about ?? '',
+                    'logo_image' => $plant_login->image ? asset('upload/manufacturer-image/' . $plant_login->image) : asset('images/defaultuser.png'),
+                    'business_name' => $plant_login->business_name ?? 'N/A',
                 ];
 
                 // Add each sales manager to the plant data
@@ -1541,6 +1968,69 @@ class UserController extends Controller
 
 
 
+    public function DropdownValues()
+    {
+
+
+        $data = [];
+        $communities_sales_lot = [
+            [
+                'label' => '1-10',
+                'value' => '1-10'
+            ],
+            [
+                'label' => '10-25',
+                'value' => '10-25'
+            ],
+            [
+                'label' => '25-50',
+                'value' => '25-50'
+            ],
+            [
+                'label' => '50-100',
+                'value' => '50-100'
+            ],
+            [
+                'label' => '100+',
+                'value' => '100+'
+            ],
+        ];
+        $buy_mhs = [
+            [
+                'label' => '1-3',
+                'value' => '1-3'
+            ],
+            [
+                'label' => '3-5',
+                'value' => '3-5'
+            ],
+            [
+                'label' => '5-10',
+                'value' => '3'
+            ],
+            [
+                'label' => '10-25',
+                'value' => '10-25'
+            ],
+            [
+                'label' => '25+',
+                'value' => '25+'
+            ]
+
+        ];
+        $data = [
+            'communities_sales_lot' => $communities_sales_lot,
+            'buy_mhs' => $buy_mhs,
+
+        ];
+        return response()->json([
+            'data' => $data,
+            'status' => true,
+        ], 200);
+    }
+
+
+
 
 
     public function forgetpassword(Request $request) 
@@ -1604,10 +2094,10 @@ class UserController extends Controller
             $subject = 'Reset Your Password';
 
             // Attempt to send the email
-            // try {
-            //     Mail::to($email)->send(new SendOTPMail($mailData, $subject));
-            // } catch (\Exception $mailException) {
-            // }
+            try {
+                Mail::to($email)->send(new SendOTPMail($mailData, $subject));
+            } catch (\Exception $mailException) {
+            }
 
             // Return a success response with the OTP data
             return response()->json($data);

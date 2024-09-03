@@ -38,7 +38,7 @@
                          @if ($admin->profile_image != null)
                         <div class="profile-media-action">
                             <a  data-bs-toggle="modal"
-                            data-bs-target="#activePlant"><i class="fa-regular fa-trash-can"></i></a>
+                            data-bs-target="#activePlant" style="cursor: pointer;"><i class="fa-regular fa-trash-can"></i></a>
                         </div>
                         @endif
                 </div>
@@ -151,9 +151,14 @@
     <div class="modal ss-modal fade" id="EditProfile" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title" style="color: var(--pink);margin-left: 171px;margin-top: 14px;font-size: 20px;">Edit Profile</h2>
+                <a  class="close" id="closeModalBtn" data-dismiss="modal" aria-label="Close" style="font-size:25px;margin-left:11rem;cursor:pointer">
+                    <span aria-hidden="true">&times;</span>
+                </a>
+            </div>
                 <div class="modal-body">
                     <div class="ss-modal-form">
-                        <h2>Edit Profile</h2>
                         <form action="{{ route('admin.profile.update') }}" method="POST" enctype="multipart/form-data">
                             @csrf
 
@@ -239,7 +244,16 @@
         </div>
     </div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.inputmask/3.3.4/jquery.inputmask.bundle.min.js"></script>
+    <script>
+            $(document).ready(function() {
+                $('#closeModalBtn').on('click', function() {
+                    $('#EditProfile').modal('hide');
+                });
+                
 
+                
+            });
+        </script>
     <script>
         document.querySelectorAll('.toggle-password').forEach(item => {
             item.addEventListener('click', event => {

@@ -23,7 +23,7 @@
                                 <div class="brand-logo">
                                     <img src="images/logo.svg" alt="logo">
                                 </div>
-                                <h2>Forgot Passowrd?</h2>
+                                <h2>Forgot Password?</h2>
                                 <form class="pt-4" method="post" action="">
                                     <div class="form-group">
                                         <input type="password" name="password" required class="form-control" placeholder="New Password">
