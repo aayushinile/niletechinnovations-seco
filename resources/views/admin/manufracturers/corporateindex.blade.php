@@ -241,12 +241,12 @@
                                 @if ($manufracturers->onFirstPage())
                                     <li class="disabled" id="example_previous">
                                         <a href="#" aria-controls="example" data-dt-idx="0" tabindex="0"
-                                            class="page-link">Previous</a>
+                                            class="page-link">Prev</a>
                                     </li>
                                 @else
                                     <li id="example_previous">
                                         <a href="{{ $manufracturers->previousPageUrl() }}" aria-controls="example"
-                                            data-dt-idx="0" tabindex="0" class="page-link">Previous</a>
+                                            data-dt-idx="0" tabindex="0" class="page-link">Prev</a>
                                     </li>
                                 @endif
 

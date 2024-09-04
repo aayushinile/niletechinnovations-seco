@@ -1,4 +1,4 @@
-<table border="0" cellpadding="0" cellspacing="0" style="margin:0 auto;padding:0;table-layout:fixed;background: linear-gradient(180deg, #ffd7fc 0%, rgb(255 255 255) 80%);font-family:'Google Sans','Roboto',Arial,sans-serif;" >
+<table border="0" cellpadding="0" cellspacing="0" style="background-color: #ffd7fc; background: linear-gradient(180deg, #ffd7fc 0%, rgb(255, 255, 255) 80%); font-family: Calibri, sans-serif; margin: 0 auto; padding: 10px 30px 0px 30px;">
   <tbody>
     <tr style="border-collapse:collapse;border-spacing:0;padding:0;margin:0">
       <td style="text-align:center;padding:10px;color:#202124" valign="top" style="border-bottom: 1px solid #202124;">
@@ -21,7 +21,7 @@
            <tbody>
               <tr>
                 <td style="padding:20px"  dir="ltr">
-                  <p style="direction:ltr;font-weight:normal;color:#5f6368;word-break:normal;font-size:20px;line-height:32px;color:#5f6368;font-size:16px;line-height:26px;font-weight:normal;color:#25272b">Dear <b>user</b>,</p>
+                  <p style="direction:ltr;font-weight:normal;color:#5f6368;word-break:normal;font-size:20px;line-height:32px;color:#5f6368;font-size:16px;line-height:26px;font-weight:normal;color:#25272b">Dear <b>User</b>,</p>
                   <p style="direction:ltr;word-break:normal;font-size:16px;line-height:26px;font-weight:normal;color:#25272b">You have requested to change your password. Please find the below details to do the same.</p>
 
                   <p style="direction:ltr;word-break:normal;font-size:16px;line-height:26px;font-weight:normal;color:#25272b">Your One Time Password to change your password is <b>{{ $mailData['code'] }}</b></p>
@@ -29,7 +29,7 @@
 
 
                   <p style="direction:ltr;word-break:normal;font-size:16px;line-height:26px;font-weight:bold;color:#25272b">Warm regards,</p>
-                  <p style="direction:ltr;word-break:normal;font-size:16px;line-height:26px;font-weight:normal;color:#25272b">Seco</p>
+                  <p style="direction:ltr;word-break:normal;font-size:16px;line-height:26px;font-weight:normal;color:#25272b">Show Search</p>
 
 
               </td>

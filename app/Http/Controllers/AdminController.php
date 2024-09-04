@@ -491,7 +491,7 @@ class AdminController extends Controller
             $specifications = collect(); // Same for specifications
             $contact_m = collect(); // Same for contacted manufacturers
         }
-        return view("admin.manufracturers.corpdetails", compact('mfs', 'plants'));
+        return view("admin.manufracturers.corpdetails", compact('mfs', 'plants','images'));
     }
 
 
@@ -659,7 +659,10 @@ class AdminController extends Controller
             Mail::to($email)->send(new ResetCredentials($password,$email));
         }
     
-        return response()->json(['message' => 'Credentials updated successfully'], 200);
+        return response()->json([
+            'message' => 'Credentials updated successfully and an email has been sent to the email address.',
+            'email' => $email
+        ], 200);
     }
     public function settings()
     {
@@ -754,20 +757,32 @@ class AdminController extends Controller
     }
     public function submitResetPasswordForm(Request $request)
     {
-        // try {
-        $request->validate([
-            'email' => 'required|email',
-            'password' => 'required|string|min:6|confirmed',
-            'password_confirmation' => 'required'
-        ]);
-
-        if (Admin::where('email', $request->email)->count()) {
-            $user = Admin::where('email', $request->email)
-                ->update(['password' => Hash::make($request->password)]);
+        try {
+            // Validate the request data
+            $request->validate([
+                'email' => 'required|email',
+                'password' => 'required|string|min:6|confirmed',
+                'password_confirmation' => 'required'
+            ]);
+    
+            // Check if the email exists in the Admin table
+            $userExists = Admin::where('email', $request->email)->exists();
+    
+            if ($userExists) {
+                // Update the user's password
+                Admin::where('email', $request->email)
+                    ->update(['password' => Hash::make($request->password)]);
+    
+                // Return a successful response
+                return response()->json(['message' => 'Password changed successfully.', 'success' => true, 'status' => 200], 200);
+            } else {
+                // Return an error if the email does not exist
+                return response()->json(['message' => 'Email not found.', 'success' => false, 'status' => 404], 404);
+            }
+        } catch (\Exception $e) {
+            // Handle any exceptions that may occur
+            return response()->json(['message' => 'An error occurred: ' . $e->getMessage(), 'success' => false, 'status' => 500], 500);
         }
-
-
-        return response()->json(['message' => 'Password changed successfully.',  'success' => true, 'status' => 200], 200);
     }
     public function submitResetPasswordFormEmail(Request $request)
     {
@@ -814,7 +829,8 @@ class AdminController extends Controller
                 // }
                 // return redirect()->back()->with("success", "We have just sent you Verification Code for Password Reset");
                 try {
-                    Mail::to($request->email)->send(new ForgetPassword($user, $token));
+                    $name = 'Admin';
+                    Mail::to($request->email)->send(new ForgetPassword($user, $token,$name));
                 } catch (\Throwable $th) {
                     // Log the error to see the issue
                     return response()->json([
@@ -823,7 +839,7 @@ class AdminController extends Controller
                         'success' => false,
                     ], 500);
                 }
-                return response()->json(['message' => 'We have just sent you an one time password for resetting the password.' . $token, 'redirect' => false, 'token' => $token, 'success' => true, 'status' => 200], 200);
+                return response()->json(['message' => 'We have just sent you an one time password for resetting the password.', 'redirect' => false, 'success' => true, 'status' => 200], 200);
             } else {
                 // return redirect()->back()->with("error", "User does not exist in our records.");
                 return response()->json(['message' => 'User does not exist in our records.',  'success' => false, 'status' => 201], 201);

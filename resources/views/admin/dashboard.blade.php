@@ -16,8 +16,10 @@
                         <div class="col-md-3">
                             <div class="overview-enquiries-card bl-bg-card">
                                 <div class="overview-enquiries-text">
+                                    <a href="{{ route('admin.community.owners') }}">
                                     <h1>Total Registered CO/Retailer</h1>
                                     <p>{{ $owners }}</p>
+                                    </a>
                                 </div>
                                 <div class="overview-enquiries-img"><img src="images/Community-Owners1.svg" height="64"
                                         alt=""></div>
@@ -27,8 +29,10 @@
                         <div class="col-md-3">
                             <div class="overview-enquiries-card gr-bg-card">
                                 <div class="overview-enquiries-text">
+                                <a href="{{ route('admin.manufracturers') }}">
                                     <h1>Total Registered Plant Rep.</h1>
                                     <p>{{ $total_manufacturer_plant }}</p>
+                                </a>
                                 </div>
                                 <div class="overview-enquiries-img"><img src="images/manufacturers1.svg" height="64"
                                         alt=""></div>
@@ -37,18 +41,22 @@
                         <div class="col-md-3">
                             <div class="overview-enquiries-card bl-bg-card">
                                 <div class="overview-enquiries-text">
+                                <a href="{{ route('admin.enquiries') }}">
                                     <h1>Total Enquiries</h1>
                                     <p>{{ $enquiries }}</p>
+                                </a>
                                 </div>
-                                <div class="overview-enquiries-img"><img src="images/enquiries-icon.svg" height="64"
+                                <div class="overview-enquiries-img"><img src="{{asset('images/enquiries-icon.svg')}}" height="64"
                                         alt=""></div>
                             </div>
                         </div>
                         <div class="col-md-3">
                             <div class="overview-enquiries-card gr-bg-card">
                                 <div class="overview-enquiries-text">
+                                <a href="{{ route('admin.manufracturers.corporate') }}">
                                     <h1>Total Registered Corporate Rep.</h1>
                                     <p>{{ $total_manufacturer_corp }}</p>
+                                    </a>
                                 </div>
                                 <div class="overview-enquiries-img"><img src="images/building-4.svg" height="64"
                                         alt=""></div>

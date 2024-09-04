@@ -1,18 +1,7 @@
 @extends('admin.layouts')
 @push('css')
-    <link rel="stylesheet" type="text/css" href="{{ asset('admin/css/home.css') }}">
-    <link rel="stylesheet" type="text/css" href="{{ asset('css/auth.css') }}">
-    <link rel="stylesheet" type="text/css" href="{{ asset('css/header-footer.css') }}">
-    <link rel="stylesheet" type="text/css" href="{{ asset('css/profile.css') }}">
-    <link rel="stylesheet" type="text/css" href="{{ asset('css/home.css') }}">
-    <link rel="stylesheet" type="text/css" href="{{ asset('css/managelocations.css') }}">
-    <script src="{{ asset('js/jquery-3.7.1.min.js') }}" type="text/javascript"></script>
-    <script src="{{ asset('plugins/bootstrap/js/bootstrap.bundle.min.js') }}" type="text/javascript"></script>
-
-    <link rel="stylesheet" type="text/css" href="{{ asset('plugins/OwlCarousel/assets/owl.carousel.min.css') }}">
-    <link rel="stylesheet" type="text/css" href="{{ asset('plugins/fancybox/fancybox.css') }}">
-    <script src="{{ asset('plugins/OwlCarousel/owl.carousel.min.js') }}" type="text/javascript"></script>
-    <script src="{{ asset('plugins/fancybox/fancybox.umd.js') }}" type="text/javascript"></script>
+<link rel="stylesheet" type="text/css" href="{{ asset('admin/css/profile.css') }}">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 @endpush
 @section('content')
     <div class="body-main-content">

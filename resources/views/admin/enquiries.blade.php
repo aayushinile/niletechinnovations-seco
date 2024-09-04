@@ -120,7 +120,39 @@
                     </table>
                     @if (method_exists($mergedData, 'hasPages'))
                         <div class="ss-table-pagination">
-                            {{ $mergedData->links('pagination::bootstrap-4') }}
+                            <ul class="ss-pagination">
+                                @if ($mergedData->onFirstPage())
+                                    <li class="disabled" id="example_previous">
+                                        <a href="#" aria-controls="example" data-dt-idx="0" tabindex="0"
+                                            class="page-link">Prev</a>
+                                    </li>
+                                @else
+                                    <li id="example_previous">
+                                        <a href="{{ $mergedData->previousPageUrl() }}" aria-controls="example" data-dt-idx="0"
+                                            tabindex="0" class="page-link">Prev</a>
+                                    </li>
+                                @endif
+
+                                @foreach ($mergedData->getUrlRange(1, $mergedData->lastPage()) as $page => $url)
+                                    <li class="{{ $mergedData->currentPage() == $page ? 'active' : '' }}">
+                                        <a href="{{ $url }}" aria-controls="example"
+                                            data-dt-idx="{{ $page }}" tabindex="0"
+                                            class="page-link">{{ $page }}</a>
+                                    </li>
+                                @endforeach
+
+                                @if ($mergedData->hasMorePages())
+                                    <li class="next" id="example_next">
+                                        <a href="{{ $mergedData->nextPageUrl() }}" aria-controls="example" data-dt-idx="7"
+                                            tabindex="0" class="page-link">Next</a>
+                                    </li>
+                                @else
+                                    <li class="disabled" id="example_next">
+                                        <a href="#" aria-controls="example" data-dt-idx="7" tabindex="0"
+                                            class="page-link">Next</a>
+                                    </li>
+                                @endif
+                            </ul>
                         </div>
                     @endif
                 </div>

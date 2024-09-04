@@ -132,7 +132,7 @@
                                     </div>
 
                                     <div class="mt-1 forgotpsw-text">
-                                        <a href="{{ route('manufacturer.login') }}">Signin</a>
+                                        <a  class="btn-auth-gr" href="{{ route('manufacturer.login') }}">Signin</a>
                                     </div>
                                 </form>
 

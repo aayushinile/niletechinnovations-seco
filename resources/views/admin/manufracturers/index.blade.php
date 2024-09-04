@@ -165,7 +165,7 @@
                                                     @endif
                                                 </div>
                                                 <div class="user-profile-text">
-                                                    <h2>{{ $item->plant_name ?? 'N/A' }}</h2>
+                                                    <h2>{{ $manufacturer->plant_name ?? 'N/A' }}</h2>
                                                     <div
                                                         class="status-text {{ $manufacturer->status == 1 ? 'status-active' : 'status-inactive' }}">
                                                         {{ $manufacturer->status == 1 ? 'Active' : 'Inactive' }}
@@ -183,7 +183,7 @@
                                                     </div>
                                                     <div class="user-contact-info-content">
                                                         <h2>Mgf. Location</h2>
-                                                        <p>{{ $item->full_address ?? 'N/A' }}</p>
+                                                        <p>{{ $manufacturer->full_address ?? 'N/A' }}</p>
                                                     </div>
                                                 </div>
                                             </div>
@@ -195,7 +195,7 @@
                                                     </div>
                                                     <div class="user-contact-info-content">
                                                         <h2>Email</h2>
-                                                        <p>{{ $item->email ?? 'N/A' }}</p>
+                                                        <p>{{ $manufacturer->email ?? 'N/A' }}</p>
                                                     </div>
                                                 </div>
                                             </div>
@@ -207,7 +207,7 @@
                                                     </div>
                                                     <div class="user-contact-info-content">
                                                         <h2>Phone</h2>
-                                                        <p>{{ $item->phone ? '+1 ' . $item->phone : 'N/A' }}</p>
+                                                        <p>{{ $manufacturer->phone ? '+1 ' . $item->phone : 'N/A' }}</p>
                                                     </div>
                                                 </div>
                                             </div>
@@ -252,12 +252,12 @@
                                 @if ($manufracturers->onFirstPage())
                                     <li class="disabled" id="example_previous">
                                         <a href="#" aria-controls="example" data-dt-idx="0" tabindex="0"
-                                            class="page-link">Previous</a>
+                                            class="page-link">Prev</a>
                                     </li>
                                 @else
                                     <li id="example_previous">
                                         <a href="{{ $manufracturers->previousPageUrl() }}" aria-controls="example"
-                                            data-dt-idx="0" tabindex="0" class="page-link">Previous</a>
+                                            data-dt-idx="0" tabindex="0" class="page-link">Prev</a>
                                     </li>
                                 @endif
 

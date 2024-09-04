@@ -155,11 +155,19 @@
                 </div>
                 @endif
             </div>
+            
             <div class="added-comminity-body">
                 @foreach ($plants as $item)
+                @php 
+                $image = \App\Models\PlantMedia::where('plant_id',$item->plant_id)->first();
+                 @endphp
                     <div class="added-comminity-item">
                         <div class="added-comminity-item-image">
-                            <img src="{{ asset('images/defaultuser.png') }}">
+                        @if ($image)
+                            <img src="{{ asset('upload/manufacturer-image/' . $image->image_url) }}" alt="Plant Image">
+                        @else
+                            <img src="{{ asset('images/defaultuser.png') }}" alt="Default Image">
+                        @endif
                         </div>
                         <div class="added-comminity-item-text">
                             <h4>{{ $item->plant_name }}</h4>

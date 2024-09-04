@@ -136,7 +136,7 @@
         <h2 style="color:#5f0f58">Business Info</h2>
     </div>
 </div>
-                                <div class="contacted-manufacturer-body">
+                                <div class="contacted-manufacturer-body mt-2">
                                         <div class="contacted-manufacturer-item">
                                             <div class="contacted-manufacturer-item-text">
                                             <h4>Type :  
@@ -146,15 +146,22 @@
                                                     Community Owner
                                                 @endif
                                             </h4>
-                                            
+                                                
+                                                <div class="contacted-manufacturer-item">
+                                                    <div class="contacted-manufacturer-item-image">
+                                                        <img src="https://showsearch.net/images/ic-user-square.svg">
+                                                    </div>
+                                                    <div>
+                                                        <p>Business Name : {{$owner->business_name ?? 'N/A'}}</p>
+                                                    </div>
+                                                </div>
 
                                                 <div class="contacted-manufacturer-item">
                                                     <div class="contacted-manufacturer-item-image">
                                                         <img src="https://showsearch.net/images/location.svg">
                                                     </div>
                                                     <div>
-                                                        <p>Business Name : {{$owner->business_name ?? 'N/A'}}</p>
-                                                        <p>{{$owner->business_address ?? 'N/A'}}</p>
+                                                        <p>{{$owner->business_address ?? 'N/A'}} </p>
                                                     </div>
                                                 </div>
 
@@ -163,7 +170,7 @@
                                                         <img src="https://showsearch.net/images/ic-receipt-edit.svg">
                                                     </div>
                                                     <div>
-                                                        <p>No. of new MHs you want to buy per year : {{$owner->no_of_mhs ?? 'N/A'}}</p>
+                                                        <p>MHs purchased per year : <span> {{$owner->no_of_mhs ?? 'N/A'}}</span> </p>
                                                     </div>
                                                 </div>
 
@@ -172,7 +179,7 @@
                                                         <img src="https://showsearch.net/images/ic-receipt-edit.svg">
                                                     </div>
                                                     <div>
-                                                        <p> No. of Communities or Sales lot you have : {{$owner->no_of_communities ?? 'N/A'}}</p>
+                                                        <p> Communities/Retail Lots Owned : <span> {{$owner->no_of_communities ?? 'N/A'}} </span></p>
                                                     </div>
                                                 </div>
                                                 

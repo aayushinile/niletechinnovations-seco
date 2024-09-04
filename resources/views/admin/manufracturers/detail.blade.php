@@ -190,7 +190,7 @@
                 </div>
                 @if (!empty($plant['description']))
                     <div class="plants-about-section">
-                        <h2>About Us</h2>
+                        <h2>About Our Homes</h2>
                         <p>{!! nl2br(e($plant['description'])) !!}</p>
                     </div>
                 @else

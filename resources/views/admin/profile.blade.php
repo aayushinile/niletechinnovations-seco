@@ -21,7 +21,7 @@
         }
     </style>
 @endpush
-@section('content')
+@section('content') 
     <div class="body-main-content">
         <div class="ss-heading-section">
             <h2>My Profile</h2>
@@ -210,7 +210,7 @@
 
                                 <div class="col-md-12">
                                     <div class="form-group">
-                                        <button type='submit' class="save-btn">Save</button>
+                                        <button type='submit' class="save-btn">Update</button>
                                     </div>
                                 </div>
                             </div>

@@ -50,6 +50,30 @@
         .swal2-confirm {
             background-color: #5F0F58;
         }
+        span.input-group-text {
+            background: transparent;
+            border-radius: 5px;
+            font-size: 13px;
+            border: 1px solid var(--border);
+            font-weight: 400;
+            height: auto;
+            padding: 15px;
+            outline: 0;
+            display: inline-block;
+            color: var(--pink);
+            box-shadow: 0px 8px 13px 0px rgba(0, 0, 0, 0.05);
+        }
+        .eye-icon {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+        }
+
+        .form-group {
+            position: relative;
+        }
     </style>
 </head>
 
@@ -76,20 +100,34 @@
                                     <input type="hidden" name="email" value="{{ $email }}">
                                     <div class="form-group">
                                         <div class="input-group">
-                                            <input type="password" name="password" class="form-control"
-                                                id="passwordField" placeholder="Password">
-                                            <div class="input-group-append d-flex">
-                                                <span class="px-2 m-auto" type="button" id="togglePassword">
+                                            <input type="password" name="password" class="form-control" id="passwordField" placeholder="Password">
+                                            <div class="input-group-append">
+                                                <span class="input-group-text" type="button" onclick="togglePasswordVisibility('passwordField', this)">
                                                     <i class="fa fa-eye-slash text-dark" aria-hidden="true"></i>
                                                 </span>
                                             </div>
                                         </div>
+                                        @error('password')
+                                            <span class="invalid-feedback" role="alert">
+                                                <strong>{{ $message }}</strong>
+                                            </span>
+                                        @enderror
                                     </div>
-                                    <div class="form-group">
-                                        <input id="password-confirm" placeholder="Confirm Password" type="password"
-                                            class="form-control" name="password_confirmation" required
-                                            autocomplete="new-password">
 
+                                    <div class="form-group">
+                                        <div class="input-group">
+                                            <input id="password-confirm" placeholder="Confirm Password" type="password" class="form-control" name="password_confirmation" required autocomplete="new-password">
+                                            <div class="input-group-append">
+                                                <span class="input-group-text" type="button" onclick="togglePasswordVisibility('password-confirm', this)">
+                                                    <i class="fa fa-eye-slash text-dark" aria-hidden="true"></i>
+                                                </span>
+                                            </div>
+                                        </div>
+                                        @error('password_confirmation')
+                                            <span class="invalid-feedback" role="alert">
+                                                <strong>{{ $message }}</strong>
+                                            </span>
+                                        @enderror
                                     </div>
 
 
@@ -108,8 +146,23 @@
             </div>
         </div>
     </div>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
         $(document).ready(function() {
+            $.validator.addMethod("passwordMatch", function(value, element) {
+            if (value !== $('#passwordField').val()) {
+                // Show SweetAlert error message
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Passwords do not match',
+                    text: 'Please make sure that both password fields match.',
+                });
+                return false; // Invalid password match
+            }
+            return true; // Valid password match
+        }, "");
+
+
             $('#signin_form').validate({
                 rules: {
 
@@ -125,6 +178,15 @@
                         minlength: 6,
 
                     },
+                    password: {
+                    required: true,
+                    minlength: 6
+                },
+                password_confirmation: {
+                    required: true,
+                    minlength: 6,
+                    passwordMatch: true // Use custom validation method
+                }
 
 
 
@@ -270,18 +332,22 @@
         </script>
     @endif
     <script>
-        document.getElementById('togglePassword').addEventListener('click', function() {
-            var passwordField = document.getElementById('passwordField');
-            var fieldType = passwordField.getAttribute('type');
-            if (fieldType === 'password') {
-                passwordField.setAttribute('type', 'text');
+        
 
-                this.innerHTML = '<i class="fa fa-eye text-dark" aria-hidden="true"></i>';
+       function togglePasswordVisibility(fieldId, icon) {
+            var field = document.getElementById(fieldId);
+            var iconElement = icon.querySelector('i');
+            
+            if (field.type === "password") {
+                field.type = "text";
+                iconElement.classList.remove('fa-eye-slash');
+                iconElement.classList.add('fa-eye');
             } else {
-                passwordField.setAttribute('type', 'password');
-                this.innerHTML = '<i class="fa fa-eye-slash text-dark" aria-hidden="true"></i>';
+                field.type = "password";
+                iconElement.classList.remove('fa-eye');
+                iconElement.classList.add('fa-eye-slash');
             }
-        });
+        }
     </script>
 </body>
 

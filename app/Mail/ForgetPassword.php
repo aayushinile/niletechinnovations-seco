@@ -15,10 +15,12 @@ class ForgetPassword extends Mailable
 
     public $user;
     public $token;
-    public function __construct($user, $token)
+    public $name;
+    public function __construct($user, $token,$name)
     {
         $this->user = $user;
         $this->token = $token;
+        $this->name = $name;
     }
 
     public function build()
@@ -28,6 +30,7 @@ class ForgetPassword extends Mailable
                     ->with([
                         'user' => $this->user,
                         'token' => $this->token,
+                        'name' => $this->name,
                     ]);
     }
 }

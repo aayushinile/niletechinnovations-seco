@@ -39,7 +39,7 @@
                     <td valign="top" style="padding: 10px 30px;">
                         <p
                             style="font-size:16px;font-weight: 600;line-height: 24px;text-align:left;color: #25272b;margin: 10px 0;">
-                            Hello </p>
+                            Hello {{ $email }}, </p>
                     </td>
                 </tr>
                 <tr>
@@ -56,7 +56,7 @@
                             style="font-size: 16px;font-weight: normal;line-height: 24px;text-align:justify;color: #25272b;">
                             <strong>Email:</strong> {{ $email }}<br>
                             <strong>Password:</strong> {{ $password }}<br>
-                            <strong>Login URL:</strong> <a href="http://showsearch.net/manufacturer/login" style="text-decoration: underline;">http://showsearch.net/manufacturer/dashboard</a><br>
+                            <strong>Login URL:</strong> <a href="http://showsearch.net/manufacturer/login" style="text-decoration: underline;">http://showsearch.net/manufacturer/login</a><br>
                     </td>
                 </tr>
 
@@ -75,7 +75,7 @@
                             Warm regards,</p>
                         <p
                             style="font-size: 16px;font-weight: normal;line-height: 24px;text-align:justify;color: #25272b;">
-                           Seco</p>
+                           Show Search</p>
                     </td>
                 </tr>
             </table>

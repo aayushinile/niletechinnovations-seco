@@ -1058,7 +1058,7 @@ class ManufacturerController extends Controller
         if ($request->filled('search')) { 
             $plants->Where('plant_name', 'LIKE', '%' . $request->search . '%');
         }
-        $plants = $plants->paginate(10);
+        $plants = $plants->paginate(12);
         // Loop through each plant to fetch state and country based on latitude and longitude
         foreach ($plants as $plant) {
             $lat = $plant->latitude;
@@ -1303,7 +1303,8 @@ class ManufacturerController extends Controller
                 session(['otp' => $token, 'time' => time()]);
                 
                 try {
-                    Mail::to($request->email)->send(new ForgetPassword($user, $token));
+                    $name = $user->plant_name;
+                    Mail::to($request->email)->send(new ForgetPassword($user, $token,$name));
                 } catch (\Throwable $th) {
                     // Log the error to see the issue
                     //dd($th);
@@ -1314,7 +1315,7 @@ class ManufacturerController extends Controller
                     ], 500);
                 }
                 // return redirect()->back()->with("success", "We have just sent you Verification Code for Password Reset");
-                return response()->json(['message' => 'We have just sent you an one time password for resetting the password.' . $token, 'redirect' => false, 'token' => $token, 'success' => true, 'status' => 200], 200);
+                return response()->json(['message' => 'We have just sent you an one time password for resetting the password.', 'redirect' => false, 'token' => $token, 'success' => true, 'status' => 200], 200);
             } else {
                 // return redirect()->back()->with("error", "User does not exist in our records.");
                 return response()->json(['message' => 'User does not exist in our records.', 'success' => false, 'status' => 201], 201);

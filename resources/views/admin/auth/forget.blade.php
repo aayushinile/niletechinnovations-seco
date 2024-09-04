@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Show Search</title>
     <link rel="stylesheet" type="text/css" href="css/auth.css">
+    <link rel="stylesheet" type="text/css" href="{{ asset('css/auth.css') }}">
     <script src="{{ asset('js/jquery-3.7.1.min.js') }}" type="text/javascript"></script>
     <script src="{{ asset('plugins/bootstrap/js/bootstrap.bundle.min.js') }}" type="text/javascript"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -50,6 +51,41 @@
         .swal2-confirm {
             background-color: #5F0F58;
         }
+        .loader-container {
+            position: fixed;
+            z-index: 9999;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent black overlay */
+            display: none; /* Initially hidden */
+            justify-content: center;
+            align-items: center;
+        }
+
+        .loader {
+            border: 8px solid #f3f3f3; /* Light grey */
+            border-top: 8px solid #3498db; /* Blue */
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            position: relative;
+            top: 46%;
+            left: 46%;
+
+            
+        }
+        .loader-container.show {
+            display: flex;
+        }
+
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
     </style>
 </head>
 
@@ -92,7 +128,7 @@
                                     </div>
 
                                     <div class="mt-1 forgotpsw-text">
-                                        <a href="{{ route('admin.login') }}">Signin</a>
+                                        <a class="btn-auth-gr" href="{{ route('admin.login') }}">Signin</a>
                                     </div>
                                 </form>
 
@@ -104,6 +140,9 @@
             </div>
         </div>
     </div>
+    <div class="loader-container" id="loader">
+            <div class="loader"></div>
+        </div>
     <script>
         $(document).ready(function() {
             $('#signin_form').validate({
@@ -142,7 +181,7 @@
                 },
                 submitHandler: function(form, event) {
                     event.preventDefault();
-
+                    document.getElementById('loader').style.display = 'block';
 
                     let formData = new FormData(form);
 
@@ -176,7 +215,7 @@
                                     return false;
                                 }
 
-                                $(".loading").addClass("d-none");
+                                document.getElementById('loader').style.display = 'none';
 
                                 Swal.fire(
                                     'Success',
@@ -208,7 +247,7 @@
                                     response.message,
                                     'error'
                                 );
-                                $(".loading").addClass("d-none");
+                                document.getElementById('loader').style.display = 'none';
 
                                 return false;
                             }

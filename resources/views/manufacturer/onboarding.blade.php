@@ -26,7 +26,7 @@
                                     <div class="col-md-6">
                                         <div class="onboarding-slider-item">
                                             <div class="onboarding-slider-media">
-                                                <img src="{{asset('images/onboarding5.png')}}">
+                                                <img src="{{asset('images/mockup1.png')}}">
                                             </div>
                                             
                                         </div>
@@ -45,7 +45,7 @@
                                     <div class="col-md-6">
                                         <div class="onboarding-slider-item">
                                             <div class="onboarding-slider-media">
-                                                <img src="{{asset('images/onboarding1.png')}}">
+                                                <img src="{{asset('images/mockup2.png')}}">
                                             </div>
                                             
                                         </div>
@@ -64,7 +64,7 @@
                                     <div class="col-md-6">
                                         <div class="onboarding-slider-item">
                                             <div class="onboarding-slider-media">
-                                                <img src="{{asset('images/onboarding2.png')}}">
+                                                <img src="{{asset('images/mockup5.png')}}">
                                             </div>
                                             
                                         </div>
@@ -84,7 +84,7 @@
                                     <div class="col-md-6">
                                         <div class="onboarding-slider-item">
                                             <div class="onboarding-slider-media">
-                                                <img src="{{asset('images/onboarding3.png')}}">
+                                                <img src="{{asset('images/mockup3.png')}}">
                                             </div>
                                             
                                         </div>
@@ -104,7 +104,7 @@
                                     <div class="col-md-6">
                                         <div class="onboarding-slider-item">
                                             <div class="onboarding-slider-media">
-                                                <img src="{{asset('images/onboarding4.png')}}">
+                                                <img src="{{asset('images/mockup6.png')}}">
                                             </div>
                                             
                                         </div>

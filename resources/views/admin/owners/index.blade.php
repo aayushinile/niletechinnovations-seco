@@ -169,12 +169,12 @@
                                 @if ($owners->onFirstPage())
                                     <li class="disabled" id="example_previous">
                                         <a href="#" aria-controls="example" data-dt-idx="0" tabindex="0"
-                                            class="page-link">Previous</a>
+                                            class="page-link">Prev</a>
                                     </li>
                                 @else
                                     <li id="example_previous">
                                         <a href="{{ $owners->previousPageUrl() }}" aria-controls="example" data-dt-idx="0"
-                                            tabindex="0" class="page-link">Previous</a>
+                                            tabindex="0" class="page-link">Prev</a>
                                     </li>
                                 @endif
 

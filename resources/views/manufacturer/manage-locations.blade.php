@@ -197,9 +197,43 @@ button.btn-search {
                         </div>
                         @endforeach
                         @endif
-                        <div class="ss-table-pagination">
-                                {{ $plants->links('pagination::bootstrap-4') }}
-                            </div>
+                        @if (method_exists($plants, 'hasPages'))
+                        <div class="ss-table-pagination" style="margin-left: 22px;">
+                            <ul class="ss-pagination">
+                                @if ($plants->onFirstPage())
+                                    <li class="disabled" id="example_previous">
+                                        <a href="#" aria-controls="example" data-dt-idx="0" tabindex="0"
+                                            class="page-link">Prev</a>
+                                    </li>
+                                @else
+                                    <li id="example_previous">
+                                        <a href="{{ $plants->previousPageUrl() }}" aria-controls="example" data-dt-idx="0"
+                                            tabindex="0" class="page-link">Prev</a>
+                                    </li>
+                                @endif
+
+                                @foreach ($plants->getUrlRange(1, $plants->lastPage()) as $page => $url)
+                                    <li class="{{ $plants->currentPage() == $page ? 'active' : '' }}">
+                                        <a href="{{ $url }}" aria-controls="example"
+                                            data-dt-idx="{{ $page }}" tabindex="0"
+                                            class="page-link">{{ $page }}</a>
+                                    </li>
+                                @endforeach
+
+                                @if ($plants->hasMorePages())
+                                    <li class="next" id="example_next">
+                                        <a href="{{ $plants->nextPageUrl() }}" aria-controls="example" data-dt-idx="7"
+                                            tabindex="0" class="page-link">Next</a>
+                                    </li>
+                                @else
+                                    <li class="disabled" id="example_next">
+                                        <a href="#" aria-controls="example" data-dt-idx="7" tabindex="0"
+                                            class="page-link">Next</a>
+                                    </li>
+                                @endif
+                            </ul>
+                        </div>
+                    @endif
                     </div>
                 </div>
             </div>
