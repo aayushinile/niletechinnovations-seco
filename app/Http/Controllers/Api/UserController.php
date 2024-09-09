@@ -35,7 +35,7 @@ class UserController extends Controller
             'mobile' => 'nullable|string|max:255',
             'business_name' => 'nullable|string|max:255',
             'business_address' => 'nullable|string|max:255',
-            'password' => 'required|string|min:8|confirmed',
+            'password' => 'required|min:8|confirmed',
             'password_confirmation' => 'required_with:password|same:password',
             'status' => 'nullable|string|max:10',
             'no_of_communities_sales_lot' => 'nullable',
@@ -44,6 +44,9 @@ class UserController extends Controller
             'type' => 'nullable|integer|in:1,2',
         ], [
             'email.unique' => 'This email is already registered with Show Search.',
+            'password.min' => 'Password must be at least 8 characters.',
+            'password.confirmed' => 'Password confirmation does not match.',
+            'password_confirmation.same' => 'Password confirmation does not match the password.',
         ]);
 
         // Check if validation fails
@@ -102,11 +105,21 @@ class UserController extends Controller
 
         // Attempt to find the user
         $user = User::where('email', $request->email)->first();
-
+        // dd($user);
         if (!$user || !Hash::check($request->password, $user->password)) {
             return response()->json(['message' => 'Invalid credentials', 'status' => false], 200);
         }
-
+        if ($user->status == 0) {
+            return response()->json([
+                'message' => 'Your account has been deactivated by the admin',
+                'status' => false,
+            ], 200);
+        }elseif($user->status == 2){
+            return response()->json([
+                'message' => 'This email is not registered with Show Search',
+                'status' => false,
+            ], 200);
+        }
         // Create a new personal access token
         $token = $user->createToken('auth_token')->plainTextToken;
 
@@ -178,19 +191,19 @@ class UserController extends Controller
                     'id' => $user->id,
                     'fullname' => $user->fullname,
                     'email' => $user->email,
-                    'mobile' => $user->mobile,
-                    'business_name' => $user->business_name,
-                    'business_address' => $user->business_address,
-                    'business_city' => $user->business_city,
-                    'business_state' => $user->business_state,
-                    'business_zipcode' => $user->business_zipcode,
-                    'community_owner' => $user->community_owner,
-                    'location' => $user->location,
-                    'mailverified' => $user->mailverified,
-                    'no_of_mhs' => $user->no_of_mhs,
-                    'no_of_communities' => $user->no_of_communities,
-                    'status' => $user->status,
-                    'device_token' => $user->device_token,
+                    'mobile' => !empty($user->mobile) && strtolower($user->mobile) !== 'null' ? $user->mobile : null,
+                    'business_name' => $user->business_name ?? 'N/A',
+                    'business_address' => $user->business_address ?? 'N/A',
+                    'business_city' => $user->business_city ?? 'N/A',
+                    'business_state' => $user->business_state ?? 'N/A',
+                    'business_zipcode' => $user->business_zipcode ?? 'N/A',
+                    'community_owner' => $user->community_owner ?? 'N/A',
+                    'location' => $user->location ?? 'N/A',
+                    'mailverified' => $user->mailverified ?? 'N/A',
+                    'no_of_mhs' => $user->no_of_mhs ?? 'N/A',
+                    'no_of_communities' => $user->no_of_communities ?? 'N/A',
+                    'status' => $user->status ?? 'N/A',
+                    'device_token' => $user->device_token ?? 'N/A',
                     'type' => $user->type == 1 ? 'Retail Sales Lot' : 'Community Owner',
                     'profile_image' => $user->image ? asset('upload/profile-image/' . $user->image) : asset('images/defaultuser.png'),
                     'company_image' => $user->company_image ? asset('upload/profile-image/' . $user->company_image) : asset('images/defaultuser.png'),
@@ -286,7 +299,6 @@ class UserController extends Controller
                     // dd($plantEmail);
                 Mail::to($plantEmail)->send(new ContactManufacturerMail($contact));
             } catch (\Exception $e) {
-                dd($e);
                 // Handle any errors during the email sending
                 return response()->json([
                     'message' => 'Contact request submitted, but failed to send email',
@@ -342,6 +354,13 @@ class UserController extends Controller
 
             // Update the authenticated user's profile
             $user = Auth::user();
+            if(!$user){
+                return response()->json([
+                    'message' => 'This email is not registered with Show Search',
+                    'status' => false,
+                ], 200);
+            }
+            
             $user->fill($request->except(['password', 'device_token']));
             
 
@@ -381,7 +400,10 @@ class UserController extends Controller
                 $companyFile->move(public_path('upload/profile-image'), $companyImageName);
                 $user->company_image = $companyImageName; // Update the user's company image field
             }
-    
+            // if ($request->has('mobile') && !is_null($request->mobile) && $request->mobile !== '') {
+            //     // Prepend +1 to the mobile number
+            //     $user->mobile = '+1' . $request->mobile;
+            // }
             $user->save();
 
             // Return a response
@@ -465,7 +487,12 @@ class UserController extends Controller
             }
 
             if ($validator->fails()) {
-                return ($validator->errors()->first());
+                $errorMessages = $validator->errors()->all(); // Get all error messages as an array
+                $combinedErrors = implode(', ', $errorMessages); // Combine the messages into a single string
+                return response()->json([
+                    'status' => false,
+                    'message' => $combinedErrors // Return combined errors as a message
+                ], 200);
             }
 
             if (!empty($old_password)) {
@@ -486,7 +513,7 @@ class UserController extends Controller
                 return response()->json($data);
             } else {
                 $data['status'] = false;
-                $data['message'] = 'Something went wrong!';
+                $data['message'] = 'Your account has been deactivated by the admin';
                 return response()->json($data);
             }
         } catch (\Exception $e) {
@@ -990,7 +1017,7 @@ class UserController extends Controller
             }
 
             // Mapbox API Key
-            $apiKey = env('MAPBOX_ACESS_TOKEN');
+            $apiKey = env('MAPBOX_ACESS_TOKEN');;
 
             // Get filter inputs
             $latitude = $request->input('latitude');
@@ -1196,7 +1223,7 @@ class UserController extends Controller
             }
 
             // Mapbox API Key
-            $apiKey = env('MAPBOX_ACESS_TOKEN');
+            $apiKey = env('MAPBOX_ACESS_TOKEN');;
 
             // Get filter inputs
             $latitude = $request->input('latitude');
@@ -1325,8 +1352,10 @@ class UserController extends Controller
             if ($manufacturers->isEmpty()) {
                 return response()->json([
                     'data' => [],
+                    'user_id' => $user_id ?? '',
+                    'is_saved' => $isSaved,
                     'message' => 'Manufacturers not found',
-                    'status' => false,
+                    'status' => true,
                 ], 200);
             }
 
@@ -1461,7 +1490,7 @@ class UserController extends Controller
             $distance_miles = DB::table('miles_settings')->where('id', 1)->first();
             $miles = isset($distance_miles->miles) ? $distance_miles->miles * 1609.34 : 482803;
             $distanceRange = $request->input('distance_range') ?? $miles;
-
+            $isSaved = false;
             // Initialize Guzzle client
             $client = new Client();
 
@@ -1576,8 +1605,10 @@ class UserController extends Controller
             if ($manufacturers->isEmpty()) {
                 return response()->json([
                     'data' => [],
+                    'user_id' => $user_id ?? '',
+                    'is_saved' => $isSaved,
                     'message' => 'Manufacturers not found',
-                    'status' => false,
+                    'status' => true,
                 ], 200);
             }
 
@@ -1663,6 +1694,8 @@ class UserController extends Controller
             $sortedData = $data->sortBy('distance_value');
 
             return response()->json([
+                'user_id' => $user_id ?? '',
+                'is_saved' => $isSaved,
                 'data' => $sortedData->values()->toArray(), // Use values() to re-index the array
                 'message' => 'Manufacturers found',
                 'status' => true,
@@ -1687,7 +1720,7 @@ class UserController extends Controller
             $distance = $request->input('distance');
             $latitude = $request->input('latitude');
             $longitude = $request->input('longitude');
-            $apiKey = env('MAPBOX_ACESS_TOKEN');
+            $apiKey = env('MAPBOX_ACESS_TOKEN');;
             // Fetch the specified plant for the manufacturer
             $plants = DB::table('plant')
                 ->where('id', $plant_id) // Filter by plant_id
@@ -2049,14 +2082,27 @@ class UserController extends Controller
             $email = $request->email;
 
             // Check if the user exists with the given email and status 1
-            $user = User::where('email', $email)->where('status', 1)->first();
+            $user = User::where('email', $email)->first();
             // dd($user);
 
             if (!$user) {
                 // User does not exist, return an error response
                 return response()->json([
                     'status' => false,
-                    'message' => 'This email is not registered with Seco',
+                    'message' => 'This email is not registered with Show Search',
+                ]);
+            }
+
+            if ($user->status == 0) {
+                // User exists but the account is deactivated by admin
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Your account has been deactivated by the admin.',
+                ]);
+            }elseif($user->status == 2){
+                return response()->json([
+                    'status' => false,
+                    'message' => 'This email is not registered with Show Search',
                 ]);
             }
 
@@ -2164,5 +2210,89 @@ class UserController extends Controller
         } catch (\Exception $e) {
             return errorMsg("Exception -> " . $e->getMessage());
         }
+    }
+
+
+    public function deleteUserAccount(Request $request)
+    {
+        try {
+            // Get the authenticated user
+            $user = Auth::user();
+
+            // If the user is not found (which shouldn't happen since they're authenticated), return an error
+            if (!$user) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'User not found',
+                ], 404);
+            }
+
+            // Delete the user account
+            $user->status = 2;
+            $user->save();
+
+            return response()->json([
+                'status' => true,
+                'message' => 'User account deleted successfully',
+            ], 200);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => false,
+                'message' => 'An error occurred while deleting the account',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+
+    public function deleteAccount(Request $request)
+    {
+        try {
+            // Get the authenticated user
+            $user = Auth::user();
+
+            // If the user is not found (which shouldn't happen since they're authenticated), return an error
+            if (!$user) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'User not found',
+                ], 200);
+            }
+
+            // Delete the user account
+            $user->status = 2;
+            $user->save();
+
+            return response()->json([
+                'status' => true,
+                'message' => 'User account deleted successfully',
+            ], 200);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => false,
+                'message' => 'An error occurred while deleting the account',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+
+    public function getPolicies(Request $request)
+    {
+        // URLs for the Privacy Policy and Terms and Conditions
+        $privacyPolicyUrl = 'https://showsearch.net/pages/privacy_policy';  // Or the actual URL if hosted elsewhere
+        $termsAndConditionsUrl = 'https://showsearch.net/pages/terms-and-conditions';  // Or the actual URL if hosted elsewhere
+
+        // Return the response with the URLs
+        return response()->json([
+            'status' => true,
+            'message' => 'Policies fetched successfully',
+            'data' => [
+                'privacy_policy_url' => $privacyPolicyUrl,
+                'terms_and_conditions_url' => $termsAndConditionsUrl,
+            ]
+        ], 200);
     }
 }
