@@ -14,6 +14,53 @@
             line-height: 40px;
             border-radius: 5px;
         }
+        .switch-toggle {
+    display: inline-block;
+    position: relative;
+}
+
+.toggle {
+    position: relative;
+    display: inline-block;
+    width: 60px;
+    height: 34px;
+}
+
+.toggle__input {
+    display: none;
+}
+
+.toggle__fill {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    transition: 0.4s;
+    border-radius: 34px;
+}
+
+.toggle__fill:before {
+    position: absolute;
+    content: "";
+    height: 26px;
+    width: 26px;
+    left: 4px;
+    bottom: 4px;
+    background-color: white;
+    transition: 0.4s;
+    border-radius: 50%;
+}
+
+.toggle__input:checked + .toggle__fill {
+    background-color: var(--pink);
+}
+
+.toggle__input:checked + .toggle__fill:before {
+    transform: translateX(26px);
+}
     </style>
 @endpush
 @section('content')
@@ -82,10 +129,11 @@
             <div class="card-body">
                 <div class="ss-card-table">
                     <div class="user-table-list">
+                    <?php $s_no = 1; ?>
                         @forelse ($owners as $item)
                             <div class="user-table-item">
                                 <div class="row g-1 align-items-center">
-                                    <div class="col-md-4">
+                                    <div class="col-md-3">
                                         <div class="user-profile-item">
                                             <div class="user-profile-media">
                                                 @if(empty($item->image))
@@ -103,9 +151,9 @@
                                             </div>
                                         </div>
                                     </div>
-                                    <div class="col-md-8">
+                                    <div class="col-md-9">
                                         <div class="row g-1 align-items-center">
-                                            <div class="col-md-4">
+                                            <div class="col-md-3">
                                                 <div class="user-contact-info">
                                                     <div class="user-contact-info-icon">
                                                         <img src="{{ asset('admin/images/sms.svg') }}">
@@ -125,11 +173,15 @@
                                                     </div>
                                                     <div class="user-contact-info-content">
                                                         <h2>Phone</h2>
-                                                        <p>{{ $item->mobile }}</p>
+                                                        <p>@if ($item->mobile)
+                    {{ substr($item->mobile, 0, 2) === '+1' ? $item->mobile : '+1 ' . $item->mobile }}
+                @else
+                    N/A
+                @endif</p>
                                                     </div>
                                                 </div>
                                             </div>
-                                            <div class="col-md-3">
+                                            <div class="col-md-2">
                                                 <div class="user-contact-info">
                                                     <div class="user-contact-info-content">
                                                         <h2>Type</h2>
@@ -142,7 +194,22 @@
                                                 </div>
                                             </div>
 
-                                            <div class="col-md-2 text-end">
+
+                                            <div class="col-md-3">
+                                                <div class="user-contact-info">
+                                                    <div class="user-contact-info-content">
+                                                        <h2>Status</h2>
+                                                        <div class="switch-toggle">
+                                    <label class="toggle" for="myToggleClass_{{ $s_no }}">
+                                        <input class="toggle__input myToggleClass" name="status" data-id="{{ $item->id }}" type="checkbox" id="myToggleClass_{{ $s_no }}" {{ $item->status == 1 ? 'checked' : '' }}>
+                                        <div class="toggle__fill"></div>
+                                    </label>
+                                </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div class="col-md-1 text-end">
                                                 <div class="action-item-text">
                                                     <a class="action-btn"
                                                         href="{{ route('admin.community.owners.show', encrypt($item->id)) }}"><img
@@ -153,10 +220,12 @@
                                     </div>
                                 </div>
                             </div>
+                             <?php $s_no++; ?>
                         @empty
                             <div>
                                 <p class="text-center">No results found</p>
                             </div>
+                           
                         @endforelse
 
 
@@ -204,6 +273,53 @@
             </div>
         </div>
     </div>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" rel="stylesheet">
+    <!-- Toastr JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+    <script>
+$(document).ready(function() {
+    // Attach the event handler dynamically to all toggle inputs
+    $('.toggle__input').on('change', function() {
+        // Get the new status and the data-id of the clicked toggle
+        var newStatus = this.checked ? '1' : '0';
+        var request_id = $(this).attr("data-id");
+        var baseUrl = "{{ url('/') }}";
+
+        console.log('Sending AJAX request with:', {
+            request_id: request_id,
+            status: newStatus,
+            _token: '{{ csrf_token() }}'
+        });
+
+        // Perform the AJAX request to toggle the status
+        $.ajax({
+            url: baseUrl + '/toggleUserRequestStatus',
+            type: 'POST',
+            data: {
+                request_id: request_id,
+                status: newStatus,
+                _token: '{{ csrf_token() }}'
+            },
+            headers: {
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            },
+            success: function(response) {
+                console.log('Response received:', response);
+                if (response.success) {
+                    toastr.success(response.message);
+                    window.location.reload();
+                } else {
+                    toastr.error(response.message);
+                }
+            },
+            error: function(error) {
+                console.error('Error toggling user status:', error);
+            }
+        });
+    });
+});
+</script>
+
     <script>
         document.getElementById('date').addEventListener('change', function() {
             var selectedValue = this.value;
@@ -243,4 +359,5 @@
             window.location.href = currentUrl.toString();
         }
     </script>
+    
 @endsection

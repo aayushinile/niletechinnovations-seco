@@ -156,7 +156,7 @@
                         </div>
                     </div>
                     <div class="onboarding-slider-action">
-                        <a class="Skipbtn" href="{{ route('signup') }}">Create an Account</a>
+                        <a class="Skipbtn" href="{{ url('manufacturer/login') }}">Create an Account</a>
                     </div>
                 </div>
             </div>

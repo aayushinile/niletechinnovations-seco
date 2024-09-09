@@ -141,11 +141,11 @@
     <div class="col-md-12">
         <div class="added-comminity-card">
             <div class="added-comminity-head">
-                <div class="col-md-10">
+                <div class="">
                     <h2>Added Plants ({{ count($plants) }})</h2>
                 </div>
                 @if ($plants->isNotEmpty())
-                <div class="col-md-2 text-right">
+                <div class=" text-right">
                     <form action="{{ route('admin.plant.export') }}" method="GET">
                         <input type="hidden" value="{{$mfs->id}}" name="id">
                         <button type="submit" class="btnDownloadExcel">
@@ -155,7 +155,6 @@
                 </div>
                 @endif
             </div>
-            
             <div class="added-comminity-body">
                 @foreach ($plants as $item)
                 @php 

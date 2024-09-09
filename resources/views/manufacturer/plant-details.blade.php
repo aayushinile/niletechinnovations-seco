@@ -51,7 +51,7 @@
                 <p>{!! nl2br(e($plant['description'])) !!}</p>
             </div>
 
-            <div class="amenities-section">
+            <div class="amenities-section d-none">
                 <h4 style="color: var(--pink);">Home Specifications</h4>
                 <div class="row">
                     @if (!empty($plant['specifications']))
@@ -163,8 +163,8 @@
                                                 <div class="sales-manager-contact">
                                                     <img src="{{ asset('images/call.svg') }}"> {{ !empty($manager['phone']) ? '+1' . $manager['phone'] : 'N/A' }}
                                                 </div>
-                                                <div class="sales-manager-contact">
-                                                    <img src="{{ asset('images/sms.svg') }}"> -  {{ $manager['email']  ?? 'N/A'}}
+                                                <div class="sales-manager-contact" >
+                                                    <img src="{{ asset('images/sms.svg') }}" style="margin-right: .25rem !important"> {{ $manager['email']  ?? 'N/A'}}
                                                 </div>
                                             </div>
                                         </div>

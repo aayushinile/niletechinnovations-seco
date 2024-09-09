@@ -200,7 +200,7 @@
                     </div>
                 @endif
 
-                <div class="amenities-section">
+                <div class="amenities-section d-none">
                     <h4 style="color: var(--pink);">Specifications</h4>
                     <div class="row">
                     @if ($specifications->isNotEmpty())

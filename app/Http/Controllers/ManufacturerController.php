@@ -773,6 +773,7 @@ class ManufacturerController extends Controller
                 'plant.specification',
                 'plant.type',
                 'plant.manufacturer_id',
+                'plant.web_link',
                 'plant.shipping_cost',
                 'plant.created_at',
                 'plant.updated_at',
@@ -801,6 +802,7 @@ class ManufacturerController extends Controller
                     'plant_name' => $data->plant_name,
                     'email' => $data->email,
                     'phone' => $data->phone,
+                    'web_link' => $data->web_link,
                     'description' => $data->description,
                     'full_address' => $data->full_address,
                     'latitude' => $data->latitude,
@@ -1035,6 +1037,7 @@ class ManufacturerController extends Controller
                             'users.business_name',
                         );
             $data = $new_enquiriess->get();
+            $count = count($data);
             $new_enquiries = $new_enquiriess->paginate(10);
             $plants = DB::table('plant')->where('manufacturer_id',$user->id) ->orderBy('plant_name', 'asc')->get();
         //dd($new_enquiries);
@@ -1043,7 +1046,7 @@ class ManufacturerController extends Controller
             $fileName = $manufacturer ? $manufacturer . '_inquiries.xls' : 'plant_inquiries.xls';
              return Excel::download(new ManufacturerEnquiriesExport($data), $fileName);
          }
-        return view('manufacturer.enquiry',compact('new_enquiries','user','search','date','statusFilter','plants'));
+        return view('manufacturer.enquiry',compact('new_enquiries','user','search','date','statusFilter','plants','count'));
     }
 
 

@@ -221,7 +221,7 @@
                                 </div>
                             </div>
 
-                            <div class="col-md-6">
+                            <div class="col-md-6 d-none">
                                 <div class="form-group">
                                     <h5>Type *</h5>
                                     <select class="form-control" name="type">

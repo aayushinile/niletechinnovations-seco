@@ -46,6 +46,54 @@
             line-height: 40px;
             border-radius: 5px;
         }
+
+        .switch-toggle {
+            display: inline-block;
+            position: relative;
+        }
+
+        .toggle {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
+        }
+
+        .toggle__input {
+            display: none;
+        }
+
+        .toggle__fill {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: 0.4s;
+            border-radius: 34px;
+        }
+
+        .toggle__fill:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: 0.4s;
+            border-radius: 50%;
+        }
+
+        .toggle__input:checked + .toggle__fill {
+            background-color: var(--pink);
+        }
+
+        .toggle__input:checked + .toggle__fill:before {
+            transform: translateX(26px);
+        }
     </style>
 @endpush
 @section('content')
@@ -54,7 +102,7 @@
             <div class="card-header">
                 <h2>Plants({{ $total }})</h2>
                 <div class="search-filter wd80">
-                    <div class="row g-1">
+                    <div class="row g-1" style="justify-content: end;">
 
                         <div class="col-md-3  d-none">
                             <div class="form-group">
@@ -76,7 +124,7 @@
                         </div>
 
 
-                        <div class="col-md-8">
+                        <div class="col-md-9">
                             <div class="search-form-refresh-group">
                                 <div class="search-form-input-group">
                                     <form action="" method="get">
@@ -90,7 +138,7 @@
                                         </div>
                                     </form>
                                 </div>
-                                <div class="col-md-3">
+                                <div class="col-md-4">
                                      <div class="form-group">
                                         <select name="status" class="form-control"  onchange="changeStatus(this.value)">
                                         <option value="2" {{ request('status') == '2' ? 'selected' : '' }}>SHOW ALL</option>
@@ -110,26 +158,27 @@
                             </div> 
                         </div>
                       
-                        <div class="col-md-2">
+                        <!-- <div class="col-md-2 d-none">
                             <div class="form-group">
                                 <a class="btn-bl"  style="background-color: var(--green);"
                                     data-bs-toggle="modal" id="open-activate-modal">Mark
                                     As Active</a>
                             </div>
-                        </div>
-                        <div class="col-md-2">
+                        </div> -->
+                        <!-- <div class="col-md-2 d-none">
                             <div class="form-group">
                                 <a class="btn-bl" href="" style="background-color: var(--red);"
                                     data-bs-toggle="modal" id="open-inactivate-modal">Mark
                                     As Inactive</a>
                             </div>
-                        </div>
+                        </div> -->
                     </div>
                 </div>
             </div>
             <div class="card-body">
                 <div class="ss-card-table">
                     <div class="user-table-list">
+                    <?php $s_no = 1; ?>
                         @forelse ($manufracturers as $item)
                         @php 
                         $manufacturer = \App\Models\PlantLogin::where('id',$item->manufacturer_id)->first();
@@ -137,7 +186,7 @@
                         @if ($manufacturer)
                             <div class="user-table-item">
                                 <div class="row g-1 align-items-center">
-                                    <div class="col-md-4">
+                                    <div class="col-md-3">
                                         <div class="usercheckbox-info">
                                             <div class="sscheckbox">
                                                 <input type="checkbox" name="select_plant[]" value="{{ $manufacturer->id }}" id="{{ $manufacturer->id }}">
@@ -165,7 +214,7 @@
                                                     @endif
                                                 </div>
                                                 <div class="user-profile-text">
-                                                    <h2>{{ $manufacturer->plant_name ?? 'N/A' }}</h2>
+                                                <h2>{{ $manufacturer->plant_name ?? $manufacturer->business_name ?? 'N/A' }}</h2>
                                                     <div
                                                         class="status-text {{ $manufacturer->status == 1 ? 'status-active' : 'status-inactive' }}">
                                                         {{ $manufacturer->status == 1 ? 'Active' : 'Inactive' }}
@@ -174,9 +223,9 @@
                                             </div>
                                         </div>
                                     </div>
-                                    <div class="col-md-8">
+                                    <div class="col-md-9">
                                         <div class="row g-1 align-items-center">
-                                            <div class="col-md-4">
+                                            <div class="col-md-3">
                                                 <div class="user-contact-info">
                                                     <div class="user-contact-info-icon">
                                                         <img src="{{ asset('images/location.svg') }}">
@@ -188,7 +237,7 @@
                                                 </div>
                                             </div>
 
-                                            <div class="col-md-4">
+                                            <div class="col-md-3">
                                                 <div class="user-contact-info">
                                                     <div class="user-contact-info-icon">
                                                         <img src="{{ asset('images/sms.svg') }}">
@@ -207,7 +256,7 @@
                                                     </div>
                                                     <div class="user-contact-info-content">
                                                         <h2>Phone</h2>
-                                                        <p>{{ $manufacturer->phone ? '+1 ' . $item->phone : 'N/A' }}</p>
+                                                        <p>{{ $manufacturer->phone ? '+1 ' . $manufacturer->phone : 'N/A' }}</p>
                                                     </div>
                                                 </div>
                                             </div>
@@ -219,11 +268,16 @@
                                                     $type = ' Plant Representative';
                                                 }
                                             @endphp
-                                            <div class="col-md-2 d-none">
+                                            <div class="col-md-2">
                                                 <div class="user-contact-info">
                                                     <div class="user-contact-info-content">
-                                                        <h2>Type</h2>
-                                                        <p>{{ $type ?? 'N/A' }}</p>
+                                                        <h2>Status</h2>
+                                                        <div class="switch-toggle">
+                                                            <label class="toggle" for="myToggleClass_{{ $s_no }}">
+                                                                <input class="toggle__input myToggleClass" name="status" data-id="{{ $item->id }}" type="checkbox" id="myToggleClass_{{ $s_no }}" {{ $manufacturer->status == 1 ? 'checked' : '' }}>
+                                                                <div class="toggle__fill"></div>
+                                                            </label>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
@@ -240,7 +294,9 @@
                                     </div>
                                 </div>
                             </div>
+                            <?php $s_no++; ?>
                             @endif
+                            
                         @empty
                             <p class="text-center">No records found</p>
                         @endforelse
@@ -336,6 +392,53 @@
             </div>
         </div>
     </div>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" rel="stylesheet">
+    <!-- Toastr JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+    <script>
+$(document).ready(function() {
+    // Attach the event handler using event delegation
+    $(document).on('change', '.toggle__input', function() {
+        // Get the new status and the data-id of the clicked toggle
+        var newStatus = this.checked ? '1' : '0';
+        var request_id = $(this).attr("data-id");
+        var baseUrl = "{{ url('/') }}";
+
+        console.log('Sending AJAX request with:', {
+            request_id: request_id,
+            status: newStatus,
+            _token: '{{ csrf_token() }}'
+        });
+
+        // Perform the AJAX request to toggle the status
+        $.ajax({
+            url: baseUrl + '/set_status',
+            type: 'POST',
+            data: {
+                request_id: request_id,
+                status: newStatus,
+                _token: '{{ csrf_token() }}'
+            },
+            headers: {
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            },
+            success: function(response) {
+                console.log('Response received:', response);
+                if (response.success) {
+                    toastr.success(response.message);
+                    window.location.reload();
+                } else {
+                    toastr.error(response.message);
+                }
+            },
+            error: function(error) {
+                console.error('Error toggling user status:', error);
+                toastr.error('There was an error processing your request.');
+            }
+        });
+    });
+});
+</script>
     <script>
         document.getElementById('open-inactivate-modal').addEventListener('click', function(e) {
             e.preventDefault();

@@ -38,7 +38,7 @@ class PlantsExport implements FromCollection, WithHeadings, ShouldAutoSize, With
                 'phone' => $this->formatPhone($plant->phone),
                 //'price_range' => $this->getPriceRange($plant->id),
                 //'shipping cost' => $this->getShippingCost($plant->id),
-                'type' => $this->getType($plant->id),
+                //'type' => $this->getType($plant->id),
                 'sales_managers' => $this->getSalesManagers($plant->id),
                
                 'contacted_owners' => $this->getContactedOwners($plant->id),
@@ -294,7 +294,7 @@ class PlantsExport implements FromCollection, WithHeadings, ShouldAutoSize, With
             'Phone',
             //'Price Range ($)',
             //'Shipping Cost ($)',
-            'Type',
+            // 'Type',
             'Sales Personnel',
             'Contacted Community Owners',
             //'Specifications',
@@ -309,11 +309,11 @@ class PlantsExport implements FromCollection, WithHeadings, ShouldAutoSize, With
         return [
             AfterSheet::class => function(AfterSheet $event) {
                 // Enable wrap text for the 'Sales Personnel' column (e.g., column K)
-                $salesManagersRange = 'I2:I' . $event->sheet->getHighestRow();
+                $salesManagersRange = 'H2:H' . $event->sheet->getHighestRow();
                 $event->sheet->getStyle($salesManagersRange)->getAlignment()->setWrapText(true);
 
                 // Enable wrap text for the 'Contacted Community Owners' column (e.g., column L)
-                $contactedOwnersRange = 'J2:J' . $event->sheet->getHighestRow();
+                $contactedOwnersRange = 'I2:I' . $event->sheet->getHighestRow();
                 $event->sheet->getStyle($contactedOwnersRange)->getAlignment()->setWrapText(true);
             },
         ];

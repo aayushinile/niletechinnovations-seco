@@ -10,6 +10,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Auth;
 use App\Models\PlantSalesManager;
+use App\Models\User;
 use Illuminate\Support\Facades\DB;
 
 class AjaxController extends Controller
@@ -171,6 +172,25 @@ class AjaxController extends Controller
     }
 
 
+
+
+    public function toggleUserRequestStatus(Request $request)
+    {
+        if ($request->has('request_id')) {
+            $enquiry = User::find($request->input('request_id'));
+            if ($enquiry) {
+                $enquiry->status = $request->input('status');
+                $enquiry->save();
+                return response()->json(['success' => true, 'message' => 'Request status changed successfully']);
+            } else {
+                return response()->json(['success' => false, 'message' => 'Something went wrong']);
+            }
+        } else {
+            return response()->json(['success' => false, 'message' => 'Something went wrong']);
+        }
+    }
+
+
     public function activatePlant(Request $request)
     {
         try {
@@ -213,38 +233,41 @@ class AjaxController extends Controller
 
     public function set_status(Request $request)
     {
-        $ids = explode(',', $request->input('plant_ids'));
-        $status = $request->input('status'); // Inactivate the plants
-        // return $status;
-        if (is_array($ids) && count($ids) > 0) {
-            if ($status == 0) {
-                DB::table('plant_login')
-                    ->whereIn('id', $ids)
-                    ->update(['status' => 0]);
+        if ($request->has('request_id')) {
+            $ids = $request->input('request_id');
+            $plant = DB::table('plant')
+                         ->where('id', $ids)
+                         ->first();
+            $enquiry = PlantLogin::where('id', $plant->manufacturer_id)->first();
+            
+            if ($enquiry) {
+                $enquiry->status = $request->input('status');
+                $enquiry->save();
+                return response()->json(['success' => true, 'message' => 'Request status changed successfully']);
+            } else {
+                return response()->json(['success' => false, 'message' => 'Something went wrong']);
             }
-
-
-            return response()->json(['success' => true]);
+        } else {
+            return response()->json(['success' => false, 'message' => 'Something went wrong']);
         }
-
-        return response()->json(['success' => false, 'message' => 'Invalid request.']);
     }
 
 
-    public function set_statuss(Request $request)
+     public function set_statuss(Request $request)
     {
-        $ids = explode(',', $request->input('plant_ids'));
-        $status = $request->input('status'); // Inactivate the plants
-        // return $status;
-        if (is_array($ids) && count($ids) > 0) {
-            DB::table('plant_login')
-                ->whereIn('id', $ids)
-                ->update(['status' => 1]);
-
-
-            return response()->json(['success' => true]);
+        if ($request->has('request_id')) {
+            $ids = $request->input('request_id');
+            $enquiry = PlantLogin::where('id', $ids)->first();
+            
+            if ($enquiry) {
+                $enquiry->status = $request->input('status');
+                $enquiry->save();
+                return response()->json(['success' => true, 'message' => 'Request status changed successfully']);
+            } else {
+                return response()->json(['success' => false, 'message' => 'Something went wrong']);
+            }
+        } else {
+            return response()->json(['success' => false, 'message' => 'Something went wrong']);
         }
-
-        return response()->json(['success' => false, 'message' => 'Invalid request.']);
     }
 }

@@ -109,7 +109,7 @@ button.btn-search {
             <div class="body-main-content">
                 <div class="lp-card">
                     <div class="card-header">
-                        <h2>Inquiries({{count($new_enquiries)}})</h2>
+                        <h2>Inquiries({{$count}})</h2>
                         <div class="search-filter wd6">
                         <form action="{{route('manufacturer.enquiry')}}" method="POST">
                         @csrf

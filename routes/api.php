@@ -29,7 +29,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('update-profile', [UserController::class, 'updateProfile']);
     Route::get('/get-notifications', [UserController::class, 'getNotification']);
     Route::post('/clear-notifications', [UserController::class, 'ClearNotification']);
+    Route::post('/delete-account', [UserController::class, 'deleteAccount']);
+    
 });
+Route::get('/policies', [UserController::class, 'getPolicies']);
 Route::post('/save-locations', [UserController::class, 'saveLocationDetails']);
 Route::post('/community-details', [CommunityController::class, 'getCommunityDetails']);
 Route::post('/delete-community-image', [CommunityController::class, 'deleteCommunityPhoto']);

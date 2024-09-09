@@ -134,6 +134,7 @@ class AdminController extends Controller
         
         // Build the query with the necessary filters
         $ownersQuery = User::whereIn('type', [1, 2])
+                 ->whereIn('status', [0, 1])
             ->when($request->has('search'), function ($query) use ($request) {
                 $keyword = trim($request->search);
                 return $query->where(function ($query) use ($keyword) {
@@ -502,7 +503,7 @@ class AdminController extends Controller
         //dd($request->all());
        $search = $request->search;
        $date = $request->date;
-       $count = ContactManufacturer::whereNotNull("user_id")->count();
+       //$count = ContactManufacturer::whereNotNull("user_id")->count();
        $mergedData = ContactManufacturer::whereNotNull("user_id")
        ->join('plant', 'contact_manufacturer.plant_id', '=', 'plant.id')
        ->when($request->has('search'), function ($query) use ($request) {
@@ -532,6 +533,7 @@ class AdminController extends Controller
             $data_enquiries =  $mergedData->orderBy("contact_manufacturer.id", "desc")->get();
             $mergedData = $mergedData->orderBy("contact_manufacturer.id", "desc")->paginate(10);
         }
+        $count = count($mergedData);
 
         foreach ($mergedData as $item) {
             $item->plant_name = Plant::find($item->plant_id) ? Plant::find($item->plant_id)->plant_name : "N/A";
@@ -556,6 +558,7 @@ class AdminController extends Controller
            $fileName = $request->manufacturer_id ? $request->manufacturer_id . '_inquiries.xls' : 'inquiries.xls';
             return Excel::download(new EnquiriesExport($data_enquiries), $fileName);
         }
+        
         $pls = Plant::select('plant_name')
             ->groupBy('plant_name')          // Group by 'plant_name' to avoid duplicates
             ->orderBy('plant_name', 'asc')   // Order by 'plant_name' in ascending order (alphabetical)

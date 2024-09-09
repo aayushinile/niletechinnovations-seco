@@ -30,6 +30,12 @@ Route::get('/', function () {
 Route::get('/payment', function () {
     return view("payment");
 });
+Route::get('pages/privacy_policy', function () {
+    return view("pages.privacy");
+});
+Route::get('pages/terms-and-conditions', function () {
+    return view("pages.termsconditions");
+});
 Route::get('/payment/success', function () {
     return 'success';
 });
@@ -70,6 +76,7 @@ Route::middleware(['auth:manufacturer'])->group(function () {
     Route::post("/delete-profile-photo/{id}", [ManufacturerController::class, 'deleteProfilePhoto'])->name('delete-profile-photo');
     Route::post('update-specifications/{id}', [AjaxController::class, 'updateSpecifications'])->name('updateSpecification');
 });
+Route::post("/toggleUserRequestStatus", [AjaxController::class, 'toggleUserRequestStatus'])->name('toggleUserRequestStatus');
 Route::group(['prefix' => 'manufacturer', 'as' => 'manufacturer.'], function () {
 
     Route::get("/forget-password", [ManufacturerController::class, 'forget'])->name('forget.password');

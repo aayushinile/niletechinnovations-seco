@@ -4,6 +4,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Admin | Show Search</title>
     <link rel="stylesheet" type="text/css" href="{{ asset('admin/css/header-footer.css') }}">
     <link rel="stylesheet" type="text/css" href="{{ asset('admin/plugins/OwlCarousel/assets/owl.carousel.min.css') }}">
