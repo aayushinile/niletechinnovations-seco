@@ -200,7 +200,7 @@
                                             @if(!empty($user->image))
                                             <img src="{{ asset('upload/manufacturer-image/'.$user->image) }}" alt="user"> 
                                             @else 
-                                            <img src="{{ asset('images/defaultuser.png') }}">
+                                            <img src="{{ asset('images/default-user-2.png') }}">
                                             @endif
                                         </div>
                                         <div  class="profile-text" style="cursor: pointer;">

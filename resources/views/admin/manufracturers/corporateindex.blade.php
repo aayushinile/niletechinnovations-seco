@@ -187,7 +187,7 @@
                                 <div class="row g-1 align-items-center">
                                     <div class="col-md-3">
                                         <div class="usercheckbox-info">
-                                            <div class="sscheckbox">
+                                            <div class="sscheckbox d-none">
                                                 <input type="checkbox" name="select_plant[]" value="{{ $item->id }}" id="{{ $item->id }}">
                                                 <label for="{{ $item->id }}">&nbsp;</label>
                                             </div>
@@ -207,13 +207,13 @@
                                                     src="{{ asset('upload/manufacturer-image/' . $manufacturer['image']) }}">
                                                     @else 
 
-                                                        <img src="{{ asset('images/defaultuser.png') }}">
+                                                        <img src="{{ asset('images/default-user-2.png') }}">
                                                     @endif
                                                 </div>
                                                 <div class="user-profile-text">
                                                     <h2>{{ $item->business_name ?? 'N/A' }}</h2>
                                                     <div
-                                                        class="status-text {{ $item->status == 1 ? 'status-active' : 'status-inactive' }}">
+                                                        class="status-text d-none {{ $item->status == 1 ? 'status-active' : 'status-inactive' }}">
                                                         {{ $item->status == 1 ? 'Active' : 'Inactive' }}
                                                     </div>
                                                 </div>
@@ -261,12 +261,10 @@
                                                 <div class="user-contact-info">
                                                     <div class="user-contact-info-content">
                                                         <h2>Status</h2>
-                                                        <div class="switch-toggle">
-                                                            <label class="toggle" for="myToggleClass_{{ $s_no }}">
-                                                                <input class="toggle__input myToggleClass" name="status" data-id="{{ $item->id }}" type="checkbox" id="myToggleClass_{{ $s_no }}" {{ $manufacturer->status == 1 ? 'checked' : '' }}>
-                                                                <div class="toggle__fill"></div>
-                                                            </label>
-                                                        </div>
+                                                        <div
+                                                        class="status-text {{ $item->status == 1 ? 'status-active' : 'status-inactive' }}">
+                                                        {{ $item->status == 1 ? 'Approved' : 'Pending' }}
+                                                    </div>
                                                     </div>
                                                 </div>
                                             </div>
@@ -399,7 +397,7 @@ $(document).ready(function() {
 
         // Perform the AJAX request to toggle the status
         $.ajax({
-            url: baseUrl + '/set_statuss',
+            url: baseUrl + '/set_statuss_all',
             type: 'POST',
             data: {
                 request_id: request_id,

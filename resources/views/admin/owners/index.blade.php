@@ -138,7 +138,7 @@
                                             <div class="user-profile-media">
                                                 @if(empty($item->image))
                                                 <img
-                                                    src="{{ asset('images/defaultuser.png') }}">
+                                                    src="{{ asset('images/default-user-2.png') }}">
                                                 @else 
                                                 <img src="{{ asset('upload/profile-image/' . $item->image) }}">
                                                 @endif
@@ -147,7 +147,7 @@
                                                 <h2>{{ $item->fullname }}</h2>
                                                 <div
                                                     class="status-text   {{ $item->status == 1 ? 'status-active' : 'status-inactive' }}">
-                                                    {{ $item->status == 1 ? 'Active' : 'Inactive' }}</div>
+                                                    {{ $item->status == 1 ? 'Approved' : 'Pending for Approval' }}</div>
                                             </div>
                                         </div>
                                     </div>

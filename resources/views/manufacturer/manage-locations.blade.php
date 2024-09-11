@@ -166,7 +166,7 @@ button.btn-search {
                                         @if(!empty($media))
                                         <img src="{{ asset('upload/manufacturer-image/'.$media->image_url) }}" alt="plant_media">
                                         @else 
-                                        <img src="{{ asset('images/1.jpg') }}">
+                                        <img src="{{ asset('images/default-plant-image.png') }}">
                                         @endif 
                                             
                                         </div>
@@ -179,7 +179,7 @@ button.btn-search {
                                     @if(!empty($media))
                                     <img src="{{ asset('upload/manufacturer-image/'.$media->image_url) }}" alt="plant_media">
                                     @else 
-                                    <img src="{{ asset('images/1.jpg') }}">
+                                    <img src="{{ asset('images/default-plant-image.png') }}">
                                     @endif 
                                 </div> 
 

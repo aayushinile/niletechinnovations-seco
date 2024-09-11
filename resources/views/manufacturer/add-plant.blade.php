@@ -370,7 +370,7 @@
                                                     <div class="Uploadphoto-file1">
                                                         <input type="file" multiple="multiple" id="Upload Photos"
                                                             class="ssUploadphoto1" name="sales_manager[images][]"
-                                                            onchange="previewImage(event)">
+                                                            onchange="previewImage(event)" accept=".png, .jpg, .jpeg">
                                                         <label for="Upload Photos">
                                                             <div class="Uploadphoto-text">
                                                                 <div class="exportfile-text"><img
@@ -675,6 +675,7 @@
 
 
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
         $(document).ready(function() {
             $('#closeModalBtn').on('click', function() {
@@ -808,7 +809,7 @@
                                 <h5>Upload Photos</h5>
                                 <div class="salesUploadphoto">
                                     <div class="Uploadphoto-file1">
-                                        <input type="file" multiple="multiple" id="uploadPhotos-${uniqueId}" class="ssUploadphoto1" name="sales_manager[images][]" onchange="previewImages2(event, 'previewImage-${uniqueId}')">
+                                        <input type="file" multiple="multiple" id="uploadPhotos-${uniqueId}" class="ssUploadphoto1" name="sales_manager[images][]" onchange="previewImages2(event, 'previewImage-${uniqueId}')" accept=".png, .jpg, .jpeg">
                                         <label for="uploadPhotos-${uniqueId}">
                                             <div class="Uploadphoto-text">
                                                 <div class="exportfile-text"><img src="{{ asset('images/upload-icon.svg') }}" height="24"></div>
@@ -1006,6 +1007,8 @@
     <script>
           let filesArray = []; // Array to keep track of files
 
+// Array to keep track of files
+
 function previewImages(event) {
     var input = event.target;
     var previewContainer = document.getElementById('preview_container');
@@ -1014,9 +1017,20 @@ function previewImages(event) {
     previewContainer.innerHTML = '';
 
     if (input.files) {
+        const allowedExtensions = ['.png', '.jpg', '.jpeg'];
         filesArray = Array.from(input.files); // Update the filesArray
 
+        const invalidFiles = [];
+
         filesArray.forEach((file, index) => {
+            const fileExtension = file.name.slice(((file.name.lastIndexOf(".") - 1) >>> 0) + 2).toLowerCase();
+
+            // Check if the file extension is allowed
+            if (!allowedExtensions.includes(`.${fileExtension}`)) {
+                invalidFiles.push(file.name);
+                return; // Skip this file
+            }
+
             var reader = new FileReader();
 
             reader.onload = function(e) {
@@ -1046,9 +1060,21 @@ function previewImages(event) {
 
             reader.readAsDataURL(file);
         });
+
+        // Show error if there are invalid files
+        if (invalidFiles.length > 0) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Invalid File Type',
+                text: `The following files are not allowed: ${invalidFiles.join(', ')}`,
+                confirmButtonText: 'OK'
+            });
+
+            // Clear the file input
+            input.value = '';
+        }
     }
 }
-
 function deleteImage(index) {
     // Remove preview from the container
     var previewDiv = document.getElementById('preview-' + index);
@@ -1090,9 +1116,24 @@ document.querySelector('form').addEventListener('reset', function() {
             var input = event.target;
             var previewContainer = document.querySelector('.Uploadphoto-thumb');
             var existingImage = document.getElementById('imagePreview');
+            const allowedExtensions = ['.png', '.jpg', '.jpeg'];
 
             if (input.files && input.files[0]) {
                 var file = input.files[0];
+                const fileExtension = file.name.slice(((file.name.lastIndexOf(".") - 1) >>> 0) + 2).toLowerCase();
+                if (!allowedExtensions.includes(`.${fileExtension}`)) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Invalid File Type',
+                text: `Only the following file types are allowed: ${allowedExtensions.join(', ')}`,
+                confirmButtonText: 'OK'
+            });
+
+            // Clear the file input
+            event.target.value = '';
+            preview.src = ''; // Clear any existing preview
+            return;
+        }
                 var reader = new FileReader();
 
                 reader.onload = function(e) {
@@ -1119,8 +1160,25 @@ document.querySelector('form').addEventListener('reset', function() {
         function previewImages2(event, previewId) {
             const files = event.target.files;
             const preview = document.getElementById(previewId);
+            const allowedExtensions = ['.png', '.jpg', '.jpeg'];
             if (files && files[0]) {
+                const file = files[0];
+                const fileExtension = file.name.slice(((file.name.lastIndexOf(".") - 1) >>> 0) + 2).toLowerCase();
                 const reader = new FileReader();
+
+                if (!allowedExtensions.includes(`.${fileExtension}`)) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Invalid File Type',
+                text: `Only the following file types are allowed: ${allowedExtensions.join(', ')}`,
+                confirmButtonText: 'OK'
+            });
+
+            // Clear the file input
+            event.target.value = '';
+            preview.src = ''; // Clear any existing preview
+            return;
+        }
                 reader.onload = function(e) {
                     preview.src = e.target.result;
                 };

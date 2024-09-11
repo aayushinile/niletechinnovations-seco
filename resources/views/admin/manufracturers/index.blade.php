@@ -124,7 +124,7 @@
                         </div>
 
 
-                        <div class="col-md-9">
+                        <div class="col-md-6">
                             <div class="search-form-refresh-group">
                                 <div class="search-form-input-group">
                                     <form action="" method="get">
@@ -158,20 +158,18 @@
                             </div> 
                         </div>
                       
-                        <!-- <div class="col-md-2 d-none">
+                        <div class="col-md-3">
                             <div class="form-group">
                                 <a class="btn-bl"  style="background-color: var(--green);"
-                                    data-bs-toggle="modal" id="open-activate-modal">Mark
-                                    As Active</a>
+                                    data-bs-toggle="modal" id="open-activate-modal">Approve</a>
                             </div>
-                        </div> -->
-                        <!-- <div class="col-md-2 d-none">
+                        </div>
+                        <div class="col-md-3">
                             <div class="form-group">
                                 <a class="btn-bl" href="" style="background-color: var(--red);"
-                                    data-bs-toggle="modal" id="open-inactivate-modal">Mark
-                                    As Inactive</a>
+                                    data-bs-toggle="modal" id="open-inactivate-modal">Disapprove</a>
                             </div>
-                        </div> -->
+                        </div>
                     </div>
                 </div>
             </div>
@@ -189,8 +187,8 @@
                                     <div class="col-md-3">
                                         <div class="usercheckbox-info">
                                             <div class="sscheckbox">
-                                                <input type="checkbox" name="select_plant[]" value="{{ $manufacturer->id }}" id="{{ $manufacturer->id }}">
-                                                <label for="{{ $manufacturer->id }}">&nbsp;</label>
+                                                <input type="checkbox" name="select_plant[]" value="{{ $item->id }}" id="{{ $item->id }}">
+                                                <label for="{{ $item->id }}">&nbsp;</label>
                                             </div>
                                             @php
                                                 $plant = \App\Models\Plant::where('manufacturer_id', $item->id)->first();
@@ -210,14 +208,14 @@
                                                     <img
                                                     src="{{ asset('upload/manufacturer-image/' . $image['image_url']) }}">
                                                     @else
-                                                        <img src="{{ asset('images/defaultuser.png') }}">
+                                                        <img src="{{ asset('images/default-user-2.png') }}">
                                                     @endif
                                                 </div>
                                                 <div class="user-profile-text">
-                                                <h2>{{ $manufacturer->plant_name ?? $manufacturer->business_name ?? 'N/A' }}</h2>
+                                                <h2>{{ $item->plant_name ?? 'N/A' }}</h2>
                                                     <div
-                                                        class="status-text {{ $manufacturer->status == 1 ? 'status-active' : 'status-inactive' }}">
-                                                        {{ $manufacturer->status == 1 ? 'Active' : 'Inactive' }}
+                                                        class="status-text d-none {{ $item->status == 1 ? 'status-active' : 'status-inactive' }}">
+                                                        {{ $item->status == 1 ? 'Approved' : 'Pending' }}
                                                     </div>
                                                 </div>
                                             </div>
@@ -231,8 +229,8 @@
                                                         <img src="{{ asset('images/location.svg') }}">
                                                     </div>
                                                     <div class="user-contact-info-content">
-                                                        <h2>Mgf. Location</h2>
-                                                        <p>{{ $manufacturer->full_address ?? 'N/A' }}</p>
+                                                        <h2>Location</h2>
+                                                        <p>{{ $item->full_address ?? 'N/A' }}</p>
                                                     </div>
                                                 </div>
                                             </div>
@@ -244,7 +242,7 @@
                                                     </div>
                                                     <div class="user-contact-info-content">
                                                         <h2>Email</h2>
-                                                        <p>{{ $manufacturer->email ?? 'N/A' }}</p>
+                                                        <p>{{ $item->email ?? 'N/A' }}</p>
                                                     </div>
                                                 </div>
                                             </div>
@@ -256,7 +254,7 @@
                                                     </div>
                                                     <div class="user-contact-info-content">
                                                         <h2>Phone</h2>
-                                                        <p>{{ $manufacturer->phone ? '+1 ' . $manufacturer->phone : 'N/A' }}</p>
+                                                        <p>{{ $item->phone ? '+1 ' . $item->phone : 'N/A' }}</p>
                                                     </div>
                                                 </div>
                                             </div>
@@ -272,12 +270,10 @@
                                                 <div class="user-contact-info">
                                                     <div class="user-contact-info-content">
                                                         <h2>Status</h2>
-                                                        <div class="switch-toggle">
-                                                            <label class="toggle" for="myToggleClass_{{ $s_no }}">
-                                                                <input class="toggle__input myToggleClass" name="status" data-id="{{ $item->id }}" type="checkbox" id="myToggleClass_{{ $s_no }}" {{ $manufacturer->status == 1 ? 'checked' : '' }}>
-                                                                <div class="toggle__fill"></div>
-                                                            </label>
-                                                        </div>
+                                                        <div
+                                                        class="status-text {{ $item->status == 1 ? 'status-active' : 'status-inactive' }}">
+                                                        {{ $item->status == 1 ? 'Approved' : 'Pending' }}
+                                                    </div>
                                                     </div>
                                                 </div>
                                             </div>
@@ -350,7 +346,7 @@
                 <div class="modal-body">
                     <div class="ss-modal-delete">
                         {{-- <div class="ss-modal-delete-icon"><img src=""></div> --}}
-                        <p id="delete-message">Are you sure you want to In-activate these Plants?</p>
+                        <p id="delete-message">Are you sure you want to Disapprove these Plants?</p>
                         <form id="inactivate-form" method="POST">
                             @csrf
                             <input type="hidden" id="plant-ids" name="plant_ids">
@@ -376,7 +372,7 @@
                 <div class="modal-body">
                     <div class="ss-modal-delete">
                         {{-- <div class="ss-modal-delete-icon"><img src=""></div> --}}
-                        <p id="delete-message">Are you sure you want to Activate these Plants?</p>
+                        <p id="delete-message">Are you sure you want to Approve these Plants?</p>
                         <form id="activate-form" method="POST">
                             @csrf
                             <input type="hidden" id="plant-idss" name="plant_ids">

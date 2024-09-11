@@ -32,7 +32,8 @@ class ResetCredentials extends Mailable
      */
     public function build()
     {
-        return $this->subject('Your Updated Credentials')
+        return $this->subject('New credentials generated to Login into the account.
+')
                     ->view('emails.reset_credentials')
                     ->with([
                         'password' => $this->password,

@@ -74,14 +74,13 @@
         <div class="listed-plants-section">
             <div class="plants-details-head" style="justify-content:end;">
                 <div class="plants-details-action">
-                    @if ($mfs->status == 1)
+                    @if ($plant->status == 1)
                         <a class="edit-btn" style="background: var(--red);cursor:pointer !important;font-size: 14px;" data-bs-toggle="modal"
-                            data-bs-target="#inactivePlant" data-plant-id="{{ $mfs['id'] }}"> Mark As Inactive</a>
+                            data-bs-target="#inactivePlant" data-plant-id="{{ $plant['id'] }}"> Disapprove</a>
                     @else
                         <a class="" data-bs-toggle="modal" data-bs-target="#activePlant"
-                            data-plant-id="{{ $mfs['id'] }}"
-                            style="background: var(--green);color: var(--white);padding: 12px 20px;border-radius: 5px;font-size: 14px;box-shadow: 0 4px 10px #5f0f5845;display: inline-block;position: relative;cursor:pointer">Mark
-                            As Active</a>
+                            data-plant-id="{{ $plant['id'] }}"
+                            style="background: var(--green);color: var(--white);padding: 12px 20px;border-radius: 5px;font-size: 14px;box-shadow: 0 4px 10px #5f0f5845;display: inline-block;position: relative;cursor:pointer">Approve</a>
                     @endif
 
                     @if($mfs->plant_type == 'plant_rep')
@@ -94,7 +93,7 @@
                     <div class="col-md-4">
                         <div class="user-profile-item">
                             <div class="user-profile-media">
-                                <img src="{{ asset('images/defaultuser.png') }}">
+                                <img src="{{ asset('images/default-user-2.png') }}">
                             </div>
                             @php 
                             $type = 'N/A';
@@ -106,8 +105,8 @@
                             @endphp
                             <div class="user-profile-text">
                                 <h2>{{ $mfs->plant_name ?? 'N/A' }}({{ $type ?? 'N/A' }})</h2>
-                                <div class="status-text {{ $mfs->status == 1 ? 'status-active' : 'status-inactive' }}">
-                                    {{ $mfs->status == 1 ? 'Active' : 'Inactive' }}
+                                <div class="status-text {{ $plant->status == 1 ? 'status-active' : 'status-inactive' }}">
+                                    {{ $plant->status == 1 ? 'Approved' : 'Pending' }}
                                 </div>
                             </div>
                         </div>
@@ -156,7 +155,7 @@
                     <div class="plants-details-item">
                         <div class="plants-details-logo">
                             @if ($images->isEmpty())
-                                <img src="{{ asset('images/defaultuser.png') }}">
+                                <img src="{{ asset('images/default-user-2.png') }}">
                             @else
                                 @foreach ($images as $image)
                                     <img src="{{ asset('upload/manufacturer-image/' . $image['image_url']) }}">
@@ -313,7 +312,7 @@
                                                         <img
                                                             src="{{ asset('upload/sales-manager-images/' . $manager['image']) }}">
                                                     @else
-                                                        <img src="{{ asset('images/profile.png') }}">
+                                                        <img src="{{ asset('images/default-user-2.png') }}">
                                                     @endif
                                                 </div>
                                                 <div class="sales-manager-content">
@@ -378,7 +377,7 @@
                 <div class="modal-content">
                     <div class="modal-body">
                         <div class="ss-modal-delete">
-                            <p id="delete-message">Are you sure you want to activate this Plant?</p>
+                            <p id="delete-message">Are you sure you want to Approved this Plant?</p>
                             <form id="activate-form" method="POST">
                                 @csrf
                                 <input type="hidden" id="plant-id" name="plant_id">
@@ -401,7 +400,7 @@
                 <div class="modal-content">
                     <div class="modal-body">
                         <div class="ss-modal-delete">
-                            <p id="delete-message">Are you sure you want to In-activate this Plant?</p>
+                            <p id="delete-message">Are you sure you want to Disapprove this Plant?</p>
                             <form id="inactivate-form" method="POST">
                                 @csrf
                                 <input type="hidden" id="plant-id" name="plant_id">

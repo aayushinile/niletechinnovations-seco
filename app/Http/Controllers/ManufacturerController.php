@@ -20,9 +20,11 @@ use Exception;
 use Carbon\Carbon;
 use Mail;
 use App\Mail\ForgetPassword;
+use App\Mail\ApprovalMail;
 use GuzzleHttp\Client;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\ManufacturerEnquiriesExport;
+use App\Imports\PlantImport;
 use Illuminate\Support\Facades\Log;
 
 class ManufacturerController extends Controller
@@ -447,12 +449,23 @@ class ManufacturerController extends Controller
                 'web_link' => $request->web_link,
                 'manufacturer_id' => Auth::user()->id,
                 'shipping_cost'=> $request->shipping_cost,
+                'status' => 0,
             ]);
-
-
             $user = Auth::user();
 
             $plants_login = PlantLogin::where('id',$user->id)->first();
+           // dd($plants_login->plant_type);
+            try {
+                $name = 'Admin';
+                $email = 'admin1@yopmail.com';
+                $plantName = $plant->plant_name;
+                $type = $plants_login->plant_type;
+                $location = $plant->full_address;
+                Mail::to($email)->send(new ApprovalMail($plantName,$location,$type));
+            } catch (\Throwable $th) {
+            }
+
+           
 
             // if($plants_login['plant_type'] == 'plant_rep'){
             //     PlantLogin::where('id', $user->id)->update([
@@ -774,6 +787,7 @@ class ManufacturerController extends Controller
                 'plant.type',
                 'plant.manufacturer_id',
                 'plant.web_link',
+                'plant.status',
                 'plant.shipping_cost',
                 'plant.created_at',
                 'plant.updated_at',
@@ -801,6 +815,7 @@ class ManufacturerController extends Controller
                     'id' => $data->plant_id,
                     'plant_name' => $data->plant_name,
                     'email' => $data->email,
+                    'status' => $data->status,
                     'phone' => $data->phone,
                     'web_link' => $data->web_link,
                     'description' => $data->description,
@@ -1342,6 +1357,24 @@ class ManufacturerController extends Controller
         return response()->json(['exists' => $exists]);
     }
 
+    public function importExcel(Request $request)
+    {
+        try {
+            // Validate file input
+            $request->validate([
+                'file' => 'required|file|mimes:xlsx,xls,csv|max:2048',
+            ]);
 
+            // Import the file
+            Excel::import(new PlantImport, $request->file('file'));
+
+            // Return success response
+            return response()->json(['success' => true, 'message' => 'Plants imported successfully.']);
+        } catch (\Exception $e) {
+            // Log error and return error response
+            Log::error('Error during import: ' . $e->getMessage());
+            return response()->json(['success' => false, 'message' => 'Error during import: ' . $e->getMessage()]);
+        }
+    }
     
 }

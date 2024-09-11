@@ -14,12 +14,21 @@
                                 <img src="{{ asset('upload/manufacturer-image/' . $image['image_url']) }}">
                             @endforeach
                         @else
-                            <img src="{{ asset('images/defaultuser.png') }}">
+                            <img src="{{ asset('images/default-user-2.png') }}">
                         @endif
                     </div>
                     <div class="plants-details-head-text">
 
-                        <h4>{{ $plant['plant_name'] }}</h4>
+                        <h4>{{ $plant['plant_name'] }}
+                            @if($plant['status'] == 0)
+                            <div class="Verifiedtext" style="color:var(--red)"> <img src="{{asset('images/not-verify.svg')}}"> Pending for Approval
+                                </div>
+                            @else
+                            <div class="Verifiedtext">
+                            <img src="{{asset('images/tick.svg')}}"> Approved
+                            </div> 
+                            @endif
+                            </h4>
                         <div class="plants-details-location">
                             <img src="{{ asset('images/location-icon.svg') }}">{{ $plant['full_address'] }}
                         </div>
@@ -154,7 +163,7 @@
                                                     <img
                                                         src="{{ asset('upload/sales-manager-images/' . $manager['image']) }}">
                                                 @else
-                                                    <img src="{{ asset('images/profile.png') }}">
+                                                    <img src="{{ asset('images/default-user-2.png') }}">
                                                 @endif
                                             </div>
                                             <div class="sales-manager-content">

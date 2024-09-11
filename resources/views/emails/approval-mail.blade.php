@@ -1,5 +1,4 @@
 
-
 <!DOCTYPE html>
 <html>
 
@@ -32,21 +31,21 @@
                     <td style=" padding: 10px;" >
                         <h1
                             style="color: #601059;font-size: 20px;text-align: center;font-weight:500; margin: 10px 0;line-height:10px;padding:8px">
-                            Your Credentials Have Been Updated</h1>
+                            NEW PLANT CREATED</h1>
                     </td>
                 </tr>
                 <tr>
                     <td valign="top" style="padding: 10px 30px;">
                         <p
                             style="font-size:16px;font-weight: 600;line-height: 24px;text-align:left;color: #25272b;margin: 10px 0;">
-                            Hello {{ $email }}, </p>
+                            Hello Admin,</p>
                     </td>
                 </tr>
                 <tr>
                     <td valign="top" style="padding: 10px 30px;">
                         <p
                             style="font-size: 16px;font-weight: normal;line-height: 24px;text-align:justify;color: #25272b;">
-                            Your credentials have been generated successfully. Below are the login details:</p>
+                            A new plant has been created. Please review and approve the plant as soon as possible.</p>
                     </td>
                 </tr>
 
@@ -54,16 +53,23 @@
                     <td valign="top" style="padding: 10px 30px;">
                         <p
                             style="font-size: 16px;font-weight: normal;line-height: 24px;text-align:justify;color: #25272b;">
-                            <strong>Email:</strong> {{ $email }}<br>
-                            <strong>Password:</strong> {{ $password }}<br>
-                            <strong>Login URL:</strong> <a href="http://showsearch.net/manufacturer/login" style="text-decoration: underline;">http://showsearch.net/manufacturer/login</a><br>
+                            <strong>Plant Name:</strong> {{ $plant_name }}<br>
+                            <strong>Plant Location:</strong> {{ $location }}<br>
+                            <strong>Representative Type:</strong> 
+                                @if($type == 'plant_rep')
+                                    Plant Representative
+                                @else
+                                    Corporate Representative
+                                @endif
+                                <br>
+                        </p>
                     </td>
                 </tr>
 
                 <tr>
                     <td valign="top" style="padding: 10px 30px;">
                         <p
-                            style="font-size: 16px;font-weight: normal;line-height: 24px;text-align:justify;color: #25272b;">Please keep this information secure and do not share it with anyone.</p>
+                            style="font-size: 16px;font-weight: normal;line-height: 24px;text-align:justify;color: #25272b;">  Please log in to the Admin Panel to view and approve this plant.</p>
                     </td>
                 </tr>
 

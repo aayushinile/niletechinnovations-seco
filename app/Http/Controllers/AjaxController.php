@@ -195,7 +195,7 @@ class AjaxController extends Controller
     {
         try {
             $plantId = $request->input('plant_id');
-            $plant = PlantLogin::where('id', $plantId)->first();
+            $plant = Plant::where('id', $plantId)->first();
             if (!$plant) {
                 return response()->json(['status' => false, 'message' => 'Plant not found']);
             }
@@ -214,7 +214,7 @@ class AjaxController extends Controller
     {
         try {
             $plantId = $request->input('plant_id');
-            $plant = PlantLogin::where('id', $plantId)->first();
+            $plant = Plant::where('id', $plantId)->first();
             if (!$plant) {
                 return response()->json(['status' => false, 'message' => 'Plant not found']);
             }
@@ -233,38 +233,84 @@ class AjaxController extends Controller
 
     public function set_status(Request $request)
     {
-        if ($request->has('request_id')) {
-            $ids = $request->input('request_id');
-            $plant = DB::table('plant')
-                         ->where('id', $ids)
-                         ->first();
-            $enquiry = PlantLogin::where('id', $plant->manufacturer_id)->first();
+        try {
+            if ($request->has('plant_ids')) {
+                // Ensure the plant_ids is an array, converting it if it's a comma-separated string
+                $ids = $request->input('plant_ids');
+                
+                if (is_string($ids)) {
+                    $ids = explode(',', $ids);  // Convert comma-separated string to array
+                }
+
+                // Check if the array is not empty
+                if (!empty($ids)) {
+                    // Use the Plant model to update the status for all plants whose ID is in the array
+                    Plant::whereIn('id', $ids)->update(['status' => $request->input('status')]);
             
-            if ($enquiry) {
-                $enquiry->status = $request->input('status');
-                $enquiry->save();
-                return response()->json(['success' => true, 'message' => 'Request status changed successfully']);
+                    return response()->json(['success' => true, 'message' => 'Request status changed successfully for all selected plants']);
+                } else {
+                    return response()->json(['success' => false, 'message' => 'No valid plant IDs provided']);
+                }
             } else {
                 return response()->json(['success' => false, 'message' => 'Something went wrong']);
             }
-        } else {
-            return response()->json(['success' => false, 'message' => 'Something went wrong']);
+        } catch (\Exception $e) {
+            // Log the error or return the error message for debugging
+            return response()->json(['success' => false, 'message' => $e->getMessage()]);
         }
     }
 
 
      public function set_statuss(Request $request)
+     {
+        try {
+            if ($request->has('plant_ids')) {
+                // Ensure the plant_ids is an array, converting it if it's a comma-separated string
+                $ids = $request->input('plant_ids');
+                
+                if (is_string($ids)) {
+                    $ids = explode(',', $ids);  // Convert comma-separated string to array
+                }
+    
+                // Check if the array is not empty
+                if (!empty($ids)) {
+                    // Use the Plant model to update the status for all plants whose ID is in the array
+                    Plant::whereIn('id', $ids)->update(['status' => $request->input('status')]);
+            
+                    return response()->json(['success' => true, 'message' => 'Request status changed successfully for all selected plants']);
+                } else {
+                    return response()->json(['success' => false, 'message' => 'No valid plant IDs provided']);
+                }
+            } else {
+                return response()->json(['success' => false, 'message' => 'Something went wrong']);
+            }
+        } catch (\Exception $e) {
+            // Log the error or return the error message for debugging
+            return response()->json(['success' => false, 'message' => $e->getMessage()]);
+        }
+    }
+
+
+    public function set_statuss_all(Request $request)
     {
         if ($request->has('request_id')) {
             $ids = $request->input('request_id');
-            $enquiry = PlantLogin::where('id', $ids)->first();
-            
-            if ($enquiry) {
-                $enquiry->status = $request->input('status');
-                $enquiry->save();
-                return response()->json(['success' => true, 'message' => 'Request status changed successfully']);
+            $plant = PlantLogin::find($ids);
+            $plants = Plant::where('manufacturer_id',$ids)->get();
+            if ($plant && $plants->isNotEmpty()) {
+                // Update the status of the PlantLogin (manufacturer)
+                $plant->status = $request->input('status');
+                $plant->save();  // Save the updated manufacturer status
+    
+                // Loop through each plant associated with this manufacturer and update the status
+                foreach ($plants as $singlePlant) {
+                    $singlePlant->status = $request->input('status');
+                    $singlePlant->save();  // Save each plant's updated status
+                }
+    
+                return response()->json(['success' => true, 'message' => 'Request status changed successfully for all plants']);
             } else {
-                return response()->json(['success' => false, 'message' => 'Something went wrong']);
+                return response()->json(['success' => false, 'message' => 'Plant or manufacturer not found']);
             }
         } else {
             return response()->json(['success' => false, 'message' => 'Something went wrong']);

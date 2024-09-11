@@ -37,7 +37,7 @@
                                 <div class="user-profile-media">
                                 @if(empty($owner->image))
                                 <img
-                                    src="{{ asset('images/defaultuser.png') }}">
+                                    src="{{ asset('images/default-user-2.png') }}">
                                 @else 
                                 <img src="{{ asset('upload/profile-image/' . $owner->image) }}">
                                 @endif
@@ -126,7 +126,7 @@
     <div class="col-md-2">
         <div class="user-profile-media">
             @if(empty($owner->company_image))
-                <img src="{{ asset('images/defaultuser.png') }}" alt="Default User">
+                <img src="{{ asset('images/default-user-2.png') }}" alt="Default User">
             @else 
                 <img src="{{ asset('upload/profile-image/' . $owner->company_image) }}" alt="User Image">
             @endif
@@ -213,7 +213,7 @@
                                         <div class="contacted-manufacturer-item">
                                             <div class="contacted-manufacturer-item-image">
                                                 <a data-bs-toggle="modal" data-bs-target="#contactedmanufacturer">
-                                                    <img src="{{ $item->image_url ? asset('upload/manufacturer-image/' . $item->image_url) : asset('images/defaultuser.png') }}">
+                                                    <img src="{{ $item->image_url ? asset('upload/manufacturer-image/' . $item->image_url) : asset('images/default-user-2.png') }}">
                                                     </a>
                                             </div>
                                             <div class="contacted-manufacturer-item-text">

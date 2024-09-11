@@ -28,11 +28,6 @@
                     </td>
                 </tr>
                 <tr>
-                    <td style=" padding: 10px;" >
-                        <h1
-                            style="color: #601059;font-size: 20px;text-align: center;font-weight:500; margin: 10px 0;line-height:10px;padding:8px">
-                            NEW CONTACT REQUEST</h1>
-                    </td>
                 </tr>
                 <tr>
                     <td valign="top" style="padding: 10px 30px;">
@@ -64,6 +59,14 @@
                     <td valign="top" style="padding: 10px 30px;">
                         <p
                             style="font-size: 16px;font-weight: normal;line-height: 24px;text-align:justify;color: #25272b;"> Please respond to the inquiry as soon as possible.</p>
+                    </td>
+                </tr>
+
+
+                <tr>
+                    <td valign="top" style="padding: 10px 30px;">
+                        <p
+                            style="font-size: 16px;font-weight: normal;line-height: 24px;text-align:justify;color: #25272b;"> Please respond to the inquiry as soon as possible to provide further         information or assistance.</p>
                     </td>
                 </tr>
 

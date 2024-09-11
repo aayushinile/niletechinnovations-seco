@@ -58,7 +58,7 @@
                                     <p>{{ $total_manufacturer_corp }}</p>
                                     </a>
                                 </div>
-                                <div class="overview-enquiries-img"><img src="images/building-4.svg" height="64"
+                                <div class="overview-enquiries-img"><img src="{{asset('images/building-4.svg')}}" height="64"
                                         alt=""></div>
                             </div>
                         </div>
@@ -160,7 +160,7 @@
                                                     <img
                                                         src="{{ asset('upload/manufacturer-image/' . $image['image_url']) }}">
                                                 @else
-                                                    <img src="{{ asset('images/defaultuser.png') }}">
+                                                    <img src="{{ asset('images/default-user-2.png') }}">
                                                 @endif
                                             </div>
                                             <div class="user-profile-text">

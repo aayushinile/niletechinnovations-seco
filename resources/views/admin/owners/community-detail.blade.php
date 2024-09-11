@@ -10,7 +10,7 @@
         <div class="listed-plants-section">
             <div class="plants-details-head">
                 <div class="plants-details-item">
-                    <div class="plants-details-logo"><img src="{{ asset('images/defaultuser.png') }}"></div>
+                    <div class="plants-details-logo"><img src="{{ asset('images/default-user-2.png') }}"></div>
                     <div class="plants-details-head-text">
                         <h4>{{ $community->community_name }} </h4>
                         <div class="plants-details-location">

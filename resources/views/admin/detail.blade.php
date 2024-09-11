@@ -12,12 +12,11 @@
                 <div class="plants-details-action">
                     @if ($mfs->status == 1)
                         <a class="edit-btn" style="background: var(--red);" data-bs-toggle="modal"
-                            data-bs-target="#inactivePlant" data-plant-id="{{ $mfs['id'] }}"> Mark As Inactive</a>
+                            data-bs-target="#inactivePlant" data-plant-id="{{ $mfs['id'] }}"> Mark As Approve</a>
                     @else
                         <a class="" data-bs-toggle="modal" data-bs-target="#activePlant"
                             data-plant-id="{{ $mfs['id'] }}"
-                            style="background: var(--green);color: var(--white);padding: 12px 20px;border-radius: 5px;font-size: 14px;box-shadow: 0 4px 10px #5f0f5845;display: inline-block;position: relative;">Mark
-                            As Active</a>
+                            style="background: var(--green);color: var(--white);padding: 12px 20px;border-radius: 5px;font-size: 14px;box-shadow: 0 4px 10px #5f0f5845;display: inline-block;position: relative;">UnApprove</a>
                     @endif
                 </div>
             </div>
@@ -26,12 +25,12 @@
                     <div class="col-md-4">
                         <div class="user-profile-item">
                             <div class="user-profile-media">
-                                <img src="{{ asset('images/defaultuser.png') }}">
+                                <img src="{{ asset('images/default-user-2.png') }}">
                             </div>
                             <div class="user-profile-text">
                                 <h2>{{ $manufacturer->full_name ?? 'N/A' }}</h2>
                                 <div class="status-text {{ $mfs->status == 1 ? 'status-active' : 'status-inactive' }}">
-                                    {{ $mfs->status == 1 ? 'Active' : 'Inactive' }}
+                                    {{ $mfs->status == 1 ? 'Approved' : 'Pending' }}
                                 </div>
                             </div>
                         </div>
@@ -85,7 +84,7 @@
                                     <img src="{{ asset('upload/manufacturer-image/' . $image['image_url']) }}">
                                 @endforeach
                             @else
-                                <img src="{{ asset('images/defaultuser.png') }}">
+                                <img src="{{ asset('images/default-user-2.png') }}">
                             @endif
                         </div>
                         <div class="plants-details-head-text">

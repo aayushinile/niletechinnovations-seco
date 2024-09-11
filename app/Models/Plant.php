@@ -30,7 +30,8 @@ class Plant extends Model
         'shipping_cost',
         'from_price_range',
         'to_price_range',
-        'web_link'
+        'web_link',
+        'status',
     ];
 
 

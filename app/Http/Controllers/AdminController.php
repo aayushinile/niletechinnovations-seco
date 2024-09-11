@@ -453,7 +453,10 @@ class AdminController extends Controller
                 ->select(
                     'plant.id as plant_id', // Select and alias the community id
                     'plant.plant_name',
-                    'plant.full_address',   // Select the value from community_attributes
+                    'plant.full_address',
+                    'plant.status', 
+                    'plant.phone',   // Select the value from community_attributes
+                    'plant.email',
                 )
                 ->distinct()
                 ->get();

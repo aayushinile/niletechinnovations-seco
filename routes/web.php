@@ -49,6 +49,7 @@ Route::middleware(['auth:manufacturer'])->group(function () {
     Route::get('manufacturer/profile', [ManufacturerController::class, 'ManufacturerProfile'])->name('profile');
     Route::match(['get', 'post'], 'manufacturer/enquiry', [ManufacturerController::class, 'enquiries'])->name('manufacturer.enquiry');
     Route::match(['get', 'post'], 'manufacturer/manage-locations', [ManufacturerController::class, 'manageLocations'])->name('manufacturer.manage-locations');
+    Route::post('/import-excel', [ManufacturerController::class, 'importExcel'])->name('plants.importExcel');
     Route::get('manufacturer/settings', [ManufacturerController::class, 'settings'])->name('manufacturer.settings');
     Route::post('/manufacturer/settings', [ManufacturerController::class, 'updateSettings'])->name('manufacturer.updateSettings');
     Route::get('/add-plant', [ManufacturerController::class, 'AddPlant'])->name('AddPlant');
@@ -77,6 +78,7 @@ Route::middleware(['auth:manufacturer'])->group(function () {
     Route::post('update-specifications/{id}', [AjaxController::class, 'updateSpecifications'])->name('updateSpecification');
 });
 Route::post("/toggleUserRequestStatus", [AjaxController::class, 'toggleUserRequestStatus'])->name('toggleUserRequestStatus');
+
 Route::group(['prefix' => 'manufacturer', 'as' => 'manufacturer.'], function () {
 
     Route::get("/forget-password", [ManufacturerController::class, 'forget'])->name('forget.password');
@@ -95,6 +97,7 @@ Route::post('/check-email', [ManufacturerController::class, 'checkEmail'])->name
 // Admin routes 
 Route::post('set_status', [AjaxController::class, 'set_status'])->name('set_status');
 Route::post('set_statuss', [AjaxController::class, 'set_statuss'])->name('set_statuss');
+Route::post('set_statuss_all', [AjaxController::class, 'set_statuss_all'])->name('set_statuss_all');
 Route::group(['prefix' => 'admin', 'as' => 'admin.'], function () {
     Route::get('login', [AdminController::class, 'login'])->name('login');
     Route::post('login', [AdminController::class, 'authenticate'])->name('authenticate');

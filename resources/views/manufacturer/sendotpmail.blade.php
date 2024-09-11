@@ -22,11 +22,13 @@
               <tr>
                 <td style="padding:20px"  dir="ltr">
                   <p style="direction:ltr;font-weight:normal;color:#5f6368;word-break:normal;font-size:20px;line-height:32px;color:#5f6368;font-size:16px;line-height:26px;font-weight:normal;color:#25272b">Dear <b>{{ $mailData['name'] ?? 'User' }}</b>,</p>
-                  <p style="direction:ltr;word-break:normal;font-size:16px;line-height:26px;font-weight:normal;color:#25272b">You have requested to change your password. Please find the below details to do the same.</p>
+                  <p style="direction:ltr;word-break:normal;font-size:16px;line-height:26px;font-weight:normal;color:#25272b">We received a request to reset your password. If this was you, simply find the OTP below to create a new password:
+                  </p>
 
                   <p style="direction:ltr;word-break:normal;font-size:16px;line-height:26px;font-weight:normal;color:#25272b">Your One Time Password to change your password is <b>{{ $mailData['code'] }}</b></p>
 
-
+                  <p style="direction:ltr;word-break:normal;font-size:16px;line-height:26px;font-weight:normal;color:#25272b">If you didn’t request a password reset, please ignore this email. Your account will remain secure.
+                  </p>
 
                   <p style="direction:ltr;word-break:normal;font-size:16px;line-height:26px;font-weight:bold;color:#25272b">Warm regards,</p>
                   <p style="direction:ltr;word-break:normal;font-size:16px;line-height:26px;font-weight:normal;color:#25272b">Show Search</p>

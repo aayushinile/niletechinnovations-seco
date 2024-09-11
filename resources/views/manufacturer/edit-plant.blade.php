@@ -797,7 +797,7 @@
                                 <h5>Upload Photos</h5>
                                 <div class="salesUploadphoto">
                                     <div class="Uploadphoto-file1">
-                                        <input type="file" multiple="multiple" id="uploadPhotos-${uniqueId}" class="ssUploadphoto1" name="sales_manager[images][]" onchange="previewImages2(event, 'previewImage-${uniqueId}')">
+                                        <input type="file" multiple="multiple" id="uploadPhotos-${uniqueId}" class="ssUploadphoto1" name="sales_manager[images][]" onchange="previewImages2(event, 'previewImage-${uniqueId}')" accept=".png, .jpg, .jpeg">
                                         <label for="uploadPhotos-${uniqueId}">
                                             <div class="Uploadphoto-text">
                                                 <div class="exportfile-text"><img src="{{ asset('images/upload-icon.svg') }}" height="24"></div>
@@ -906,6 +906,7 @@
     <script src='https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v4.7.0/mapbox-gl-geocoder.min.js'></script>
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDtg_iY8FedOwjt419T7zaT0fHTcTYcwPE&libraries=places">
     </script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
         mapboxgl.accessToken = 'pk.eyJ1IjoidXNlcnMxIiwiYSI6ImNsdGgxdnpsajAwYWcya25yamlvMHBkcGEifQ.qUy8qSuM_7LYMSgWQk215w';
         var input = document.getElementById('geocoder');
@@ -1099,12 +1100,25 @@
 function previewImages(event) {
     var input = event.target;
     var previewContainer = document.getElementById('preview_container');
-
+    const allowedExtensions = ['.png', '.jpg', '.jpeg'];
     if (input.files) {
         filesArray = Array.from(input.files);
         previewContainer.innerHTML = ''; // Clear existing previews
 
         filesArray.forEach((file, index) => {
+            const fileExtension = file.name.slice(((file.name.lastIndexOf(".") - 1) >>> 0) + 2).toLowerCase();
+            if (!allowedExtensions.includes(`.${fileExtension}`)) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Invalid File Type',
+                    text: `Only the following file types are allowed: ${allowedExtensions.join(', ')}`,
+                    confirmButtonText: 'OK'
+                });
+
+                // Clear the file input
+                event.target.value = '';
+                return;
+            }
             var reader = new FileReader();
 
             reader.onload = function(e) {
@@ -1161,8 +1175,23 @@ function deleteImage(index) {
         function previewImage(event, previewId) {
             var input = event.target;
             var preview = document.getElementById(previewId);
-
+            const allowedExtensions = ['.png', '.jpg', '.jpeg'];
             if (input.files && input.files[0]) {
+                const file = files[0];
+                const fileExtension = file.name.slice(((file.name.lastIndexOf(".") - 1) >>> 0) + 2).toLowerCase();
+                if (!allowedExtensions.includes(`.${fileExtension}`)) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Invalid File Type',
+                    text: `Only the following file types are allowed: ${allowedExtensions.join(', ')}`,
+                    confirmButtonText: 'OK'
+                });
+
+                // Clear the file input
+                event.target.value = '';
+                preview.src = ''; // Clear any existing preview
+                return;
+            }
                 var reader = new FileReader();
 
                 reader.onload = function(e) {
@@ -1178,8 +1207,24 @@ function deleteImage(index) {
         function previewImages2(event, previewId) {
             const files = event.target.files;
             const preview = document.getElementById(previewId);
+            const allowedExtensions = ['.png', '.jpg', '.jpeg'];
             if (files && files[0]) {
+                const file = files[0];
+                const fileExtension = file.name.slice(((file.name.lastIndexOf(".") - 1) >>> 0) + 2).toLowerCase();
                 const reader = new FileReader();
+                if (!allowedExtensions.includes(`.${fileExtension}`)) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Invalid File Type',
+                text: `Only the following file types are allowed: ${allowedExtensions.join(', ')}`,
+                confirmButtonText: 'OK'
+            });
+
+            // Clear the file input
+            event.target.value = '';
+            preview.src = ''; // Clear any existing preview
+            return;
+        }
                 reader.onload = function(e) {
                     preview.src = e.target.result;
                 };
