@@ -29,7 +29,7 @@
 
 
                   <p style="direction:ltr;word-break:normal;font-size:16px;line-height:26px;font-weight:bold;color:#25272b">Warm regards,</p>
-                  <p style="direction:ltr;word-break:normal;font-size:16px;line-height:26px;font-weight:normal;color:#25272b">Show Search</p>
+                  <p style="direction:ltr;word-break:normal;font-size:16px;line-height:26px;font-weight:normal;color:#25272b">ShowSearch</p>
 
 
               </td>

@@ -20,14 +20,27 @@
                     <div class="plants-details-head-text">
 
                         <h4>{{ $plant['plant_name'] }}
-                            @if($plant['status'] == 0)
-                            <div class="Verifiedtext" style="color:var(--red)"> <img src="{{asset('images/not-verify.svg')}}"> Pending for Approval
-                                </div>
-                            @else
+                        @if($plant['status'] == 1 && $plant['is_approved'] == 'N')
+                            <div class="Verifiedtext" style="color:var(--red)">
+                                <img src="{{ asset('images/not-verify.svg') }}"> Unapproved
+                            </div>
+                        @elseif($plant['status'] == 1 && $plant['is_approved'] == 'Y')
                             <div class="Verifiedtext">
-                            <img src="{{asset('images/tick.svg')}}"> Approved
-                            </div> 
-                            @endif
+                                <img src="{{ asset('images/tick.svg') }}"> Approved
+                            </div>
+                        @elseif($plant['status'] == 0 && $plant['is_approved'] == 'N')
+                            <div class="Verifiedtext" style="color:var(--red)">
+                                <img src="{{ asset('images/not-verify.svg') }}"> Unapproved
+                            </div>
+                        @elseif($plant['status'] == 0 && is_null($plant['is_approved']))
+                            <div class="Verifiedtext" style="color:var(--red)">
+                                <img src="{{ asset('images/not-verify.svg') }}"> Pending for Approval
+                            </div>
+                        @else
+                            <div class="Verifiedtext" style="color:var(--red)">
+                                <img src="{{ asset('images/not-verify.svg') }}"> Pending
+                            </div>
+                        @endif
                             </h4>
                         <div class="plants-details-location">
                             <img src="{{ asset('images/location-icon.svg') }}">{{ $plant['full_address'] }}

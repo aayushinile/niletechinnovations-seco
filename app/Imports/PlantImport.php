@@ -8,10 +8,21 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
 use Maatwebsite\Excel\Concerns\ToModel;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
+use Maatwebsite\Excel\Concerns\Importable;
+use App\Models\PlantLogin;
 
 use Illuminate\Support\Facades\Log;
 class PlantImport implements ToModel, WithHeadingRow
 {
+    use Importable;
+    protected $mfsId;
+
+
+    public function __construct($mfsId)
+    {
+        $this->mfsId = $mfsId;
+    }
+
     public function model(array $row)
     {
         // Initialize variables
@@ -49,23 +60,24 @@ class PlantImport implements ToModel, WithHeadingRow
             }
         }
 
-        if (!Auth::check()) {
-            Log::error('User is not authenticated.');
-            return null; // Handle accordingly
-        }
+        // if (!Auth::check()) {
+        //     Log::error('User is not authenticated.');
+        //     return null; // Handle accordingly
+        // }
 
-        $authUserId = Auth::user()->id;
+        $authUserId = $this->mfsId;
+        $mfs = PlantLogin::find($authUserId);
         $plantName = $row['plant_name'] ?: 'N/A';
         $plantWebsite = $row['plant_website'];
         $aboutOurHomes = $row['about_our_homes'] ?? null;
         $address = $row['address'];
-        $authUser = Auth::user();
+        // $authUser = Auth::user();
 
         // Create Plant
         if ($plantName !== 'N/A') {
             $plant = Plant::create([
                 'plant_name' => $plantName,
-                'email' => $row['corp_con_email'] ?? $authUser->email,
+                'email' => $row['corp_con_email'] ?? $mfs->email,
                 'web_link' => $plantWebsite,
                 'description' => $aboutOurHomes,
                 'full_address' => $address,

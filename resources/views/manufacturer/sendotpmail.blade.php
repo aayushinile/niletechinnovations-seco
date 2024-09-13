@@ -2,7 +2,9 @@
   <tbody>
     <tr style="border-collapse:collapse;border-spacing:0;padding:0;margin:0">
       <td style="text-align:center;padding:10px;color:#202124" valign="top" style="border-bottom: 1px solid #202124;">
-        <img src="logo.svg" alt="" width="100" height="auto" style="width:100;height:auto;border:0" valign="top" class="CToWUd" data-bit="iit">
+      <a href="{{ URL::to('/') }}" title="{{ config('constant.siteTitle') }}">
+              <img alt="{{ config('constant.siteTitle') }}" src="{{asset('images/logo-updated.png')}}" height="60">
+          </a>
       </td>
     </tr>
     
@@ -31,7 +33,7 @@
                   </p>
 
                   <p style="direction:ltr;word-break:normal;font-size:16px;line-height:26px;font-weight:bold;color:#25272b">Warm regards,</p>
-                  <p style="direction:ltr;word-break:normal;font-size:16px;line-height:26px;font-weight:normal;color:#25272b">Show Search</p>
+                  <p style="direction:ltr;word-break:normal;font-size:16px;line-height:26px;font-weight:normal;color:#25272b">ShowSearch</p>
 
 
               </td>

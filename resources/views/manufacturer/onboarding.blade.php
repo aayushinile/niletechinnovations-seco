@@ -155,8 +155,13 @@
                             </div> -->
                         </div>
                     </div>
+                    <div class="row d-flex">
                     <div class="onboarding-slider-action">
                         <a class="Skipbtn" href="{{ url('manufacturer/login') }}">Create an Account</a>
+                    </div>
+                    <div class="onboarding-slider-action">
+                    <a class="Skipbtn" href="{{ route('contact') }}">Contact Us</a>
+                    </div>
                     </div>
                 </div>
             </div>

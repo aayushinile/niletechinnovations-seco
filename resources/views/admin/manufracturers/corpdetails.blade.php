@@ -67,6 +67,16 @@
             transform: rotate(360deg);
         }
     }
+
+
+    .status-rejected {
+        color: var(--white);
+        background: var(--red);
+    }
+    .status-pending {
+        color: var(--white);
+        background: var(--yellow);
+    }
     </style>
 @endpush
 @section('content')
@@ -87,22 +97,30 @@
                 </div>
                 <div class="search-filter wd5">
                     <div class="row g-1">
-                    <div class="col-md-4">
+                    <div class="col-md-3">
                         <div class="form-group">
                             <a class="btn-bl"  style="background-color: var(--green);"
                                 data-bs-toggle="modal" id="open-activate-modal">Approve</a>
                         </div>
                     </div>
-                    <div class="col-md-4">
+                    <div class="col-md-3">
                         <div class="form-group">
                             <a class="btn-bl" href="" style="background-color: var(--red);"
-                                data-bs-toggle="modal" id="open-inactivate-modal">Disapprove</a>
+                                data-bs-toggle="modal" id="open-inactivate-modal">Unapprove</a>
                         </div>
                     </div>
                     
-                    <div class="col-md-4">
+                    <div class="col-md-3">
                         <a class="ChangePasswordbtn btn-bl" style="background-color: var(--green);" data-bs-toggle="modal" data-bs-target="#ChangePassword"  data-plant-id="{{ $mfs['id'] }}" data-email-id="{{ $mfs['email'] }}">Reset Credentials</a>
                     </div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <a class="addnewplant-btn" href="javascript:void(0);" onclick="document.getElementById('fileInput').click()" style="background-color: var(--green);">
+                                <i class="fas fa-file-excel"></i> Import
+                            </a>
+                        </div> 
+                    </div>
+
                 </div>
             </div>
             </div>
@@ -117,7 +135,7 @@
                                     <h2>{{ $mfs->business_name ?? 'N/A' }}</h2>
                                     <div
                                         class="status-text  {{ $mfs->status == 1 ? 'status-active' : 'status-inactive' }}">
-                                        {{ $mfs->status == 1 ? 'Active' : 'Inactive' }}</div>
+                                        {{ $mfs->status == 1 ? 'Approved' : 'Pending' }}</div>
                                 </div>
                             </div>
                         </div>
@@ -162,7 +180,7 @@
         <div class="added-comminity-card">
             <div class="added-comminity-head">
                 <div class="">
-                    <h2>Added Plants ({{ count($plants) }})</h2>
+                    <h2>Added Plants ({{ $count }})</h2>
                 </div>
                 @if ($plants->isNotEmpty())
                 <div class=" text-right">
@@ -284,10 +302,31 @@
                                                 <div class="user-contact-info">
                                                     <div class="user-contact-info-content">
                                                         <h2>Status</h2>
-                                                        <div
-                                                        class="status-text {{ $item->status == 1 ? 'status-active' : 'status-inactive' }}">
-                                                        {{ $item->status == 1 ? 'Approved' : 'Pending' }}
-                                                    </div>
+                                                        <div class="status-text 
+                                                            @if($item->status == 1 && $item->is_approved == 'N') 
+                                                                status-rejected
+                                                            @elseif($item->status == 1 && $item->is_approved == 'Y') 
+                                                                status-active
+                                                            @elseif($item->status == 0 && $item->is_approved == 'N') 
+                                                                status-rejected
+                                                            @elseif($item->status == 0 && is_null($item->is_approved)) 
+                                                                status-pending
+                                                            @else
+                                                                status-inactive
+                                                            @endif
+                                                        ">
+                                                            @if($item->status == 1 && $item->is_approved == 'N')
+                                                                Unapproved
+                                                            @elseif($item->status == 1 && $item->is_approved == 'Y')
+                                                                Approved
+                                                            @elseif($item->status == 0 && $item->is_approved == 'N')
+                                                                Unapproved
+                                                            @elseif($item->status == 0 && is_null($item->is_approved))
+                                                                Pending
+                                                            @else
+                                                                Pending
+                                                            @endif
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
@@ -414,7 +453,7 @@
                 <div class="modal-body">
                     <div class="ss-modal-delete">
                         {{-- <div class="ss-modal-delete-icon"><img src=""></div> --}}
-                        <p id="delete-message">Are you sure you want to Disapprove these Plants?</p>
+                        <p id="delete-message">Are you sure you want to Unapprove these Plants?</p>
                         <form id="inactivate-form" method="POST">
                             @csrf
                             <input type="hidden" id="plant-ids" name="plant_ids">
@@ -456,10 +495,101 @@
             </div>
         </div>
     </div>
+    <form id="importForm" method="POST" enctype="multipart/form-data" style="display: none;">
+  @csrf
+  <input type="file" name="file" id="fileInput" accept=".xlsx,.xls,.csv" onchange="showModal()" required>
+  <input type="hidden" name="mfs_id" id="mfsIdInput" value="{{ $mfs['id'] }}">
+</form>
+
+
+<div class="modal fade" id="fileModal" tabindex="-1" aria-labelledby="fileModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="fileModalLabel">File Upload</h5>
+      </div>
+      <div class="modal-body">
+        <p id="fileName"></p>
+        <p>Are you sure you want to upload this file?</p> 
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" onclick="submitForm()" style="background-color: var(--pink);">Submit</button>
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div class="loader-container" id="loader">
                 <div class="loader"></div>
             </div>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+     function showModal() {
+    const fileInput = document.getElementById('fileInput');
+    
+    const fileName = fileInput.files[0] ? fileInput.files[0].name : 'No file selected';
+    
+    // Set the file name in the modal
+    document.getElementById('fileName').textContent = fileName;
+
+    // Show the modal
+    $('#fileModal').modal('show');
+  }
+
+
+  function submitForm() {
+    document.getElementById('loader').style.display = 'block'; // Show loader
+
+    const formData = new FormData(document.getElementById('importForm'));
+
+    fetch("{{ route('plants.importExcel') }}", {
+      method: 'POST',
+      body: formData,
+      headers: {
+        'X-CSRF-TOKEN': "{{ csrf_token() }}"
+      }
+    })
+    .then(response => response.json())
+    .then(data => {
+      document.getElementById('loader').style.display = 'none'; // Hide loader
+
+      if (data.success) {
+        Swal.fire({
+          title: 'Success!',
+          text: data.message,
+          icon: 'success',
+          confirmButtonText: 'Ok'
+        }).then(() => {
+          $('#fileModal').modal('hide');
+          window.location.reload(); // Reload the page after closing the modal
+        });
+      } else {
+        Swal.fire({
+          title: 'Error!',
+          text: data.message,
+          icon: 'error',
+          confirmButtonText: 'Ok'
+        });
+      }
+    })
+    .catch(error => {
+      document.getElementById('loader').style.display = 'none'; // Hide loader
+      console.error('Error:', error);
+      Swal.fire({
+        title: 'Error!',
+        text: 'Error during import.',
+        icon: 'error',
+        confirmButtonText: 'Ok'
+      });
+    });
+  }
+
+  function cancelUpload() {
+    $('#fileModal').modal('hide');
+  }
+</script>
 <script>
     $(document).on('click', '.ChangePasswordbtn', function() {
         var plantId = $(this).data('plant-id');
@@ -469,6 +599,14 @@
         $('#plant-id').val(plantId);
         $('#email').val(emailId); // Set the email in the new input field
     });
+    function showLoader() {
+        document.getElementById('loader').style.display = 'block';
+    }
+
+    // Function to hide the loader
+    function hideLoader() {
+        document.getElementById('loader').style.display = 'none';
+    }
 </script>
 <script>
     
@@ -556,6 +694,7 @@ document.querySelectorAll('.toggle-password').forEach(function(icon) {
 <link href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" rel="stylesheet">
     <!-- Toastr JS -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
 $(document).ready(function() {
     // Attach the event handler using event delegation
@@ -641,6 +780,7 @@ $(document).ready(function() {
             e.preventDefault();
             let form = document.getElementById('inactivate-form');
             let formData = new FormData(form);
+            showLoader();
             fetch("{{ route('set_status') }}", {
                     method: 'POST',
                     headers: {
@@ -650,21 +790,44 @@ $(document).ready(function() {
                 })
                 .then(response => response.json())
                 .then(data => {
+                    hideLoader(); 
                     if (data.success) {
+                        Swal.fire({
+                        icon: 'success',
+                        title: 'Success',
+                        text: 'Status updated successfully!'
+                    }).then(() => {
+                        location.reload(); // Reload page after alert is closed
+                    });
                         location.reload();
                     } else {
-                        alert('An error occurred while updating the status.');
+                        Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'An error occurred while updating the status.'
+                    });
                     }
                 })
-                .catch(error => console.error('Error:', error));
-        });
+                .catch(error => {
+                hideLoader(); // Hide loader on error
+                console.error('Error:', error);
+                
+                // Error alert
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'An unexpected error occurred.'
+                });
+            });
+    });
 
 
 
-        document.getElementById('confirm-activate').addEventListener('click', function(e) {
+    document.getElementById('confirm-activate').addEventListener('click', function(e) {
             e.preventDefault();
             let form = document.getElementById('activate-form');
             let formData = new FormData(form);
+            showLoader();
             console.log(formData);
             fetch("{{ route('set_statuss') }}", {
                     method: 'POST',
@@ -675,14 +838,35 @@ $(document).ready(function() {
                 })
                 .then(response => response.json())
                 .then(data => {
+                    hideLoader();
                     if (data.success) {
-                        location.reload();
+                        Swal.fire({
+                        icon: 'success',
+                        title: 'Success',
+                        text: 'Status updated successfully!'
+                    }).then(() => {
+                        location.reload(); // Reload page after alert is closed
+                    });
                     } else {
-                        alert('An error occurred while updating the status.');
+                        Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'An error occurred while updating the status.'
+                    });
                     }
                 })
-                .catch(error => console.error('Error:', error));
-        });
+                .catch(error => {
+                hideLoader(); // Hide loader on error
+                console.error('Error:', error);
+                
+                // Error alert
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'An unexpected error occurred.'
+                });
+            });
+    });
     </script>
     <script>
         document.getElementById('date').addEventListener('change', function() {
@@ -716,4 +900,6 @@ $(document).ready(function() {
         }
     </script>
 @endsection
+
+
 

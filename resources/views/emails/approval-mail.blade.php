@@ -5,7 +5,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Show Search</title>
+    <title>ShowSearch</title>
     <style>
 
     </style>
@@ -45,7 +45,7 @@
                     <td valign="top" style="padding: 10px 30px;">
                         <p
                             style="font-size: 16px;font-weight: normal;line-height: 24px;text-align:justify;color: #25272b;">
-                            A new plant has been created. Please review and approve the plant as soon as possible.</p>
+                            This is to inform you that a new plant has been created by manufacturer. Please review the plant details at your earliest convenience and take action. The details of the newly added plant are as follows:</p>
                     </td>
                 </tr>
 
@@ -53,6 +53,7 @@
                     <td valign="top" style="padding: 10px 30px;">
                         <p
                             style="font-size: 16px;font-weight: normal;line-height: 24px;text-align:justify;color: #25272b;">
+                            <strong>Business Name:</strong> {{ $business_name }}<br>
                             <strong>Plant Name:</strong> {{ $plant_name }}<br>
                             <strong>Plant Location:</strong> {{ $location }}<br>
                             <strong>Representative Type:</strong> 
@@ -69,7 +70,13 @@
                 <tr>
                     <td valign="top" style="padding: 10px 30px;">
                         <p
-                            style="font-size: 16px;font-weight: normal;line-height: 24px;text-align:justify;color: #25272b;">  Please log in to the Admin Panel to view and approve this plant.</p>
+                            style="font-size: 16px;font-weight: normal;line-height: 24px;text-align:justify;color: #25272b;"> Kindly use the below URL to login into the administrator panel.</p>
+                    </td>
+                </tr>
+                <tr>
+                    <td valign="top" style="padding: 10px 30px;">
+                        <p
+                            style="font-size: 16px;font-weight: normal;line-height: 24px;text-align:justify;color: #25272b;">URL -<a href="http://showsearch.net/admin/login" style="text-decoration: underline;">https://showsearch.net/admin/login</p>
                     </td>
                 </tr>
 
@@ -81,7 +88,7 @@
                             Warm regards,</p>
                         <p
                             style="font-size: 16px;font-weight: normal;line-height: 24px;text-align:justify;color: #25272b;">
-                           Show Search</p>
+                           ShowSearch</p>
                     </td>
                 </tr>
             </table>

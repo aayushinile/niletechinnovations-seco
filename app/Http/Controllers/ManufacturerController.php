@@ -10,6 +10,7 @@ use App\Models\Plant;
 use App\Models\PlantLogin;
 use App\Models\Specifications;
 use App\Models\PlantMedia;
+use App\Models\Contact;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Auth;
@@ -457,11 +458,12 @@ class ManufacturerController extends Controller
            // dd($plants_login->plant_type);
             try {
                 $name = 'Admin';
-                $email = 'admin1@yopmail.com';
+                $email = 'spencer@roane.com';
                 $plantName = $plant->plant_name;
                 $type = $plants_login->plant_type;
                 $location = $plant->full_address;
-                Mail::to($email)->send(new ApprovalMail($plantName,$location,$type));
+                $business_name = $plants_login->business_name ?? 'N/A';
+                Mail::to($email)->send(new ApprovalMail($plantName,$location,$type,$business_name));
             } catch (\Throwable $th) {
             }
 
@@ -788,6 +790,7 @@ class ManufacturerController extends Controller
                 'plant.manufacturer_id',
                 'plant.web_link',
                 'plant.status',
+                'plant.is_approved',
                 'plant.shipping_cost',
                 'plant.created_at',
                 'plant.updated_at',
@@ -816,6 +819,7 @@ class ManufacturerController extends Controller
                     'plant_name' => $data->plant_name,
                     'email' => $data->email,
                     'status' => $data->status,
+                    'is_approved' => $data->is_approved,
                     'phone' => $data->phone,
                     'web_link' => $data->web_link,
                     'description' => $data->description,
@@ -1364,9 +1368,10 @@ class ManufacturerController extends Controller
             $request->validate([
                 'file' => 'required|file|mimes:xlsx,xls,csv|max:2048',
             ]);
-
+            $mfsId = $request->mfs_id;
             // Import the file
-            Excel::import(new PlantImport, $request->file('file'));
+            set_time_limit(0);
+            Excel::import(new PlantImport($mfsId), $request->file('file'));
 
             // Return success response
             return response()->json(['success' => true, 'message' => 'Plants imported successfully.']);
@@ -1375,6 +1380,29 @@ class ManufacturerController extends Controller
             Log::error('Error during import: ' . $e->getMessage());
             return response()->json(['success' => false, 'message' => 'Error during import: ' . $e->getMessage()]);
         }
+    }
+
+
+
+    public function saveContact(Request $request)
+    {
+        // Validate only the email field as required
+        $request->validate([
+            'email' => 'required|email|max:255',
+        ]);
+
+        // Save the data to the database, using null for optional fields
+        Contact::create([
+            'first_name' => $request->input('first_name', null),
+            'last_name' => $request->input('last_name', null),
+            'email' => $request->input('email'),
+            'phone' => $request->input('phone', null),
+            'message' => $request->input('message', null),
+            'created_at' => Carbon::now(),
+        ]);
+
+        // Return a success response
+        return redirect()->back()->with('success', 'Your form has been sent successfully!');
     }
     
 }

@@ -32,6 +32,7 @@ class Plant extends Model
         'to_price_range',
         'web_link',
         'status',
+        'is_approved'
     ];
 
 

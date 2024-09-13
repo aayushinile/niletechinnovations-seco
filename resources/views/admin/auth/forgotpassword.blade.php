@@ -4,7 +4,7 @@
 <head>
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Show Search</title>
+    <title>ShowSearch</title>
     <link rel="stylesheet" type="text/css" href="css/auth.css">
 	<script src="js/jquery-3.7.1.min.js" type="text/javascript"></script>
     <script src="plugins/bootstrap/js/bootstrap.bundle.min.js" type="text/javascript"></script>

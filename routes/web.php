@@ -33,6 +33,9 @@ Route::get('/payment', function () {
 Route::get('pages/privacy_policy', function () {
     return view("pages.privacy");
 });
+Route::get('/contact', function () {
+    return view("pages.support");
+})->name('contact');
 Route::get('pages/terms-and-conditions', function () {
     return view("pages.termsconditions");
 });
@@ -42,6 +45,7 @@ Route::get('/payment/success', function () {
 Route::get('/payment/failure', function () {
     return 'failure';
 });
+Route::post('/contact-us', [ManufacturerController::class, 'saveContact'])->name('contact.save');
 Route::get('manufacturer/login', [ManufacturerController::class, 'loginManufacturer'])->name('manufacturer.login');
 Route::post('manufacturer/login', [ManufacturerController::class, 'authenticate']);
 Route::middleware(['auth:manufacturer'])->group(function () {
@@ -49,7 +53,7 @@ Route::middleware(['auth:manufacturer'])->group(function () {
     Route::get('manufacturer/profile', [ManufacturerController::class, 'ManufacturerProfile'])->name('profile');
     Route::match(['get', 'post'], 'manufacturer/enquiry', [ManufacturerController::class, 'enquiries'])->name('manufacturer.enquiry');
     Route::match(['get', 'post'], 'manufacturer/manage-locations', [ManufacturerController::class, 'manageLocations'])->name('manufacturer.manage-locations');
-    Route::post('/import-excel', [ManufacturerController::class, 'importExcel'])->name('plants.importExcel');
+    
     Route::get('manufacturer/settings', [ManufacturerController::class, 'settings'])->name('manufacturer.settings');
     Route::post('/manufacturer/settings', [ManufacturerController::class, 'updateSettings'])->name('manufacturer.updateSettings');
     Route::get('/add-plant', [ManufacturerController::class, 'AddPlant'])->name('AddPlant');
@@ -58,6 +62,7 @@ Route::middleware(['auth:manufacturer'])->group(function () {
     Route::post('/manufacturer/update-password/{id}', [ManufacturerController::class, 'updateManufacturerPassword'])->name('manufacturer.updatePassword');
 
     Route::post('/manufacturers', [ManufacturerController::class, 'saveManufacturer']);
+    
     Route::put('/manufacturers/{id}', [ManufacturerController::class, 'updateManufacturer'])->name('manufacturers.update');
     Route::post('/plant', [ManufacturerController::class, 'savePlant'])->name('savePlant');
     Route::post('/update-plant/{id}', [ManufacturerController::class, 'updatePlant'])->name('updatePlant');
@@ -77,8 +82,12 @@ Route::middleware(['auth:manufacturer'])->group(function () {
     Route::post("/delete-profile-photo/{id}", [ManufacturerController::class, 'deleteProfilePhoto'])->name('delete-profile-photo');
     Route::post('update-specifications/{id}', [AjaxController::class, 'updateSpecifications'])->name('updateSpecification');
 });
-Route::post("/toggleUserRequestStatus", [AjaxController::class, 'toggleUserRequestStatus'])->name('toggleUserRequestStatus');
 
+Route::get('/edit-plant-admin/{id}', [AdminController::class, 'EditPlant'])->name('EditPlantAdmin');
+Route::post('/update-plant-admin/{id}', [AdminController::class, 'updatePlantAdmin'])->name('updatePlantAdmin');
+Route::post("/toggleUserRequestStatus", [AjaxController::class, 'toggleUserRequestStatus'])->name('toggleUserRequestStatus');
+Route::post('/import-excel', [ManufacturerController::class, 'importExcel'])->name('plants.importExcel');
+Route::post('/manufacturers-admin', [AdminController::class, 'saveManufacturerAdmin'])->name('saveManufacturerAdmin');
 Route::group(['prefix' => 'manufacturer', 'as' => 'manufacturer.'], function () {
 
     Route::get("/forget-password", [ManufacturerController::class, 'forget'])->name('forget.password');
@@ -130,10 +139,12 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.'], function () {
 
         // manufracturers
         Route::get('plants', [AdminController::class, 'manufracturers'])->name('manufracturers');
+        
         Route::get('corporate/plants', [AdminController::class, 'Corporatemanufracturers'])->name('manufracturers.corporate');
         Route::get('plants/requests', [AdminController::class, 'manufracturers_requests'])->name('manufracturers.requests');
         Route::post('plants/requests/approve/{id}', [AdminController::class, 'manufracturers_requests_approve'])->name('manufracturers.requests.approve');
         Route::get('plants/{slug}', [AdminController::class, 'manufracturersShow'])->name('manufracturers.show');
+        
         Route::get('corporate/plants/{slug}', [AdminController::class, 'manufracturersCorpShow'])->name('manufracturers.corporateshow');
 
 

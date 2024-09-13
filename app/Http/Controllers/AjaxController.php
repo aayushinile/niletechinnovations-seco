@@ -12,6 +12,8 @@ use Illuminate\Support\Facades\Auth;
 use App\Models\PlantSalesManager;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
+use Mail;
+use App\Mail\ApprovedPlantMail;
 
 class AjaxController extends Controller
 {
@@ -194,59 +196,98 @@ class AjaxController extends Controller
     public function activatePlant(Request $request)
     {
         try {
-            $plantId = $request->input('plant_id');
-            $plant = Plant::where('id', $plantId)->first();
-            if (!$plant) {
-                return response()->json(['status' => false, 'message' => 'Plant not found']);
+            if ($request->has('plant_id')) {
+                // Ensure the plant_ids is an array, converting it if it's a comma-separated string
+                $ids = $request->input('plant_id');
+    
+                if (is_string($ids)) {
+                    $ids = explode(',', $ids);  // Convert comma-separated string to array
+                }
+    
+                // Check if the array is not empty
+                if (!empty($ids)) {
+                    // Get the new status from the request
+                    $status = 1;
+    
+                    // Prepare the update data
+                    $updateData = ['status' => $status];
+    
+                    // Check if the status is 1 and set the is_approved column to 'Y'
+                    if ($status == 1) {
+                        $updateData['is_approved'] = 'Y';
+                    }
+                    // Check if the status is 0 and set the is_approved column to 'N'
+                    elseif ($status == 0) {
+                        $updateData['is_approved'] = 'N';
+                    }
+    
+                    // Use the Plant model to update the status and is_approved column for all plants whose ID is in the array
+                    Plant::whereIn('id', $ids)->update($updateData);
+                    $plants = Plant::whereIn('id', $ids)->get();
+                    foreach ($plants as $plant) {
+                        $subject = $status == 1 ? 'ShowSearch - Plant Details Approved' : 'ShowSearch - Plant Details Unapproved';  // Set dynamic subject based on status
+                        $plantEmail = $plant->email;  // Assuming 'email' is a field in the plant table
+
+                        try {
+                            // Send mail to the plant's email
+                            Mail::to($plantEmail)->send(new ApprovedPlantMail($status, $subject, $plant));
+                        } catch (\Throwable $th) {
+                        }
+                    }
+                    return response()->json(['success' => true, 'message' => 'Request status changed successfully for all selected plants']);
+                } else {
+                    return response()->json(['success' => false, 'message' => 'No valid plant IDs provided']);
+                }
+            } else {
+                return response()->json(['success' => false, 'message' => 'Something went wrong']);
             }
-
-            // Update the plant status
-            $plant->status = 1;
-            $plant->save();
-
-            return response()->json(['status' => true, 'message' => 'Plant activated successfully']);
         } catch (\Exception $e) {
-            return response()->json(['status' => false, 'message' => 'An error occurred while activating the plant']);
+            // Log the error or return the error message for debugging
+            return response()->json(['success' => false, 'message' => $e->getMessage()]);
         }
     }
 
     public function inactivatePlant(Request $request)
     {
         try {
-            $plantId = $request->input('plant_id');
-            $plant = Plant::where('id', $plantId)->first();
-            if (!$plant) {
-                return response()->json(['status' => false, 'message' => 'Plant not found']);
-            }
-
-            // Update the plant status
-            $plant->status = 0;
-            $plant->save();
-
-            return response()->json(['status' => true, 'message' => 'Plant activated successfully']);
-        } catch (\Exception $e) {
-            return response()->json(['status' => false, 'message' => 'An error occurred while activating the plant']);
-        }
-    }
-
-
-
-    public function set_status(Request $request)
-    {
-        try {
-            if ($request->has('plant_ids')) {
+            if ($request->has('plant_id')) {
                 // Ensure the plant_ids is an array, converting it if it's a comma-separated string
-                $ids = $request->input('plant_ids');
-                
+                $ids = $request->input('plant_id');
+    
                 if (is_string($ids)) {
                     $ids = explode(',', $ids);  // Convert comma-separated string to array
                 }
-
+    
                 // Check if the array is not empty
                 if (!empty($ids)) {
-                    // Use the Plant model to update the status for all plants whose ID is in the array
-                    Plant::whereIn('id', $ids)->update(['status' => $request->input('status')]);
-            
+                    // Get the new status from the request
+                    $status = 0;
+    
+                    // Prepare the update data
+                    $updateData = ['status' => $status];
+    
+                    // Check if the status is 1 and set the is_approved column to 'Y'
+                    if ($status == 1) {
+                        $updateData['is_approved'] = 'Y';
+                    }
+                    // Check if the status is 0 and set the is_approved column to 'N'
+                    elseif ($status == 0) {
+                        $updateData['is_approved'] = 'N';
+                    }
+    
+                    // Use the Plant model to update the status and is_approved column for all plants whose ID is in the array
+                    Plant::whereIn('id', $ids)->update($updateData);
+                    $plants = Plant::whereIn('id', $ids)->get();
+                    foreach ($plants as $plant) {
+                        $subject = $status == 1 ? 'ShowSearch - Plant Details Approved' : 'ShowSearch - Plant Details Unapproved';  // Set dynamic subject based on status
+                        $plantEmail = $plant->email;  // Assuming 'email' is a field in the plant table
+
+                        try {
+                            // Send mail to the plant's email
+                            Mail::to($plantEmail)->send(new ApprovedPlantMail($status, $subject, $plant));
+                        } catch (\Throwable $th) {
+                        }
+                    }
                     return response()->json(['success' => true, 'message' => 'Request status changed successfully for all selected plants']);
                 } else {
                     return response()->json(['success' => false, 'message' => 'No valid plant IDs provided']);
@@ -261,22 +302,105 @@ class AjaxController extends Controller
     }
 
 
+
+    public function set_status(Request $request)
+{
+    try {
+        if ($request->has('plant_ids')) {
+            // Ensure the plant_ids is an array, converting it if it's a comma-separated string
+            $ids = $request->input('plant_ids');
+
+            if (is_string($ids)) {
+                $ids = explode(',', $ids);  // Convert comma-separated string to array
+            }
+
+            // Check if the array is not empty
+            if (!empty($ids)) {
+                // Get the new status from the request
+                $status = $request->input('status');
+
+                // Prepare the update data
+                $updateData = ['status' => $status];
+
+                // Check if the status is 1 and set the is_approved column to 'Y'
+                if ($status == 1) {
+                    $updateData['is_approved'] = 'Y';
+                }
+                // Check if the status is 0 and set the is_approved column to 'N'
+                elseif ($status == 0) {
+                    $updateData['is_approved'] = 'N';
+                }
+
+                
+                // Use the Plant model to update the status and is_approved column for all plants whose ID is in the array
+                Plant::whereIn('id', $ids)->update($updateData);
+                $plants = Plant::whereIn('id', $ids)->get();
+                foreach ($plants as $plant) {
+                    $subject = $status == 1 ? 'ShowSearch - Plant Details Approved' : 'ShowSearch - Plant Details Unapproved';  // Set dynamic subject based on status
+                    $plantEmail = $plant->email;  // Assuming 'email' is a field in the plant table
+
+                    try {
+                        // Send mail to the plant's email
+                        Mail::to($plantEmail)->send(new ApprovedPlantMail($status, $subject, $plant));
+                    } catch (\Throwable $th) {
+                    }
+                }
+
+                return response()->json(['success' => true, 'message' => 'Request status changed successfully for all selected plants']);
+            } else {
+                return response()->json(['success' => false, 'message' => 'No valid plant IDs provided']);
+            }
+        } else {
+            return response()->json(['success' => false, 'message' => 'Something went wrong']);
+        }
+    } catch (\Exception $e) {
+        // Log the error or return the error message for debugging
+        return response()->json(['success' => false, 'message' => $e->getMessage()]);
+    }
+}
+
+
      public function set_statuss(Request $request)
      {
         try {
             if ($request->has('plant_ids')) {
                 // Ensure the plant_ids is an array, converting it if it's a comma-separated string
                 $ids = $request->input('plant_ids');
-                
+    
                 if (is_string($ids)) {
                     $ids = explode(',', $ids);  // Convert comma-separated string to array
                 }
     
                 // Check if the array is not empty
                 if (!empty($ids)) {
-                    // Use the Plant model to update the status for all plants whose ID is in the array
-                    Plant::whereIn('id', $ids)->update(['status' => $request->input('status')]);
-            
+                    // Get the new status from the request
+                    $status = $request->input('status');
+    
+                    // Prepare the update data
+                    $updateData = ['status' => $status];
+    
+                    // Check if the status is 1 and set the is_approved column to 'Y'
+                    if ($status == 1) {
+                        $updateData['is_approved'] = 'Y';
+                    }
+                    // Check if the status is 0 and set the is_approved column to 'N'
+                    elseif ($status == 0) {
+                        $updateData['is_approved'] = 'N';
+                    }
+    
+                    // Use the Plant model to update the status and is_approved column for all plants whose ID is in the array
+                    Plant::whereIn('id', $ids)->update($updateData);
+                    $plants = Plant::whereIn('id', $ids)->get();
+                    foreach ($plants as $plant) {
+                        $subject = $status == 1 ? 'ShowSearch - Plant Details Approved' : 'ShowSearch - Plant Details Unapproved';  // Set dynamic subject based on status
+                        $plantEmail = $plant->email;  // Assuming 'email' is a field in the plant table
+
+                        try {
+                            // Send mail to the plant's email
+                            Mail::to($plantEmail)->send(new ApprovedPlantMail($status, $subject, $plant));
+                        } catch (\Throwable $th) {
+                        }
+                    }
                     return response()->json(['success' => true, 'message' => 'Request status changed successfully for all selected plants']);
                 } else {
                     return response()->json(['success' => false, 'message' => 'No valid plant IDs provided']);

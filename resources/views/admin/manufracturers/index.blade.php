@@ -94,6 +94,60 @@
         .toggle__input:checked + .toggle__fill:before {
             transform: translateX(26px);
         }
+        .status-rejected {
+            color: var(--white);
+            background: var(--red);
+        }
+        .status-pending {
+            color: var(--white);
+            background: var(--yellow);
+        }
+
+        .loader-container {
+        position: fixed;
+        z-index: 9999;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        /* Semi-transparent black overlay */
+        display: none;
+        /* Initially hidden */
+        justify-content: center;
+        align-items: center;
+    }
+
+    .loader {
+        border: 8px solid #f3f3f3;
+        /* Light grey */
+        border-top: 8px solid #3498db;
+        /* Blue */
+        border-radius: 50%;
+        width: 50px;
+        height: 50px;
+        animation: spin 1s linear infinite;
+        position: relative;
+        top: 46%;
+        left: 46%;
+
+
+    }
+
+    .loader-container.show {
+        display: flex;
+    }
+
+
+    @keyframes spin {
+        0% {
+            transform: rotate(0deg);
+        }
+
+        100% {
+            transform: rotate(360deg);
+        }
+    }
     </style>
 @endpush
 @section('content')
@@ -167,7 +221,7 @@
                         <div class="col-md-3">
                             <div class="form-group">
                                 <a class="btn-bl" href="" style="background-color: var(--red);"
-                                    data-bs-toggle="modal" id="open-inactivate-modal">Disapprove</a>
+                                    data-bs-toggle="modal" id="open-inactivate-modal">Unapprove</a>
                             </div>
                         </div>
                     </div>
@@ -270,10 +324,35 @@
                                                 <div class="user-contact-info">
                                                     <div class="user-contact-info-content">
                                                         <h2>Status</h2>
-                                                        <div
-                                                        class="status-text {{ $item->status == 1 ? 'status-active' : 'status-inactive' }}">
-                                                        {{ $item->status == 1 ? 'Approved' : 'Pending' }}
-                                                    </div>
+                                                        <div class="status-text 
+                                                            @if($item->status == 1 && $item->is_approved == 'N') 
+                                                                status-rejected
+                                                            @elseif($item->status == 1 && $item->is_approved == 'Y') 
+                                                                status-active
+                                                            @elseif(is_null($item->status) && is_null($item->is_approved)) 
+                                                            status-pending
+                                                            @elseif($item->status == 0 && $item->is_approved == 'N') 
+                                                                status-rejected
+                                                            @elseif($item->status == 0 && is_null($item->is_approved)) 
+                                                                status-pending
+                                                            @else
+                                                                status-pending
+                                                            @endif
+                                                        ">
+                                                            @if($item->status == 1 && $item->is_approved == 'N')
+                                                                Unapproved
+                                                            @elseif($item->status == 1 && $item->is_approved == 'Y')
+                                                                Approved
+                                                            @elseif($item->status == 0 && $item->is_approved == 'N')
+                                                                Unapproved
+                                                            @elseif(is_null($item->status) && is_null($item->is_approved)) 
+                                                                Pending
+                                                            @elseif($item->status == 0 && is_null($item->is_approved))
+                                                                Pending
+                                                            @else
+                                                                Pending
+                                                            @endif
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
@@ -346,7 +425,7 @@
                 <div class="modal-body">
                     <div class="ss-modal-delete">
                         {{-- <div class="ss-modal-delete-icon"><img src=""></div> --}}
-                        <p id="delete-message">Are you sure you want to Disapprove these Plants?</p>
+                        <p id="delete-message">Are you sure you want to Unapprove these Plants?</p>
                         <form id="inactivate-form" method="POST">
                             @csrf
                             <input type="hidden" id="plant-ids" name="plant_ids">
@@ -388,10 +467,22 @@
             </div>
         </div>
     </div>
+    <div class="loader-container" id="loader">
+                <div class="loader"></div>
+            </div>
+            <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" rel="stylesheet">
     <!-- Toastr JS -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
     <script>
+         function showLoader() {
+        document.getElementById('loader').style.display = 'block';
+    }
+
+    // Function to hide the loader
+    function hideLoader() {
+        document.getElementById('loader').style.display = 'none';
+    }
 $(document).ready(function() {
     // Attach the event handler using event delegation
     $(document).on('change', '.toggle__input', function() {
@@ -476,6 +567,7 @@ $(document).ready(function() {
             e.preventDefault();
             let form = document.getElementById('inactivate-form');
             let formData = new FormData(form);
+            showLoader();
             fetch("{{ route('set_status') }}", {
                     method: 'POST',
                     headers: {
@@ -485,14 +577,36 @@ $(document).ready(function() {
                 })
                 .then(response => response.json())
                 .then(data => {
+                    hideLoader(); 
                     if (data.success) {
+                        Swal.fire({
+                        icon: 'success',
+                        title: 'Success',
+                        text: 'Status updated successfully!'
+                    }).then(() => {
+                        location.reload(); // Reload page after alert is closed
+                    });
                         location.reload();
                     } else {
-                        alert('An error occurred while updating the status.');
+                        Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'An error occurred while updating the status.'
+                    });
                     }
                 })
-                .catch(error => console.error('Error:', error));
-        });
+                .catch(error => {
+                hideLoader(); // Hide loader on error
+                console.error('Error:', error);
+                
+                // Error alert
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'An unexpected error occurred.'
+                });
+            });
+    });
 
 
 
@@ -500,6 +614,7 @@ $(document).ready(function() {
             e.preventDefault();
             let form = document.getElementById('activate-form');
             let formData = new FormData(form);
+            showLoader();
             console.log(formData);
             fetch("{{ route('set_statuss') }}", {
                     method: 'POST',
@@ -510,14 +625,35 @@ $(document).ready(function() {
                 })
                 .then(response => response.json())
                 .then(data => {
+                    hideLoader();
                     if (data.success) {
-                        location.reload();
+                        Swal.fire({
+                        icon: 'success',
+                        title: 'Success',
+                        text: 'Status updated successfully!'
+                    }).then(() => {
+                        location.reload(); // Reload page after alert is closed
+                    });
                     } else {
-                        alert('An error occurred while updating the status.');
+                        Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'An error occurred while updating the status.'
+                    });
                     }
                 })
-                .catch(error => console.error('Error:', error));
-        });
+                .catch(error => {
+                hideLoader(); // Hide loader on error
+                console.error('Error:', error);
+                
+                // Error alert
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'An unexpected error occurred.'
+                });
+            });
+    });
     </script>
     <script>
         document.getElementById('date').addEventListener('change', function() {

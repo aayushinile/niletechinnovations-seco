@@ -1,6 +1,7 @@
 @extends('admin.layouts')
 @push('css')
     <link rel="stylesheet" type="text/css" href="{{ asset('admin/css/manufacturers.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
     <style>
        .password-wrapper {
     position: relative;
@@ -64,6 +65,15 @@
             transform: rotate(360deg);
         }
     }
+
+    .status-rejected {
+        color: var(--white);
+        background: var(--red);
+    }
+    .status-pending {
+        color: var(--white);
+        background: var(--yellow);
+    }
     </style>
 @endpush
 @section('content')
@@ -71,12 +81,18 @@
         <div class="ss-heading-section">
             <h2>Plant Details</h2>
         </div>
+        @if (session('success'))
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                {{ session('success') }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        @endif
         <div class="listed-plants-section">
             <div class="plants-details-head" style="justify-content:end;">
                 <div class="plants-details-action">
                     @if ($plant->status == 1)
                         <a class="edit-btn" style="background: var(--red);cursor:pointer !important;font-size: 14px;" data-bs-toggle="modal"
-                            data-bs-target="#inactivePlant" data-plant-id="{{ $plant['id'] }}"> Disapprove</a>
+                            data-bs-target="#inactivePlant" data-plant-id="{{ $plant['id'] }}"> Unapprove</a>
                     @else
                         <a class="" data-bs-toggle="modal" data-bs-target="#activePlant"
                             data-plant-id="{{ $plant['id'] }}"
@@ -86,10 +102,15 @@
                     @if($mfs->plant_type == 'plant_rep')
                     <a class="ChangePasswordbtn" data-bs-toggle="modal" data-bs-target="#ChangePassword" style="background: var(--green);color: var(--white);padding: 12px 20px;border-radius: 5px;font-size: 14px;box-shadow: 0 4px 10px #5f0f5845;display: inline-block;position: relative;cursor:pointer" data-plant-id="{{ $mfs['id'] }}" data-email-id="{{ $mfs['email'] }}">Reset Credentials</a>
                     @endif
+
+                    <a href="{{ url('edit-plant-admin/' .$plant['id']) }}"
+                        style="background: var(--green);color: var(--white);padding: 12px 20px;border-radius: 5px;font-size: 14px;box-shadow: 0 4px 10px #5f0f5845;display: inline-block;position: relative;cursor:pointer">Edit Plant</a>
                 </div>
             </div>
+            
             <div class="user-table-item">
                 <div class="row g-1 align-items-center">
+                
                     <div class="col-md-4">
                         <div class="user-profile-item">
                             <div class="user-profile-media">
@@ -100,13 +121,39 @@
                             if($mfs->plant_type === 'corp_rep'){
                                 $type =  'Corp. Representative';
                             }elseif($mfs->plant_type === 'plant_rep'){
-                                $type = ' Plant Representative';
+                                $type = 'Plant Representative';
                             }
                             @endphp
                             <div class="user-profile-text">
-                                <h2>{{ $mfs->plant_name ?? 'N/A' }}({{ $type ?? 'N/A' }})</h2>
-                                <div class="status-text {{ $plant->status == 1 ? 'status-active' : 'status-inactive' }}">
-                                    {{ $plant->status == 1 ? 'Approved' : 'Pending' }}
+                                <h2>{{ $mfs->plant_name ?? 'N/A'}}({{$type ?? 'N/A'}})</h2>
+                                <div class="status-text 
+                                    @if($plant->status == 1 && $plant->is_approved == 'N') 
+                                        status-rejected
+                                    @elseif($plant->status == 1 && $plant->is_approved == 'Y') 
+                                        status-active
+                                    @elseif(is_null($plant->status) && is_null($plant->is_approved)) 
+                                    status-pending
+                                    @elseif($plant->status == 0 && $plant->is_approved == 'N') 
+                                        status-rejected
+                                    @elseif($plant->status == 0 && is_null($plant->is_approved)) 
+                                        status-pending
+                                    @else
+                                        status-pending
+                                    @endif
+                                ">
+                                    @if($plant->status == 1 && $plant->is_approved == 'N')
+                                        Unapproved
+                                    @elseif($plant->status == 1 && $plant->is_approved == 'Y')
+                                        Approved
+                                    @elseif($plant->status == 0 && $plant->is_approved == 'N')
+                                        Unapproved
+                                    @elseif(is_null($plant->status) && is_null($plant->is_approved)) 
+                                        Pending
+                                    @elseif($plant->status == 0 && is_null($plant->is_approved))
+                                        Pending
+                                    @else
+                                        Pending
+                                    @endif
                                 </div>
                             </div>
                         </div>
@@ -292,7 +339,7 @@
                                 </div>
 
                                 <div class="contact-item-info">
-                                    <img src="{{ asset('images/sms.svg') }}"> {{ $mfs['email'] ?? 'N/A' }}
+                                    <img src="{{ asset('images/sms.svg') }}"> {{ $plant['email'] ?? 'N/A' }}
                                 </div>
                                 <div class="contact-item-info">
                                     <img src="{{ asset('images/ic-website.svg') }}"> {{ $plant['web_link'] ?? 'N/A' }}
@@ -327,7 +374,7 @@
                                                         @endif
                                                     </div>
                                                     <div class="sales-manager-contact">
-                                                        <img src="{{ asset('images/sms.svg') }}"> {{ $manager['email'] }}
+                                                        <img src="{{ asset('images/sms.svg') }}"> {{ $manager['email'] ?? 'N/A'}}
                                                     </div>
                                                 </div>
                                             </div>
@@ -377,7 +424,7 @@
                 <div class="modal-content">
                     <div class="modal-body">
                         <div class="ss-modal-delete">
-                            <p id="delete-message">Are you sure you want to Approved this Plant?</p>
+                            <p id="delete-message">Are you sure you want to Approve this Plant?</p>
                             <form id="activate-form" method="POST">
                                 @csrf
                                 <input type="hidden" id="plant-id" name="plant_id">
@@ -400,7 +447,7 @@
                 <div class="modal-content">
                     <div class="modal-body">
                         <div class="ss-modal-delete">
-                            <p id="delete-message">Are you sure you want to Disapprove this Plant?</p>
+                            <p id="delete-message">Are you sure you want to Unapprove this Plant?</p>
                             <form id="inactivate-form" method="POST">
                                 @csrf
                                 <input type="hidden" id="plant-id" name="plant_id">
@@ -468,6 +515,7 @@
 <div class="loader-container" id="loader">
                 <div class="loader"></div>
             </div>
+            <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
     $(document).on('click', '.ChangePasswordbtn', function() {
         var plantId = $(this).data('plant-id');
@@ -477,6 +525,15 @@
         $('#plant-id').val(plantId);
         $('#email').val(emailId); // Set the email in the new input field
     });
+
+    function showLoader() {
+        document.getElementById('loader').style.display = 'block';
+    }
+
+    // Function to hide the loader
+    function hideLoader() {
+        document.getElementById('loader').style.display = 'none';
+    }
 </script>
 
         <script>
@@ -490,48 +547,90 @@
 
                 // Handle form submission via AJAX
                 $('#confirm-activate').on('click', function() {
-                    var plantId = $('#plant-id').val();
-                    $.ajax({
-                        url: '{{ route('admin.activate.plant') }}', // Adjust the URL to match your route
-                        type: 'POST',
-                        data: {
-                            _token: '{{ csrf_token() }}',
-                            plant_id: plantId
-                        },
-                        success: function(response) {
-                            // Close the modal
-                            $('#activePlant').modal('hide');
-                            // Reload the page
-                            location.reload();
-                        },
-                        error: function(xhr) {
-                            alert('An error occurred while activating the plant.');
-                        }
-                    });
-                });
+            var plantId = $('#plant-id').val();
+            
+            // Show the loader before the request
+            showLoader();
+            
+            $.ajax({
+                url: '{{ route('admin.activate.plant') }}', // Adjust the URL to match your route
+                type: 'POST',
+                data: {
+                    _token: '{{ csrf_token() }}',
+                    plant_id: plantId
+                },
+                success: function(response) {
+                    // Hide the loader
+                    hideLoader();
 
-
-                $('#confirm-inactivate').on('click', function() {
-                    var plantId = $('#plant-id').val();
-                    $.ajax({
-                        url: '{{ route('admin.inactivate.plant') }}', // Adjust the URL to match your route
-                        type: 'POST',
-                        data: {
-                            _token: '{{ csrf_token() }}',
-                            plant_id: plantId
-                        },
-                        success: function(response) {
-                            // Close the modal
-                            $('#inactivePlant').modal('hide');
-                            // Reload the page
-                            location.reload();
-                        },
-                        error: function(xhr) {
-                            alert('An error occurred while activating the plant.');
-                        }
+                    // Success message using Swal
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Activated!',
+                        text: 'Plant has been successfully activated.'
+                    }).then(() => {
+                        // Close the modal and reload the page after alert is closed
+                        $('#activePlant').modal('hide');
+                        location.reload();
                     });
-                });
+                },
+                error: function(xhr) {
+                    // Hide the loader
+                    hideLoader();
+
+                    // Error message using Swal
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error!',
+                        text: 'An error occurred while activating the plant.'
+                    });
+                }
             });
+        });
+
+        // Handle form submission for inactivating plant via AJAX
+        $('#confirm-inactivate').on('click', function() {
+            var plantId = $('#plant-id').val();
+            
+            // Show the loader before the request
+            showLoader();
+            
+            $.ajax({
+                url: '{{ route('admin.inactivate.plant') }}', // Adjust the URL to match your route
+                type: 'POST',
+                data: {
+                    _token: '{{ csrf_token() }}',
+                    plant_id: plantId
+                },
+                success: function(response) {
+                    // Hide the loader
+                    hideLoader();
+
+                    // Success message using Swal
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Inactivated!',
+                        text: 'Plant has been successfully inactivated.'
+                    }).then(() => {
+                        // Close the modal and reload the page after alert is closed
+                        $('#inactivePlant').modal('hide');
+                        location.reload();
+                    });
+                },
+                error: function(xhr) {
+                    // Hide the loader
+                    hideLoader();
+
+                    // Error message using Swal
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error!',
+                        text: 'An error occurred while inactivating the plant.'
+                    });
+                }
+            });
+        });
+    });
         </script>
 
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>

@@ -6,7 +6,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Show Search</title>
+    <title>ShowSearch</title>
     <style>
 
     </style>
@@ -75,7 +75,7 @@
                             Warm regards,</p>
                         <p
                             style="font-size: 16px;font-weight: normal;line-height: 24px;text-align:justify;color: #25272b;">
-                           Show Search</p>
+                           ShowSearch</p>
                     </td>
                 </tr>
             </table>

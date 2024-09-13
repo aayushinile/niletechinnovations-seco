@@ -214,20 +214,6 @@
                                                     N/A
                                                 @endif
                                             </p>
-                                            @php
-                                            $user = \App\Models\Manufacturer::where('plant_id',$user->id)->first();
-                                            $status = '';
-                                             if($user->status == '0'){
-                                                $status = 'Not verified';
-                                             }else{
-                                                $status = 'Verified';
-                                             }
-                                            @endphp
-                                            <!-- @if($status == 'Verified')
-                                            <p><img src="{{asset('images/tick.svg')}}"> {{$status}}</p>
-                                            @else
-                                            <p style="color:var(--red)"><img src="{{asset('images/not-verify.svg')}}"> {{$status}}</p> 
-                                            @endif -->
                                         </div>
                                     </div>
                                 </a>
