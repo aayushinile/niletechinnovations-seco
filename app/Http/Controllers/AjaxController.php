@@ -440,4 +440,79 @@ class AjaxController extends Controller
             return response()->json(['success' => false, 'message' => 'Something went wrong']);
         }
     }
+
+
+
+    public function deleteAccount(Request $request)
+    {
+        try {
+            // Get the user ID from the form input
+            $user_id = $request->input('id');
+    
+            // Check if the user exists
+            $user = User::find($user_id);
+    
+            if (!$user) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'User not found',
+                ], 404);
+            }
+    
+            // Delete the user
+            $user->status = 2;
+            $user->save();
+            //$user->delete();
+    
+            // Return success message
+            return response()->json([
+                'status' => true,
+                'message' => 'User account deleted successfully',
+            ], 200);
+    
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => false,
+                'message' => 'An error occurred while deleting the account',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function deleteAccountMultiple(Request $request)
+    {
+        try {
+            // Get the comma-separated user IDs
+            $idsString = $request->input('user_id');
+
+            // Convert the comma-separated string to an array
+            $user_ids = explode(',', $idsString);
+
+            // Ensure the IDs are numeric
+            $user_ids = array_filter($user_ids, 'is_numeric');
+
+            // Check if the array is empty
+            if (empty($user_ids)) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'No users selected',
+                ], 400);
+            }
+
+            // Update the status of all selected users
+            User::whereIn('id', $user_ids)->update(['status' => 2]);
+
+            return response()->json([
+                'status' => true,
+                'message' => 'User accounts deleted successfully',
+            ], 200);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => false,
+                'message' => 'An error occurred while deleting the accounts',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
 }

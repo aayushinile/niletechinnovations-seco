@@ -26,5 +26,7 @@ class ContactManufacturer extends Model
         'email',
         'phone_no',
         'status',
+        'type',
+        'company_name',
     ];
 }

@@ -432,13 +432,15 @@ class AdminController extends Controller
             $contact_m = DB::table('users')
                 ->whereIn('id', $manufracturers)
                 ->get();
+            $manufacturers = ContactManufacturer::where("plant_id", $plant->id)->orderby('id','DESC')->get();
         } else {
             $images = collect(); // Use an empty collection instead of an array
             $sales_managers = collect(); // Same for sales managers
             $specifications = collect(); // Same for specifications
-            $contact_m = collect(); // Same for contacted manufacturers
+            $contact_m = collect(); // Same for contacted manufacturers 
+            $manufacturers = collect();
         }
-        return view("admin.manufracturers.detail", compact('mfs', 'plant', 'images', 'sales_managers', 'specifications', 'manufacturer','contact_m'));
+        return view("admin.manufracturers.detail", compact('mfs', 'plant', 'images', 'sales_managers', 'specifications', 'manufacturer','contact_m','manufacturers'));
     }
 
 
@@ -733,13 +735,15 @@ class AdminController extends Controller
                 $contact_m = DB::table('users')
                     ->whereIn('id', $manufracturers)
                     ->get();
+                $manufacturers = ContactManufacturer::where("plant_id", $plant->id)->orderby('id','DESC')->get();
             } else {
                 $images = collect(); // Use an empty collection instead of an array
                 $sales_managers = collect(); // Same for sales managers
                 $specifications = collect(); // Same for specifications
                 $contact_m = collect(); // Same for contacted manufacturers
+                $manufacturers = collect();
             }
-            return view('admin.manufracturers.detail',compact('mfs', 'plant', 'images', 'sales_managers', 'specifications', 'manufacturer','contact_m'))
+            return view('admin.manufracturers.detail',compact('mfs', 'plant', 'images', 'sales_managers', 'specifications', 'manufacturer','contact_m','manufacturers'))
             ->with('success', 'Plant details updated successfully.');
         } catch (\Exception $e) {
             return errorMsg('Exception => ' . $e->getMessage());
@@ -837,6 +841,7 @@ class AdminController extends Controller
            $query->where(function ($query) use ($keyword) {
                $query->where("contact_manufacturer.user_name", "LIKE", "%$keyword%")
                    ->orWhere("contact_manufacturer.email", "LIKE", "%$keyword%")
+                   ->orWhere("contact_manufacturer.company_name", "LIKE", "%$keyword%")
                    ->orWhere("contact_manufacturer.location", "LIKE", "%$keyword%")
                    ->orWhere("phone_no", "LIKE", "%$keyword%")
                    ->orWhere("plant.plant_name", "LIKE", "%$keyword%");

@@ -12,21 +12,15 @@ use Maatwebsite\Excel\Concerns\Importable;
 use App\Models\PlantLogin;
 
 use Illuminate\Support\Facades\Log;
-class PlantImport implements ToModel, WithHeadingRow
+class PlantManufacturerImport implements ToModel, WithHeadingRow
 {
     use Importable;
-    protected $mfsId;
-
-
-    public function __construct($mfsId)
-    {
-        $this->mfsId = $mfsId;
-    }
 
     public function model(array $row)
     {
         // Initialize variables
         $latitude = $longitude = $city = $state = $country = null;
+
         // Get lat/long, city, state, and country based on the full address using Mapbox
         $address = $row['address']; // This is the 'address' column in the Excel file
         if ($address) {
@@ -39,7 +33,6 @@ class PlantImport implements ToModel, WithHeadingRow
             ]);
 
             $data = json_decode($response->getBody(), true);
-            Log::info('Mapbox API Response: ', $data);
 
             if (isset($data['features'][0])) {
                 $features = $data['features'][0];
@@ -59,18 +52,18 @@ class PlantImport implements ToModel, WithHeadingRow
             }
         }
 
-        // if (!Auth::check()) {
-        //     Log::error('User is not authenticated.');
-        //     return null; // Handle accordingly
-        // }
-
-        $authUserId = $this->mfsId;
-        $mfs = PlantLogin::find($authUserId);
+        if (!Auth::check()) {
+            Log::error('User is not authenticated.');
+            return null; // Handle accordingly
+        }
+        
         $plantName = $row['plant_name'] ?: 'N/A';
         $plantWebsite = $row['plant_website'];
         $aboutOurHomes = $row['about_our_homes'] ?? '--';
         $address = $row['address'];
-        // $authUser = Auth::user();
+        $authUser = Auth::user();
+        Log::error('Failed to create Plant with data:', ['user_id' => $authUser->id, 'data' => $row]);
+        $mfs = PlantLogin::find($authUser->id);
 
         // Create Plant
         if ($plantName !== 'N/A') {
@@ -86,7 +79,7 @@ class PlantImport implements ToModel, WithHeadingRow
                 'city' => $city,
                 'state' => $state,
                 'country' => $country,
-                'manufacturer_id' => $authUserId,
+                'manufacturer_id' => $authUser->id,
             ]);
 
             if (!$plant) {
@@ -108,7 +101,7 @@ class PlantImport implements ToModel, WithHeadingRow
                 'email' => $salesEmail,
                 'phone' => $formattedPhone,
                 'designation' => 'Sales Contact',
-                'manufacturer_id' => $authUserId,
+                'manufacturer_id' => $authUser->id,
             ]);
         }
     }

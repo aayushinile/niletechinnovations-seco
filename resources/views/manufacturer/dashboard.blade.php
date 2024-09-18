@@ -146,7 +146,9 @@
                                         <th>Name</th>
                                         <th>Email</th>
                                         <th>Phone</th>
+                                        <th>Company Name</th>
                                         <th>Message</th>
+                                        <th>Type</th>
                                         <th>Status</th>
                                     </tr>
                                 </thead>
@@ -168,6 +170,7 @@
                                             <td>{{ $enquiry->enquiry_name }}</td>
                                             <td>{{ $enquiry->enquiry_mail }}</td>
                                             <td>{{ $enquiry->enquiry_phone }}</td>
+                                            <td>{{$enquiry->company_name ?? 'N/A'}}</td>
                                             <td>
                                                 {{ strlen($enquiry->message) > 30 ? substr($enquiry->message, 0, 30) . '...' : $enquiry->message }}
                                                 @if(strlen($enquiry->message) > 30)
@@ -181,6 +184,7 @@
                                                         </svg></a>
                                                 @endif
                                             </td>
+                                            <td>{{$enquiry->type == 1 ? 'Retailer':'Community Owner'}}</td>
                                             <td>
                                                 <div class="switch-toggle">
                                                     <div class="">
@@ -196,14 +200,12 @@
                                     @endforeach
                                     @else 
                                     <tr>
-                                        <td colspan="8" style="text-align: center;font-size:15px"> No Records Found</td>
+                                        <td colspan="10" style="text-align: center;font-size:15px"> No Records Found</td>
                                     </tr>
                                     @endif
                                 </tbody>
                             </table>
-                            <div class="ss-table-pagination">
-                                {{ $new_enquiries->links() }}
-                            </div>
+                            
                         </div>
                     </div>
                 </div>   

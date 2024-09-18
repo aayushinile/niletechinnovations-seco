@@ -81,12 +81,14 @@ Route::middleware(['auth:manufacturer'])->group(function () {
 
     Route::post("/delete-profile-photo/{id}", [ManufacturerController::class, 'deleteProfilePhoto'])->name('delete-profile-photo');
     Route::post('update-specifications/{id}', [AjaxController::class, 'updateSpecifications'])->name('updateSpecification');
+    Route::post('/manufacturer-import-excel', [ManufacturerController::class, 'ManufacturerimportExcel'])->name('plants.importExcelmanufacturer');
 });
 
 Route::get('/edit-plant-admin/{id}', [AdminController::class, 'EditPlant'])->name('EditPlantAdmin');
 Route::post('/update-plant-admin/{id}', [AdminController::class, 'updatePlantAdmin'])->name('updatePlantAdmin');
 Route::post("/toggleUserRequestStatus", [AjaxController::class, 'toggleUserRequestStatus'])->name('toggleUserRequestStatus');
 Route::post('/import-excel', [ManufacturerController::class, 'importExcel'])->name('plants.importExcel');
+
 Route::post('/manufacturers-admin', [AdminController::class, 'saveManufacturerAdmin'])->name('saveManufacturerAdmin');
 Route::group(['prefix' => 'manufacturer', 'as' => 'manufacturer.'], function () {
 
@@ -105,6 +107,8 @@ Route::post('/check-email', [ManufacturerController::class, 'checkEmail'])->name
 
 // Admin routes 
 Route::post('set_status', [AjaxController::class, 'set_status'])->name('set_status');
+Route::post('delete_user_account', [AjaxController::class, 'deleteAccount'])->name('delete_user_account');
+Route::post('delete_user_account_multiple', [AjaxController::class, 'deleteAccountMultiple'])->name('delete_user_account_multiple');
 Route::post('set_statuss', [AjaxController::class, 'set_statuss'])->name('set_statuss');
 Route::post('set_statuss_all', [AjaxController::class, 'set_statuss_all'])->name('set_statuss_all');
 Route::group(['prefix' => 'admin', 'as' => 'admin.'], function () {

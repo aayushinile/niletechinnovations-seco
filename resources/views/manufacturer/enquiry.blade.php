@@ -183,10 +183,13 @@ button.btn-search {
                                         @if($type->plant_type == 'corp_rep')
                                         <th>Plant Name</th>
                                         @endif
+                                        <th>Type</th>
                                         <th>CO/Retailer Name</th>
                                         <th>Email</th>
                                         <th>Phone</th>
+                                        <th>Company Name</th>
                                         <th>Message</th>
+                                        
                                         <th>Status</th>
                                     </tr>
                                 </thead>
@@ -204,9 +207,11 @@ button.btn-search {
                                             @if($type->plant_type == 'corp_rep')
                                             <td>{{ $plant->plant_name ?? 'N/A'}}</td>
                                             @endif
+                                            <td>{{$enquiry->type == 1 ? 'Retailer':'Community Owner'}}</td>
                                             <td>{{ $enquiry->enquiry_name }}</td>
                                             <td>{{ $enquiry->enquiry_mail }}</td>
                                             <td>{{ $enquiry->enquiry_phone }}</td>
+                                            <td>{{$enquiry->company_name ?? 'N/A'}}</td>
                                             <td>
                                                 {{ strlen($enquiry->message) > 30 ? substr($enquiry->message, 0, 30) . '...' : $enquiry->message }}
                                                 @if(strlen($enquiry->message) > 30)
@@ -217,6 +222,7 @@ button.btn-search {
                                                         role="button" style="font-size:15px;"><img src="{{asset('images/info.svg')}}"></a>
                                                 @endif
                                             </td>
+                                           
                                             <td>
                                                 <div class="switch-toggle">
                                                     <div class="">
@@ -237,7 +243,7 @@ button.btn-search {
                                     @endforeach
                                     @else 
                                     <tr>
-                                        <td colspan="8" style="text-align: center;font-size:15px"> No records found</td>
+                                        <td colspan="10" style="text-align: center;font-size:15px"> No records found</td>
                                     </tr>
                                     @endif
                                 </tbody>

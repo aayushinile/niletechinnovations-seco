@@ -17,7 +17,7 @@
         <div class="contactus-page-content">
                 
             <div class="row">
-                <div class="col-md-6">
+                <div class="col-md-12">
                 @if(session('success'))
                     <div class="alert alert-success alert-dismissible fade show mt-3" role="alert">
                         {{ session('success') }}
@@ -25,9 +25,11 @@
                     </div>
                 @endif
                 <div class="contact-form-card">
-                    
+                    <div class="brand-logo">
+                        <img src="{{asset('images/logo.svg')}}" alt="logo">
+                    </div>
                     <h4>Send Us A Message</h4>
-                    <p>Our team is committed to supporting you and your clients, providing guidance and expertise every step of the way.</p>
+                    <!-- <p>Our team is committed to supporting you and your clients, providing guidance and expertise every step of the way.</p> -->
                     <div class="contact-form">
                         <form action="{{ route('contact.save') }}" method="POST">
                             @csrf
@@ -60,7 +62,10 @@
                                         <textarea id="message" class="form-control" name="message" rows="2" placeholder="Message"></textarea>
                                     </div>
                                 </div>
-                                <p class="mt-2 mb-2">We are committed to your privacy. Do not include confidential or private information in this form. This form is for general questions or messages.</p>
+                                
+                                <div class="col-sm-12">
+                                    <p class="mt-2 mb-2">We are committed to your privacy. Do not include confidential or private information in this form. This form is for general questions or messages.</p>
+                                </div>
                                 <div class="col-sm-12">
                                     <div class="form-group">
                                         <button type="submit" class="contact-fill-btn">SUBMIT</button>
@@ -70,11 +75,6 @@
                         </form>
                     </div>
                 </div>
-                </div>
-                <div class="col-md-6">
-                    <div class="contact-googlemap-card">
-                        <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d224357.50123586552!2d77.23701468919643!3d28.5221023514615!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x390ce5a43173357b%3A0x37ffce30c87cc03f!2sNoida%2C%20Uttar%20Pradesh!5e0!3m2!1sen!2sin!4v1725435045208!5m2!1sen!2sin" width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>    
-                    </div>
                 </div>
             </div>
         </div>    

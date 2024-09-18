@@ -1,7 +1,6 @@
 @extends('admin.layouts')
 @push('css')
     <link rel="stylesheet" type="text/css" href="{{ asset('admin/css/manufacturers.css') }}">
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
     <style>
        .password-wrapper {
     position: relative;
@@ -388,20 +387,21 @@
                             </div>
                         </div>
                         @endif
-                        @if ($contact_m->isNotEmpty())
+                        @if ($manufacturers->isNotEmpty())
                         <div class="col-md-12">
                             <div class="sales-manager-info">
-                                <h1>Contacted Community Owners ({{ count($contact_m) }})</h1>
+                                <h1>Contacted Community Owners ({{ count($manufacturers) }})</h1>
+                               
                                 <div class="row">
-                                @foreach ($contact_m as $item)
+                                @foreach ($manufacturers as $item)
                                     <div class="col-md-4">
                                         <div class="sales-manager-card">
                                             <div class="sales-manager-content">
-                                                <h3>{{ $item->business_name }}</h3>
-                                                <h4>{{ $item->business_address ?? 'N/A' }}</h4>
+                                                <h3>{{ $item->user_name }}</h3>
+                                                <h4>{{ $item->company_name ?? 'N/A' }}</h4>
                                                 <div class="sales-manager-contact">
                                                     <img src="{{ asset('images/call.svg') }}">
-                                                    {{ $item->mobile ?? 'N/A' }}
+                                                    {{ $item->phone_no ?? 'N/A' }}
                                                 </div>
                                                 <div class="sales-manager-contact">
                                                     <img src="{{ asset('images/sms.svg') }}"> {{ $item->email ?? 'N/A' }}
@@ -409,8 +409,9 @@
                                             </div>
                                         </div>
                                     </div>
+                                    @endforeach
                                 </div>
-                                @endforeach
+                                
                             </div>
                         </div>
                         @endif

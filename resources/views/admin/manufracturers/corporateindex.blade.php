@@ -3,7 +3,6 @@
     <link rel="stylesheet" type="text/css" href="{{ asset('admin/css/manufacturers.css') }}">
     <link rel="stylesheet" type="text/css" href="{{ asset('css/responsive.css') }}">
 	<script src="{{asset('js/jquery-3.7.1.min.js')}}" type="text/javascript"></script>
-    <script src="{{asset('plugins/bootstrap/js/bootstrap.bundle.min.js')}}" type="text/javascript"></script>
     <link rel="stylesheet" type="text/css" href="{{asset('css/managelocations.css')}}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     
@@ -338,7 +337,7 @@
                             <p class="text-center">No records found</p>
                         @endforelse
                     </div>
-
+                    @if ($manufracturers->isNotEmpty())
                     @if (method_exists($manufracturers, 'hasPages'))
                         <div class="ss-table-pagination">
                             <ul class="ss-pagination">
@@ -375,6 +374,7 @@
                                 @endif
                             </ul>
                         </div>
+                    @endif
                     @endif
                 </div>
             </div>
@@ -435,7 +435,7 @@
         <div class="modal-content">
         <div class="modal-header">
                 <h2 class="modal-title" style="color: var(--pink);margin-left: 171px;margin-top: 14px;font-size: 20px;">Create Account</h2>
-                <button type="button" class="close" id="closeModalBtn" data-dismiss="modal" aria-label="Close">
+                <button type="button" class="close" id="closeModalBtn" data-dismiss="modal" aria-label="Close" style="margin-left: 9rem;">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
@@ -469,15 +469,15 @@
                             </div>
 
                             <div class="col-md-6">
-                            <div class="form-group-phone">
-                        <span class="input-group-text">+1</span>
-                        <input type="text" name="mobile" class="form-control @error('mobile') is-invalid @enderror" placeholder="Phone Number" value="{{ old('mobile') }}" maxlength="10">
-                        @error('mobile')
-                            <span class="invalid-feedback" role="alert">
-                                <strong>{{ $message }}</strong>
-                            </span>
-                        @enderror
-                    </div>
+                                <div class="form-group-phone">
+                                    <span class="input-group-text">+1</span>
+                                    <input type="text" name="mobile" class="form-control phone @error('mobile') is-invalid @enderror" placeholder="Phone Number" value="{{ old('mobile') }}" maxlength="14">
+                                    @error('mobile')
+                                        <span class="invalid-feedback" role="alert">
+                                            <strong>{{ $message }}</strong>
+                                        </span>
+                                    @enderror
+                                </div>
                             </div>
 
                             <div class="col-md-12">
@@ -600,35 +600,45 @@
     });
 </script>
     <script>
-$(document).ready(function() {
-    $(document).on('input', '.phone', function() {
-        var phoneNumber = $(this).val().replace(/\D/g, ''); // Remove non-numeric characters
-        var formattedPhoneNumber = formatPhoneNumber(phoneNumber); // Format the phone number
+        $(document).ready(function() {
+            $(document).on('input', '.phone', function() {
+            var phoneNumber = $(this).val().replace(/\D/g, ''); // Remove non-numeric characters
+            var formattedPhoneNumber = formatPhoneNumber(phoneNumber); // Format the phone number
 
-        // Update the input value with formatted phone number
-        $(this).val(formattedPhoneNumber);
+            // Update the input value with formatted phone number
+            $(this).val(formattedPhoneNumber);
 
-        // Validate the formatted phone number
-        validatePhoneNumber(formattedPhoneNumber, $(this));
-    });
+            // Validate the formatted phone number
+            validatePhoneNumber(phoneNumber, $(this));
+        });
 
-    function formatPhoneNumber(phoneNumber) {
-        // Apply the phone number format (999)-999-9999
-        var formattedPhoneNumber = phoneNumber.replace(/(\d{3})(\d{3})(\d{4})/, '($1)-$2-$3');
-        return formattedPhoneNumber;
-    }
-
-    function validatePhoneNumber(phoneNumber, element) {
-        // Check if the formatted phone number has exactly 10 digits
-        var isValid = /^\(\d{3}\)-\d{3}-\d{4}$/.test(phoneNumber);
-
-        // Toggle 'is-invalid' class based on validation
-        if (!isValid) {
-            element.addClass('is-invalid');
-        } else {
-            element.removeClass('is-invalid');
+        function formatPhoneNumber(phoneNumber) {
+            // Apply the phone number format (999)-999-9999
+            var formattedPhoneNumber = phoneNumber.replace(/(\d{0,3})(\d{0,3})(\d{0,4})/, function(_, p1, p2, p3) {
+                if (p3) {
+                    return '(' + p1 + ')-' + p2 + '-' + p3;
+                } else if (p2) {
+                    return '(' + p1 + ')-' + p2;
+                } else if (p1) {
+                    return '(' + p1;
+                } else {
+                    return '';
+                }
+            });
+            return formattedPhoneNumber;
         }
-    }
+
+        function validatePhoneNumber(phoneNumber, element) {
+            // Check if the formatted phone number has exactly 10 digits
+            var isValid = phoneNumber.length === 10;
+
+            // Toggle 'is-invalid' class based on validation
+            if (!isValid) {
+                element.addClass('is-invalid');
+            } else {
+                element.removeClass('is-invalid');
+            }
+        }
     document.addEventListener('DOMContentLoaded', function () {
         var input = document.getElementById('geocoder');
         var autocomplete = new google.maps.places.Autocomplete(input);

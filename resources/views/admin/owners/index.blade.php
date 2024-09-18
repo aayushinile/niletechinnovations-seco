@@ -61,6 +61,51 @@
 .toggle__input:checked + .toggle__fill:before {
     transform: translateX(26px);
 }
+.loader-container {
+        position: fixed;
+        z-index: 9999;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        /* Semi-transparent black overlay */
+        display: none;
+        /* Initially hidden */
+        justify-content: center;
+        align-items: center;
+    }
+
+    .loader {
+        border: 8px solid #f3f3f3;
+        /* Light grey */
+        border-top: 8px solid #3498db;
+        /* Blue */
+        border-radius: 50%;
+        width: 50px;
+        height: 50px;
+        animation: spin 1s linear infinite;
+        position: relative;
+        top: 46%;
+        left: 46%;
+
+
+    }
+
+    .loader-container.show {
+        display: flex;
+    }
+
+
+    @keyframes spin {
+        0% {
+            transform: rotate(0deg);
+        }
+
+        100% {
+            transform: rotate(360deg);
+        }
+    }
     </style>
 @endpush
 @section('content')
@@ -70,7 +115,7 @@
                 <h2>Community Owners / Retailers</h2>
                 <div class="search-filter wd50">
                     <div class="row g-2">
-                        <div class="col-md-6">
+                        <div class="col-md-4">
                              <form action="" method="get">
                                 <div class="form-group">
                                     <div class="search-form-group">
@@ -93,8 +138,13 @@
                             <option value="1" @if (request('type') == '1') selected @endif>Retailers</option>
                         </select>
                         </div>
+                        <div class="col-md-2">
+                            <div class="form-group">
+                                <a class="btn-bl" style="background: var(--red); cursor:pointer !important; font-size: 14px;" id="deleteButton">Delete</a>
+                            </div>
+                        </div>
                         <div class="col-md-1">
-                            <a class="btn-refresh" href="{{ route('admin.community.owners') }}"> <i class="fa fa-refresh"
+                            <a class="btn-refresh" href="{{ route('admin.community.owners') }}" > <i class="fa fa-refresh"
                                     aria-hidden="true"></i></a>
 
                         </div>
@@ -134,6 +184,11 @@
                             <div class="user-table-item">
                                 <div class="row g-1 align-items-center">
                                     <div class="col-md-3">
+                                    <div class="usercheckbox-info">
+                                    <div class="sscheckbox">
+                                        <input type="checkbox" name="select_plant[]" value="{{ $item->id }}" id="{{ $item->id }}">
+                                        <label for="{{ $item->id }}">&nbsp;</label>
+                                            </div>
                                         <div class="user-profile-item">
                                             <div class="user-profile-media">
                                                 @if(empty($item->image))
@@ -150,6 +205,7 @@
                                                     {{ $item->status == 1 ? 'Approved' : 'Pending for Approval' }}</div>
                                             </div>
                                         </div>
+                                    </div>
                                     </div>
                                     <div class="col-md-9">
                                         <div class="row g-1 align-items-center">
@@ -231,7 +287,7 @@
 
 
                     </div>
-
+                    @if ($owners->isNotEmpty())
                     @if (method_exists($owners, 'hasPages'))
                         <div class="ss-table-pagination">
                             <ul class="ss-pagination">
@@ -269,13 +325,112 @@
                             </ul>
                         </div>
                     @endif
+                    @endif
                 </div>
             </div>
         </div>
     </div>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" rel="stylesheet">
+    <div class="modal ss-modal fade" id="MarkAsDeleteuser" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-body">
+                <div class="ss-modal-form">
+                    <div class="MarkAsInactive-content">
+                        <div class="MarkAsInactive-image">
+                            <img src="{{ asset('images/MarkAsInactive.svg') }}" alt="Delete Icon">
+                        </div>
+                        <h2>Are you sure you want to delete this account?</h2>
+                        <form id="deleteForm" method="post">
+                            @csrf
+                            <input type="hidden" name="user_id" id="user-ids">
+                            <div class="MarkAsInactive-action">
+                                <button type="submit" class="btn-MarkAsInactive">Yes, Confirm</button>
+                                <button class="cancel-btn" type="button" data-bs-dismiss="modal" aria-label="Close">Cancel</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+   
+    <div class="loader-container" id="loader">
+    <div class="loader"></div>
+</div>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" rel="stylesheet">
     <!-- Toastr JS -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    $(document).ready(function() {
+        $('#deleteButton').on('click', function(e) {
+            e.preventDefault();
+
+            // Get selected checkboxes
+            var selectedIds = [];
+            $('input[name="select_plant[]"]:checked').each(function() {
+                selectedIds.push($(this).val());
+            });
+            console.log(selectedIds);
+            // Check if at least one checkbox is selected
+            if (selectedIds.length === 0) {
+                // Show error alert if no checkbox is selected
+                alert('Please select at least one User.');
+
+                return false; // Prevent further execution and stop the modal from showing
+            }
+
+            // Only trigger the modal if a checkbox is selected
+            document.getElementById('user-ids').value = selectedIds.join(',');
+            $('#MarkAsDeleteuser').modal('show');
+        });
+
+        // Delete form submission
+        $('#deleteForm').on('submit', function(e) {
+            e.preventDefault();
+            
+            // Show loader (if needed)
+            $('#loader').show();
+
+            // AJAX request
+            $.ajax({
+                url: "{{ route('delete_user_account_multiple') }}",  // Ensure this route is correctly defined in your web.php
+                method: 'POST',
+                data: $(this).serialize(),
+                success: function(response) {
+                    // Hide loader
+                    $('#loader').hide();
+                    
+                    // Show success message
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Deleted!',
+                        text: 'The account has been successfully deleted.',
+                        timer: 2000, // Show the success message for 2 seconds
+                        timerProgressBar: true,
+                        willClose: () => {
+                            // Redirect to the index page after the SweetAlert closes
+                            window.location.reload();
+                        }
+                    });
+                },
+                error: function(xhr) {
+                    // Hide loader
+                    $('#loader').hide();
+                    
+                    // Show error message using SweetAlert
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Oops...',
+                        text: xhr.responseJSON.message || 'An error occurred while deleting the account.',
+                    });
+                }
+            });
+        });
+    });
+</script>
     <script>
 $(document).ready(function() {
     // Attach the event handler dynamically to all toggle inputs

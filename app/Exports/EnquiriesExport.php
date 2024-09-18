@@ -33,11 +33,29 @@ class EnquiriesExport implements FromCollection, WithHeadings, ShouldAutoSize
                 $item->user_name,
                 $item->email,
                 $item->phone_no,
-                $item->location,
+                $item->company_name,
                 $item->message,
+                'type' => $this->getType($item),
                 $formattedDate,
             ];
         });
+    }
+
+    private function getType($item)
+    {
+
+        // Get the type of the plant
+        $type = $item->type;
+
+        // Map the type to the corresponding description
+        switch ($type) {
+            case 1:
+                return 'Retailer';
+            case 2:
+                return 'Community Owner';
+            default:
+                return 'N/A';
+        }
     }
 
     public function headings(): array
@@ -47,8 +65,9 @@ class EnquiriesExport implements FromCollection, WithHeadings, ShouldAutoSize
             'CO/Retailer Name',
             'Email',
             'Phone',
-            'Location',
+            'Company Name',
             'Message',
+            'Type',
             'Enquiry Date',
         ];
     }

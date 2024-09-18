@@ -78,16 +78,19 @@
             </div>
             <div class="card-body">
                 <div class="ss-card-table">
+                    <div class="" style="overflow-x: sc !important; width: 100% !important;">
                     <table class="table">
                         <thead>
                             <tr>
                                 <th>Date</th>
                                 <th>Plant Name</th>
+                                <th>Type</th>
                                 <th>Co/Retailer Name</th>
                                 <th>Email</th>
                                 <th>Phone</th>
-                                <th>Location</th>
+                                <th>Company Name</th>
                                 <th>Message</th>
+                               
                             </tr>
                         </thead>
                         <tbody>
@@ -96,10 +99,11 @@
                                     <tr>
                                         <td style="width: 8% !important;">{{ date('m-d-Y', strtotime($data->created_at)) }}</td>
                                         <td>{{ $data->plant_name }}</td>
+                                        <td>{{$data->type == 1 ? 'Retailer': 'Community Owner' }}</td>
                                         <td>{{ $data->user_name }}</td>
                                         <td>{{ $data->email }}</td>
                                         <td style="width: 12% !important;"> {{ $data->phone_no }}</td>
-                                        <td>{{ $data->location }}</td>
+                                        <td>{{ $data->company_name ?? 'N/A' }}</td>
                                         <td> {{ substr($data->message, 0, 50) }}{{ strlen($data->message) > 50 ? '...' : '' }}
                                         @if(strlen($data->message) > 30)
                                                     <a class="infoRequestMessage"
@@ -109,6 +113,7 @@
                                                         role="button" style="font-size:15px;"><img src="{{asset('images/info.svg')}}"></a>
                                         @endif
                                         </td>
+                                       
                                     </tr>
                                 @endforeach
                             @else
@@ -118,6 +123,8 @@
                             @endif
                         </tbody>
                     </table>
+                    </div>
+                    @if ($mergedData->isNotEmpty())
                     @if (method_exists($mergedData, 'hasPages'))
                         <div class="ss-table-pagination">
                             <ul class="ss-pagination">
@@ -154,6 +161,7 @@
                                 @endif
                             </ul>
                         </div>
+                    @endif
                     @endif
                 </div>
             </div>

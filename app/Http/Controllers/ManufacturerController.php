@@ -26,6 +26,7 @@ use GuzzleHttp\Client;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\ManufacturerEnquiriesExport;
 use App\Imports\PlantImport;
+use App\Imports\PlantManufacturerImport;
 use Illuminate\Support\Facades\Log;
 
 class ManufacturerController extends Controller
@@ -79,7 +80,8 @@ class ManufacturerController extends Controller
             'contact_manufacturer.user_name as enquiry_name',
             'contact_manufacturer.phone_no as enquiry_phone',
             'contact_manufacturer.email as enquiry_mail',
-
+            'contact_manufacturer.company_name as company_name',
+            'contact_manufacturer.type as type',
             'users.id as user_id',
             'contact_manufacturer.message',
             'contact_manufacturer.status',
@@ -1029,6 +1031,7 @@ class ManufacturerController extends Controller
                             return $query->where(function ($query) use ($search) {
                                 $query->where('contact_manufacturer.user_name', 'like', '%' . $search . '%')
                                       ->orWhere('contact_manufacturer.phone_no', 'like', '%' . $search . '%')
+                                      ->orWhere('contact_manufacturer.company_name', 'like', '%' . $search . '%')
                                       ->orWhere('plant.plant_name', 'like', '%' . $search . '%');
                             });
                         })
@@ -1044,7 +1047,8 @@ class ManufacturerController extends Controller
                             'contact_manufacturer.user_name as enquiry_name',
                             'contact_manufacturer.phone_no as enquiry_phone',
                             'contact_manufacturer.email as enquiry_mail',
-
+                            'contact_manufacturer.company_name as company_name',
+                            'contact_manufacturer.type as type',
                             'users.id as user_id',
                             'contact_manufacturer.message',
                             'contact_manufacturer.status',
@@ -1404,5 +1408,28 @@ class ManufacturerController extends Controller
         // Return a success response
         return redirect()->back()->with('success', 'Your form has been sent successfully!');
     }
+
+
+
+    public function ManufacturerimportExcel(Request $request)
+    {
+        try {
+            // Validate file input
+            $request->validate([
+                'file' => 'required|file|mimes:xlsx,xls,csv|max:2048',
+            ]);
+            // Import the file
+            set_time_limit(0);
+            Excel::import(new PlantManufacturerImport, $request->file('file'));
+
+            // Return success response
+            return response()->json(['success' => true, 'message' => 'Plants imported successfully.']);
+        } catch (\Exception $e) {
+            // Log error and return error response
+            Log::error('Error during import: ' . $e->getMessage());
+            return response()->json(['success' => false, 'message' => 'Error during import: ' . $e->getMessage()]);
+        }
+    }
+
     
 }

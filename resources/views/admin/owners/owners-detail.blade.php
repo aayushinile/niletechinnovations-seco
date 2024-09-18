@@ -11,6 +11,53 @@
 .contacted-manufacturer-item {
     margin-bottom: 10px; /* Adjust spacing between items */
 }
+
+.loader-container {
+        position: fixed;
+        z-index: 9999;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        /* Semi-transparent black overlay */
+        display: none;
+        /* Initially hidden */
+        justify-content: center;
+        align-items: center;
+    }
+
+    .loader {
+        border: 8px solid #f3f3f3;
+        /* Light grey */
+        border-top: 8px solid #3498db;
+        /* Blue */
+        border-radius: 50%;
+        width: 50px;
+        height: 50px;
+        animation: spin 1s linear infinite;
+        position: relative;
+        top: 46%;
+        left: 46%;
+
+
+    }
+
+    .loader-container.show {
+        display: flex;
+    }
+
+
+    @keyframes spin {
+        0% {
+            transform: rotate(0deg);
+        }
+
+        100% {
+            transform: rotate(360deg);
+        }
+    }
+
     </style>
 @endpush
 @section('content')
@@ -18,12 +65,12 @@
         <div class="ss-card">
             <div class="card-header">
                 <h2>Community Owners/Retailer Detail</h2>
-                <div class="search-filter wd2 d-none">
+                
+                <div class="search-filter wd2W">
                     <div class="row g-1">
                         <div class="col-md-12">
                             <div class="form-group">
-                                <a class="btn-bl"data-bs-toggle="modal" data-bs-target="#MarkAsInactive">Mark As
-                                    {{ $owner->status == 1 ? 'Inactive' : 'Active' }}</a>
+                                <a class="btn-bl"data-bs-toggle="modal" data-bs-target="#MarkAsDelete" style="background: var(--red);cursor:pointer !important;font-size: 14px;">Delete </a>
                             </div>
                         </div>
                     </div>
@@ -246,37 +293,83 @@
         </div>
     </div>
     <!-- Mark As Inactive -->
-    <div class="modal ss-modal fade" id="MarkAsInactive" tabindex="-1" aria-labelledby="exampleModalLabel"
-        aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-body">
-                    <div class="ss-modal-form">
-                        <div class="MarkAsInactive-content">
-                            <div class="MarkAsInactive-image">
-                                <img src="{{ asset('images/MarkAsInactive.svg') }}">
-                            </div>
-                            <h2>Are you sure want to Mark “{{ $owner->business_name }}” As
-                                {{ $owner->status == 1 ? 'Inactive' : 'Active' }}</h2>
-                            <div class="note-text">Note: manufacturer will not be able to login again</div>
-                            <form action="{{ route('set_status') }}" method="post">
-                                @csrf
-                                <input type="hidden" name="status" value=" {{ $owner->status == 1 ? 0 : 1 }}">
-                                <input type="hidden" name="table" value="users">
-                                <input type="hidden" name="id" value="{{ $owner->id }}">
-                                <div class="MarkAsInactive-action">
-
-                                    <button class="btn-MarkAsInactive">Mark As
-                                        {{ $owner->status == 1 ? 'Inactive' : 'Active' }}</button>
-                                    <button class="cancel-btn" type="button" data-bs-dismiss="modal"
-                                        aria-label="Close">Cancel</button>
-
-                                </div>
-                            </form>
+    <div class="modal ss-modal fade" id="MarkAsDelete" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-body">
+                <div class="ss-modal-form">
+                    <div class="MarkAsInactive-content">
+                        <div class="MarkAsInactive-image">
+                            <img src="{{ asset('images/MarkAsInactive.svg') }}" alt="Delete Icon">
                         </div>
+                        <h2>Are you sure you want to delete this account?</h2>
+                        <form id="deleteForm" method="post">
+                            @csrf
+                            <input type="hidden" name="id" value="{{ $owner->id }}">
+                            <div class="MarkAsInactive-action">
+                                <button type="submit" class="btn-MarkAsInactive">Yes, Confirm</button>
+                                <button class="cancel-btn" type="button" data-bs-dismiss="modal" aria-label="Close">Cancel</button>
+                            </div>
+                        </form>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+</div>
+<div class="loader-container" id="loader">
+    <div class="loader"></div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    $(document).ready(function() {
+        $('#deleteForm').on('submit', function(e) {
+            e.preventDefault();
+            
+            // Show loader
+            $('#loader').show();
+            
+            // AJAX request
+            $.ajax({
+                url: "{{ route('delete_user_account') }}",  // Ensure this route is correctly defined in your web.php
+                method: 'POST',
+                data: $(this).serialize(),
+                success: function(response) {
+                    // Hide loader
+                    $('#loader').hide();
+                    
+                    // Show success message
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Deleted!',
+                        text: 'The account has been successfully deleted.',
+                        timer: 2000, // Show the success message for 2 seconds
+                        timerProgressBar: true,
+                        willClose: () => {
+                            // Redirect to the index page after the SweetAlert closes
+                            window.location.href = "{{ route('admin.community.owners') }}";
+                        }
+                    }).then((result) => {
+                        // This ensures that if the user clicks "OK", the redirect happens immediately
+                        if (result.dismiss === Swal.DismissReason.timer || result.isConfirmed) {
+                            window.location.href = "{{ route('admin.community.owners') }}";
+                        }
+                    });
+                },
+                error: function(xhr) {
+                    // Hide loader
+                    $('#loader').hide();
+                    
+                    // Show error message using SweetAlert
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Oops...',
+                        text: xhr.responseJSON.message || 'An error occurred while deleting the account',
+                    });
+                }
+            });
+        });
+    });
+</script>
 @endsection

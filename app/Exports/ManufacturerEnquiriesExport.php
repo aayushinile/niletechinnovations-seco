@@ -35,11 +35,29 @@ class ManufacturerEnquiriesExport implements FromCollection, WithHeadings, Shoul
                 $item->enquiry_name,
                 $item->enquiry_mail,
                 $item->enquiry_phone,
-                $item->location,
+                $item->company_name ?? 'N/A',
                 $item->message,
+                'type' => $this->getType($item),
                 $formattedDate,
             ];
         });
+    }
+
+    private function getType($item)
+    {
+
+        // Get the type of the plant
+        $type = $item->type;
+
+        // Map the type to the corresponding description
+        switch ($type) {
+            case 1:
+                return 'Retailer';
+            case 2:
+                return 'Community Owner';
+            default:
+                return 'N/A';
+        }
     }
 
     public function headings(): array
@@ -49,8 +67,9 @@ class ManufacturerEnquiriesExport implements FromCollection, WithHeadings, Shoul
             'CO/Retailer Name',
             'Email',
             'Phone',
-            'Location',
+            'Company Name',
             'Message',
+            'Type',
             'Enquiry Date',
         ];
     }

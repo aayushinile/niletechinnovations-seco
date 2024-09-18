@@ -51,6 +51,16 @@
                             <strong>Name:</strong> {{ $contact->user_name }}<br>
                             <strong>Email:</strong> {{ $contact->email }}<br>
                             <strong>Phone:</strong> {{ $contact->phone_no }}<br>
+                            <strong>Company Name:</strong> {{ $contact->company_name }}<br>
+                            <strong>Type:</strong> 
+                                @if($contact->type == 1)
+                                    Retailer
+                                @elseif($contact->type == 2)
+                                    Community Owner
+                                @else
+                                    Unknown
+                                @endif
+                                <br>
                             <strong>Message:</strong> {{ $contact->message }}<br></p>
                     </td>
                 </tr>

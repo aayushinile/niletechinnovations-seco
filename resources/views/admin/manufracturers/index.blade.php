@@ -376,7 +376,7 @@
                             <p class="text-center">No records found</p>
                         @endforelse
                     </div>
-
+                    @if ($manufracturers->isNotEmpty())
                     @if (method_exists($manufracturers, 'hasPages'))
                         <div class="ss-table-pagination">
                             <ul class="ss-pagination">
@@ -413,6 +413,7 @@
                                 @endif
                             </ul>
                         </div>
+                    @endif
                     @endif
                 </div>
             </div>

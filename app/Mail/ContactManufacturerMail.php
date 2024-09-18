@@ -31,7 +31,7 @@ class ContactManufacturerMail extends Mailable
     public function build()
     {
         return $this->markdown('emails.contactmanufacturermail')
-                    ->subject('New Contact Request from Show Search')
+                    ->subject('New Contact Request from ShowSearch')
                     ->with('contact', $this->contact);
     }
 }

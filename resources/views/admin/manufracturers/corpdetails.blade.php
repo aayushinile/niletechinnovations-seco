@@ -349,7 +349,7 @@
                             <p class="text-center">No records found</p>
                         @endforelse
                     </div>
-
+                    @if ($plants->isNotEmpty())
                     @if (method_exists($plants, 'hasPages'))
                         <div class="ss-table-pagination">
                             <ul class="ss-pagination">
@@ -386,6 +386,7 @@
                                 @endif
                             </ul>
                         </div>
+                    @endif
                     @endif
                 </div>
             </div>
@@ -505,16 +506,16 @@
 <div class="modal fade" id="fileModal" tabindex="-1" aria-labelledby="fileModalLabel" aria-hidden="true">
   <div class="modal-dialog">
     <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="fileModalLabel">File Upload</h5>
-      </div>
       <div class="modal-body">
-        <p id="fileName"></p>
-        <p>Are you sure you want to upload this file?</p> 
+      <div class="ss-modal-delete">
+      <div class="ss-modal-delete-icon"><img src="{{asset('images/fileupload.svg')}}"></div>
+      <p >Are you sure you want to upload this file?</p>
+        <p  id="fileName"></p>
       </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-primary" onclick="submitForm()" style="background-color: var(--pink);">Submit</button>
-        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+      <div class="ss-modal-delete-action">
+        <button type="button" class="yes-btn" onclick="submitForm()" style="background-color: var(--pink);">Submit</button>
+        <button type="button" class="cancel-btn" data-dismiss="modal" id="cancelBtn">Cancel</button>
+      </div>
       </div>
     </div>
   </div>
@@ -526,13 +527,21 @@
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
+  $(document).ready(function() {
+    $('#cancelBtn').on('click', function() {
+      $('#fileModal').modal('hide'); // Close the modal with jQuery
+      window.location.reload();
+    });
+  });
+</script>
+<script>
      function showModal() {
     const fileInput = document.getElementById('fileInput');
     
     const fileName = fileInput.files[0] ? fileInput.files[0].name : 'No file selected';
     
     // Set the file name in the modal
-    document.getElementById('fileName').textContent = fileName;
+    document.getElementById('fileName').textContent = 'File Selected: ' + fileName;
 
     // Show the modal
     $('#fileModal').modal('show');

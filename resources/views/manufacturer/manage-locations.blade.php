@@ -61,6 +61,51 @@ button.btn-search {
     background: var(--pink);
     margin-bottom: 5px;
 }
+.loader-container {
+        position: fixed;
+        z-index: 9999;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        /* Semi-transparent black overlay */
+        display: none;
+        /* Initially hidden */
+        justify-content: center;
+        align-items: center;
+    }
+
+    .loader {
+        border: 8px solid #f3f3f3;
+        /* Light grey */
+        border-top: 8px solid #3498db;
+        /* Blue */
+        border-radius: 50%;
+        width: 50px;
+        height: 50px;
+        animation: spin 1s linear infinite;
+        position: relative;
+        top: 46%;
+        left: 46%;
+
+
+    }
+
+    .loader-container.show {
+        display: flex;
+    }
+
+
+    @keyframes spin {
+        0% {
+            transform: rotate(0deg);
+        }
+
+        100% {
+            transform: rotate(360deg);
+        }
+    }
 </style>
 
 @section('content')
@@ -86,7 +131,7 @@ button.btn-search {
                         </div>
                     @else 
                     <div class="row g-1">
-                            <div class="col-md-5">
+                            <div class="col-md-3">
                                 <div class="form-group search-form-group">
                                     <input type="text"  name="search" value="{{ $search ? $search : '' }}"
                                     class="form-control" placeholder="Search">
@@ -113,15 +158,24 @@ button.btn-search {
 
                             </div>
                             @endif
-                            <div class="col-md-4">
+                            <div class="col-md-3">
                                 <div class="form-group">
                                     <a href="{{ url('add-plant') }}" class="addnewplant-btn" style="padding: 9px 21px;">Add Plant</a>
                                 </div> 
                             </div>
+                            <div class="col-md-3">
+                        <div class="form-group">
+                            <a class="addnewplant-btn" href="javascript:void(0);" onclick="document.getElementById('fileInput').click()" style="background-color: var(--green);">
+                                <i class="fas fa-file-excel"></i> Import
+                            </a>
+                        </div> 
+                    </div>
                         </div>
                             
-                    @endif
-                    </form>  
+                    
+                    </form> 
+                    
+                    @endif 
                 </div>
             </div>
                 <div class="listed-plants-section">
@@ -197,6 +251,7 @@ button.btn-search {
                         </div>
                         @endforeach
                         @endif
+                        @if ($plants->isNotEmpty())
                         @if (method_exists($plants, 'hasPages'))
                         <div class="ss-table-pagination" style="margin-left: 22px;">
                             <ul class="ss-pagination">
@@ -234,6 +289,7 @@ button.btn-search {
                             </ul>
                         </div>
                     @endif
+                    @endif
                     </div>
                 </div>
             </div>
@@ -256,7 +312,7 @@ button.btn-search {
                             
                             <input type="hidden" id="plant-name" name="plant_name">
                             <div class="ss-modal-delete-action">
-                            <button type="submit" class="yes-btn" >Yes, Delete</button>
+                            <button type="submit" class="yes-btn"  id="delete-plant-button">Yes, Delete</button>
                             <button type="button" class="cancel-btn" data-bs-dismiss="modal" aria-label="Close">Cancel</button>
                             </div>
                         </form>
@@ -266,7 +322,112 @@ button.btn-search {
         </div>
     </div>
 </div>
+<form id="importForm" method="POST" enctype="multipart/form-data" style="display: none;">
+  @csrf
+  <input type="file" name="file" id="fileInput" accept=".xlsx,.xls,.csv" onchange="showModal()" required>
+</form>
+
+
+<div class="modal fade" id="fileModal" tabindex="-1" aria-labelledby="fileModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-body">
+      <div class="ss-modal-delete">
+      <div class="ss-modal-delete-icon"><img src="{{asset('images/fileupload.svg')}}"></div>
+      <p >Are you sure you want to upload this file?</p>
+        <p  id="fileName"></p>
+      </div>
+      <div class="ss-modal-delete-action">
+        <button type="button" class="yes-btn" onclick="submitForm()" style="background-color: var(--pink);">Submit</button>
+        <button type="button" class="cancel-btn" data-dismiss="modal" id="cancelBtn">Cancel</button>
+      </div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="loader-container" id="loader">
+    <div class="loader"></div>
+</div>
 <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+  $(document).ready(function() {
+    $('#cancelBtn').on('click', function() {
+      $('#fileModal').modal('hide'); // Close the modal with jQuery
+      $('#loader').show();
+      window.location.reload();
+    });
+    $('#delete-plant-button').on('click', function() {
+            $('#loader').show();
+        });
+  });
+</script>
+<script>
+     function showModal() {
+    const fileInput = document.getElementById('fileInput');
+    
+    const fileName = fileInput.files[0] ? fileInput.files[0].name : 'No file selected';
+    
+    // Set the file name in the modal
+    document.getElementById('fileName').textContent = 'File Selected: ' +  fileName;
+
+    // Show the modal
+    $('#fileModal').modal('show');
+  }
+
+
+  function submitForm() {
+    document.getElementById('loader').style.display = 'block'; // Show loader
+
+    const formData = new FormData(document.getElementById('importForm'));
+
+    fetch("{{ route('plants.importExcelmanufacturer') }}", {
+      method: 'POST',
+      body: formData,
+      headers: {
+        'X-CSRF-TOKEN': "{{ csrf_token() }}"
+      }
+    })
+    .then(response => response.json())
+    .then(data => {
+      document.getElementById('loader').style.display = 'none'; // Hide loader
+
+      if (data.success) {
+        Swal.fire({
+          title: 'Success!',
+          text: data.message,
+          icon: 'success',
+          confirmButtonText: 'Ok'
+        }).then(() => {
+          $('#fileModal').modal('hide');
+          window.location.reload(); // Reload the page after closing the modal
+        });
+      } else {
+        Swal.fire({
+          title: 'Error!',
+          text: data.message,
+          icon: 'error',
+          confirmButtonText: 'Ok'
+        });
+      }
+    })
+    .catch(error => {
+      document.getElementById('loader').style.display = 'none'; // Hide loader
+      console.error('Error:', error);
+      Swal.fire({
+        title: 'Error!',
+        text: 'Error during import.',
+        icon: 'error',
+        confirmButtonText: 'Ok'
+      });
+    });
+  }
+
+  function cancelUpload() {
+    $('#fileModal').modal('hide');
+  }
+</script>
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         // Listen for click on delete button
