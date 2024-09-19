@@ -195,8 +195,8 @@
 
                             <div class="col-md-12">
                                 <div class="form-group">
-                                    <h5>About Our Homes *</h5>
-                                    <textarea class="form-control" placeholder="Description" name="description" required>{{ $plant['description'] ?? '' }}</textarea>
+                                    <h5>About Our Homes </h5>
+                                    <textarea class="form-control" placeholder="Description" name="description" >{{ $plant['description'] ?? '' }}</textarea>
                                     @error('description')
                                         <div class="alert alert-danger">{{ $message }}</div>
                                     @enderror

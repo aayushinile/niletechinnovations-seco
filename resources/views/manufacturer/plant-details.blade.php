@@ -70,7 +70,11 @@
             </div>
             <div class="plants-about-section">
                 <h2>About Our Homes</h2>
+                @if(!empty($plant['description']))
                 <p>{!! nl2br(e($plant['description'])) !!}</p>
+                @else 
+                <p>N/A</p>
+                @endif
             </div>
 
             <div class="amenities-section d-none">

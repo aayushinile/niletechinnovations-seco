@@ -180,7 +180,7 @@
                                     </div>
                                     <div class="col-md-9">
                                         <div class="row g-1 align-items-center">
-                                            <div class="col-md-4">
+                                            <div class="col-md-3">
                                                 <div class="user-contact-info">
                                                     <div class="user-contact-info-icon">
                                                         <img src="images/location.svg">
@@ -192,7 +192,7 @@
                                                 </div>
                                             </div>
 
-                                            <div class="col-md-4">
+                                            <div class="col-md-3">
                                                 <div class="user-contact-info">
                                                     <div class="user-contact-info-icon">
                                                         <img src="images/sms.svg">
@@ -203,7 +203,7 @@
                                                     </div>
                                                 </div>
                                             </div>
-                                            <div class="col-md-4">
+                                            <div class="col-md-3">
                                                 <div class="user-contact-info">
                                                     <div class="user-contact-info-icon">
                                                         <img src="images/call.svg">
@@ -214,15 +214,43 @@
                                                     </div>
                                                 </div>
                                             </div>
-                                            {{-- 
-                                            <div class="col-md-3 text-end">
-                                                <div class="action-item-text">
-                                                    <a class="Approve-btn" data-bs-toggle="modal"
-                                                        onclick="$('#n').text('{{ $item->manufacturer_name }}');$('#approve_form').attr('action','{{ route('admin.manufracturers.requests.approve', $item->id) }}')"
-                                                        data-bs-target="#Approverequest">Approve</a>
-                                                    <a class="Reject-btn" href="#">Reject</a>
+                                            <div class="col-md-2">
+                                                <div class="user-contact-info">
+                                                    <div class="user-contact-info-content">
+                                                        <h2>Type</h2>
+                                                        <p> @if($item->plant_type == 'plant_rep')
+                                                               Plant Rep.
+                                                            @else
+                                                                Corp. Rep.
+                                                            @endif</p>
+                                                    </div>
                                                 </div>
-                                            </div> --}}
+                                            </div>
+                                            <div class="col-md-1 text-end">
+                                                <div class="action-item-text">
+                                                @if($item->plant_type == 'plant_rep')
+                                                @php
+                                                    $plant_id = \App\Models\Plant::where('manufacturer_id', $item->id)->first();
+                                                @endphp
+                                                    @if(!empty($plant_id))
+                                                        <a class="action-btn"
+                                                            href="{{ route('admin.manufracturers.show', encrypt($plant_id->id)) }}">
+                                                            <img src="{{ asset('images/arrow-right.svg') }}">
+                                                        </a>
+                                                    @else
+                                                    <a class="action-btn"
+                                                            href="{{ route('admin.manufracturers') }}">
+                                                            <img src="{{ asset('images/arrow-right.svg') }}">
+                                                        </a>
+                                                    @endif
+                                                    @else 
+                                                    <a class="action-btn"
+                                                        href="{{ route('admin.manufracturers.corporateshow', encrypt($item->id)) }}">
+                                                        <img src="{{ asset('images/arrow-right.svg') }}">
+                                                    </a>
+                                                    @endif
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>

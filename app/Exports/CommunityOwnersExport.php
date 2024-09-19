@@ -29,7 +29,7 @@ class CommunityOwnersExport implements FromCollection, WithHeadings, ShouldAutoS
                 $owner->fullname,
                 $owner->business_name,
                 $owner->email,
-                $owner->mobile,
+                $owner->mobile ? '+1' . $owner->mobile : 'N/A',
                 $owner->business_address,
                 $owner->no_of_mhs ?? 'N/A',
                 $owner->no_of_communities ?? 'N/A',

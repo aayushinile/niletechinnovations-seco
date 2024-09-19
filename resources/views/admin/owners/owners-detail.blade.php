@@ -119,7 +119,7 @@
                                         </div>
                                         <div class="user-contact-info-content">
                                             <h2>Phone</h2>
-                                            <p>{{ $owner->mobile ?? 'N/A' }}</p>
+                                            <p>{{ $owner->mobile ? '+1' . $owner->mobile : 'N/A' }}</p>
                                         </div>
                                     </div>
                                 </div>

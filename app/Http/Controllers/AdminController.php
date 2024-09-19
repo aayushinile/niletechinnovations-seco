@@ -167,7 +167,8 @@ class AdminController extends Controller
 
         // Export to Excel if download request is filled
         if ($request->filled('download')) {
-            return Excel::download(new CommunityOwnersExport($owners_2), 'community_owners.xls');
+            $filename = 'community_owners_' . date('m-d-Y') . '.xls';
+            return Excel::download(new CommunityOwnersExport($owners_2), $filename);
         }
 
         // Return the view with paginated data
@@ -402,7 +403,6 @@ class AdminController extends Controller
     public function manufracturersShow(Request $request, $slug)
     {
         $id = decrypt($slug);
-       
         $manufacturer = null;
         $plant = Plant::where('id', $id)->first();
         $mfs = PlantLogin::where('id',$plant->manufacturer_id)->first();
