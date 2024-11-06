@@ -112,8 +112,8 @@ button.btn-search {
 
             <div class="body-main-content">
                 <div class="ss-heading-section">
-                    <h2>Manage Manufacturer/Plant</h2>
-                    <div class="search-filter wd40">
+                    <h2>Manage Corporate Plants ({{$plantCount}})</h2>
+                    <div class="search-filter wd70">
                     <form action="{{route('manufacturer.manage-locations')}}" method="POST">
                     @csrf
                     @php
@@ -132,7 +132,7 @@ button.btn-search {
                     @else 
                     <div class="row g-1">
                             <div class="col-md-3">
-                                <div class="form-group search-form-group">
+                                <div class="form-group search-form-group" style="width:14.8rem">
                                     <input type="text"  name="search" value="{{ $search ? $search : '' }}"
                                     class="form-control" placeholder="Search">
                                     <span class="search-icon"><img src="{{asset('images/search-icon.svg')}}"></span>
@@ -140,15 +140,25 @@ button.btn-search {
                             </div>
                             <div class="col-md-1">
                                 <div class="form-group">
-                                    <a href="{{route('manufacturer.manage-locations')}}" class="btn-refresh"><i
+                                    <a href="{{route('manufacturer.manage-locations')}}" class="btn-refresh" style="margin-left:46px;"><i
                                             class="fa fa-refresh" aria-hidden="true" style="margin-top: 12px;"></i></a>
                                 </div>
                             </div>
                             
                             <div class="col-md-1">
                                 <div class="form-group">
-                                    <button type="submit" class="btn-search"><i class="fa fa-search" aria-hidden="true"></i></button>
+                                    <button type="submit" class="btn-search" style="margin-left:20px"><i class="fa fa-search" aria-hidden="true"></i></button>
                                 </div>
+                            </div>
+                            <div class="col-md-2">
+                                    <div class="form-group">
+                                    <select name="status" class="form-control"  onchange="changeStatus(this.value)">
+                                    <option value="2" {{ request('status') == '2' ? 'selected' : '' }}>SHOW ALL</option>
+                                    <option value="1" {{ request('status') == '1' ? 'selected' : '' }}>Approved</option>
+                                    <option value="3" {{ request('status') == '3' ? 'selected' : '' }}>Unapproved</option>
+                                    <option value="4" {{ request('status') == '4' ? 'selected' : '' }}>Pending</option>
+                                    </select> 
+                                </div> 
                             </div>
                             @if ($plants->isNotEmpty())
                             <div class="col-md-1">
@@ -158,12 +168,12 @@ button.btn-search {
 
                             </div>
                             @endif
-                            <div class="col-md-3">
+                            <div class="col-md-2">
                                 <div class="form-group">
                                     <a href="{{ url('add-plant') }}" class="addnewplant-btn" style="padding: 9px 21px;">Add Plant</a>
                                 </div> 
                             </div>
-                            <div class="col-md-3">
+                            <div class="col-md-2">
                         <div class="form-group">
                             <a class="addnewplant-btn" href="javascript:void(0);" onclick="document.getElementById('fileInput').click()" style="background-color: var(--green);">
                                 <i class="fas fa-file-excel"></i> Import
@@ -459,5 +469,27 @@ button.btn-search {
             });
         });
     });
+</script>
+<script>
+    $(document).ready(function() {
+            $("select").select2();
+
+        });
+     function changeStatus(val) {
+        var selectedValue = val;
+        var currentUrl = new URL(window.location.href);
+        
+        // Ensure the 0 value is handled properly
+        if (selectedValue === '2') {
+            // If SHOW ALL is selected, remove the 'status' parameter
+            currentUrl.searchParams.delete('status');
+        } else {
+            // Set the 'status' parameter to the selected value, including 0
+            currentUrl.searchParams.set('status', selectedValue);
+        }
+
+        // Reload the page with the updated URL
+        window.location.href = currentUrl.toString();
+    }
 </script>
 @endsection

@@ -210,7 +210,7 @@ button.btn-search {
                                             <td>{{$enquiry->type == 1 ? 'Retailer':'Community Owner'}}</td>
                                             <td>{{ $enquiry->enquiry_name }}</td>
                                             <td>{{ $enquiry->enquiry_mail }}</td>
-                                            <td>{{ $enquiry->enquiry_phone }}</td>
+                                            <td>{{ $enquiry->enquiry_phone == '+1' ? 'N/A' : $enquiry->enquiry_phone }}</td>
                                             <td>{{$enquiry->company_name ?? 'N/A'}}</td>
                                             <td>
                                                 {{ strlen($enquiry->message) > 30 ? substr($enquiry->message, 0, 30) . '...' : $enquiry->message }}

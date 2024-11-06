@@ -1,6 +1,7 @@
 @extends('admin.layouts')
 @push('css')
     <link rel="stylesheet" type="text/css" href="{{ asset('admin/css/manufacturers.css') }}">
+    
     <style>
        .password-wrapper {
     position: relative;
@@ -104,6 +105,11 @@
 
                     <a href="{{ url('edit-plant-admin/' .$plant['id']) }}"
                         style="background: var(--green);color: var(--white);padding: 12px 20px;border-radius: 5px;font-size: 14px;box-shadow: 0 4px 10px #5f0f5845;display: inline-block;position: relative;cursor:pointer">Edit Plant</a>
+
+                        <a class="edit-btn" style="background: var(--red);cursor:pointer !important;font-size: 14px;" data-bs-toggle="modal"
+                        data-bs-target="#DeletePlant" data-plant-id="{{ $plant['id'] }}" data-mfs-id = "{{ $mfs['id'] }}"> Delete</a>
+
+                        <a class="ChangePasswordbtn" style="background: var(--green);color: var(--white);padding: 12px 20px;border-radius: 5px;font-size: 14px;box-shadow: 0 4px 10px #5f0f5845;display: inline-block;position: relative;cursor:pointer"  href="{{ route('admin.manufracturers.corporateshow', encrypt($mfs->id)) }}">Back</a>
                 </div>
             </div>
             
@@ -125,35 +131,9 @@
                             @endphp
                             <div class="user-profile-text">
                                 <h2>{{ $mfs->plant_name ?? 'N/A'}}({{$type ?? 'N/A'}})</h2>
-                                <div class="status-text 
-                                    @if($plant->status == 1 && $plant->is_approved == 'N') 
-                                        status-rejected
-                                    @elseif($plant->status == 1 && $plant->is_approved == 'Y') 
-                                        status-active
-                                    @elseif(is_null($plant->status) && is_null($plant->is_approved)) 
-                                    status-pending
-                                    @elseif($plant->status == 0 && $plant->is_approved == 'N') 
-                                        status-rejected
-                                    @elseif($plant->status == 0 && is_null($plant->is_approved)) 
-                                        status-pending
-                                    @else
-                                        status-pending
-                                    @endif
-                                ">
-                                    @if($plant->status == 1 && $plant->is_approved == 'N')
-                                        Unapproved
-                                    @elseif($plant->status == 1 && $plant->is_approved == 'Y')
-                                        Approved
-                                    @elseif($plant->status == 0 && $plant->is_approved == 'N')
-                                        Unapproved
-                                    @elseif(is_null($plant->status) && is_null($plant->is_approved)) 
-                                        Pending
-                                    @elseif($plant->status == 0 && is_null($plant->is_approved))
-                                        Pending
-                                    @else
-                                        Pending
-                                    @endif
-                                </div>
+                                <div
+                                        class="status-text  {{ $mfs->status == 1 ? 'status-active' : 'status-inactive' }}">
+                                        {{ $mfs->status == 1 ? 'Approved' : 'Pending' }}</div>
                             </div>
                         </div>
                     </div>
@@ -210,7 +190,38 @@
                         </div>
                         <div class="plants-details-head-text">
 
-                        <h4>{{ $plant['plant_name'] ?? $mfs['plant_name'] ?? 'N/A' }}</h4>
+                        <h4>{{ $plant['plant_name'] ?? $mfs['plant_name'] ?? 'N/A' }}
+                        <span class="status-text 
+                                    @if($plant->status == 1 && $plant->is_approved == 'N') 
+                                        status-rejected
+                                    @elseif($plant->status == 1 && $plant->is_approved == 'Y') 
+                                        status-active
+                                    @elseif(is_null($plant->status) && is_null($plant->is_approved)) 
+                                    status-pending
+                                    @elseif($plant->status == 0 && $plant->is_approved == 'N') 
+                                        status-rejected
+                                    @elseif($plant->status == 0 && is_null($plant->is_approved)) 
+                                        status-pending
+                                    @else
+                                        status-pending
+                                    @endif
+                                ">
+                                    @if($plant->status == 1 && $plant->is_approved == 'N')
+                                        Unapproved
+                                    @elseif($plant->status == 1 && $plant->is_approved == 'Y')
+                                        Approved
+                                    @elseif($plant->status == 0 && $plant->is_approved == 'N')
+                                        Unapproved
+                                    @elseif(is_null($plant->status) && is_null($plant->is_approved)) 
+                                        Pending
+                                    @elseif($plant->status == 0 && is_null($plant->is_approved))
+                                        Pending
+                                    @else
+                                        Pending
+                                    @endif
+                                </span>
+                        </h4>
+                        
                             <div class="plants-details-location">
                                 <img src="{{ asset('images/location-icon.svg') }}">{{ $plant['full_address'] ?? $mfs['full_address'] }}
                             </div>
@@ -334,7 +345,7 @@
                                 </div>
                                 <div class="contact-item-info">
                                     <img
-                                        src="{{ asset('images/call.svg') }}">{{ $plant && $plant['phone'] ? '+1' . $plant['phone'] : ($mfs['phone'] ? '+1' . $mfs['phone'] : 'N/A') }}
+                                        src="{{ asset('images/call.svg') }}">{{ $plant && $plant['phone'] ? '+1' . $plant['phone'] : 'N/A' }}
                                 </div>
 
                                 <div class="contact-item-info">
@@ -362,7 +373,13 @@
                                                     @endif
                                                 </div>
                                                 <div class="sales-manager-content">
-                                                    <h3>{{ $manager['name'] }}</h3>
+                                                @php
+                                                $nameParts = explode(' ', $manager['name']);
+                                                $firstName = ucfirst(strtolower($nameParts[0]));
+                                                $lastName = isset($nameParts[1]) ? ucfirst(strtolower($nameParts[1])) : '';
+                                                $name = $firstName . ' ' . $lastName;
+                                                @endphp
+                                                    <h3>{{ $name }}</h3>
                                                     <h4>{{ $manager['designation'] }}</h4>
                                                     <div class="sales-manager-contact">
                                                         <img src="{{ asset('images/call.svg') }}">
@@ -465,6 +482,30 @@
         </div>
 
 
+        <div class="modal ss-modal fade" id="DeletePlant" tabindex="-1" aria-labelledby="exampleModalLabel"
+            aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-body">
+                        <div class="ss-modal-delete">
+                            <p id="delete-message">Are you sure you want to Delete this Plant?</p>
+                            <form id="inactivate-form" method="POST">
+                                @csrf
+                                <input type="hidden" id="plant-id" name="plant_id">
+                                <input type="hidden" id="mfs-id" name="mfs_id">
+                                <div class="ss-modal-delete-action">
+                                    <button type="button" id="confirm-delete" class="yes-btn">Yes, Confirm</button>
+                                    <button type="button" class="cancel-btn" data-bs-dismiss="modal"
+                                        aria-label="Close">Cancel</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
         <div class="modal lm-modal fade" id="ChangePassword" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -535,6 +576,20 @@
     function hideLoader() {
         document.getElementById('loader').style.display = 'none';
     }
+
+    $('#DeletePlant').on('show.bs.modal', function(event) {
+    // Get the button that triggered the modal
+    var button = $(event.relatedTarget); // Button that triggered the modal
+
+    // Extract data attributes
+    var plantId = button.data('plant-id'); 
+    var mfsId = button.data('mfs-id'); 
+
+    // Set the values in the hidden inputs
+    var modal = $(this);
+    modal.find('#plant-id').val(plantId);
+    modal.find('#mfs-id').val(mfsId);
+});
 </script>
 
         <script>
@@ -548,90 +603,137 @@
 
                 // Handle form submission via AJAX
                 $('#confirm-activate').on('click', function() {
-            var plantId = $('#plant-id').val();
+                    var plantId = $('#plant-id').val();
             
-            // Show the loader before the request
-            showLoader();
+                    // Show the loader before the request
+                    showLoader();
             
-            $.ajax({
-                url: '{{ route('admin.activate.plant') }}', // Adjust the URL to match your route
-                type: 'POST',
-                data: {
-                    _token: '{{ csrf_token() }}',
-                    plant_id: plantId
-                },
-                success: function(response) {
-                    // Hide the loader
-                    hideLoader();
+                    $.ajax({
+                        url: '{{ route('admin.activate.plant') }}', // Adjust the URL to match your route
+                        type: 'POST',
+                        data: {
+                            _token: '{{ csrf_token() }}',
+                            plant_id: plantId
+                        },
+                        success: function(response) {
+                            // Hide the loader
+                            hideLoader();
 
-                    // Success message using Swal
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Activated!',
-                        text: 'Plant has been successfully activated.'
-                    }).then(() => {
-                        // Close the modal and reload the page after alert is closed
-                        $('#activePlant').modal('hide');
-                        location.reload();
+                            // Success message using Swal
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Approved!',
+                                text: 'Plants have been approved successfully!'
+                            }).then(() => {
+                                // Close the modal and reload the page after alert is closed
+                                $('#activePlant').modal('hide');
+                                location.reload();
+                            });
+                        },
+                        error: function(xhr) {
+                            // Hide the loader
+                            hideLoader();
+
+                            // Error message using Swal
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error!',
+                                text: 'An error occurred while activating the plant.'
+                            });
+                        }
                     });
-                },
-                error: function(xhr) {
-                    // Hide the loader
-                    hideLoader();
+                });
 
-                    // Error message using Swal
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Error!',
-                        text: 'An error occurred while activating the plant.'
+                    // Handle form submission for inactivating plant via AJAX
+                    $('#confirm-inactivate').on('click', function() {
+                        var plantId = $('#plant-id').val();
+                        
+                        // Show the loader before the request
+                        showLoader();
+                        
+                        $.ajax({
+                            url: '{{ route('admin.inactivate.plant') }}', // Adjust the URL to match your route
+                            type: 'POST',
+                            data: {
+                                _token: '{{ csrf_token() }}',
+                                plant_id: plantId
+                            },
+                            success: function(response) {
+                                // Hide the loader
+                                hideLoader();
+
+                                // Success message using Swal
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'Unapproved!',
+                                    text: 'Plants have been unapproved successfully!'
+                                }).then(() => {
+                                    // Close the modal and reload the page after alert is closed
+                                    $('#inactivePlant').modal('hide');
+                                    location.reload();
+                                });
+                            },
+                            error: function(xhr) {
+                                // Hide the loader
+                                hideLoader();
+
+                                // Error message using Swal
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Error!',
+                                    text: 'An error occurred while inactivating the plant.'
+                                });
+                            }
+                        });
                     });
-                }
-            });
-        });
 
-        // Handle form submission for inactivating plant via AJAX
-        $('#confirm-inactivate').on('click', function() {
-            var plantId = $('#plant-id').val();
+
+                    $('#confirm-delete').on('click', function() {
+                    var plantId = $('#plant-id').val();
+                    var mfsId = $('#mfs-id').val();
+
+                    console.log('Plant ID:', plantId);
+                    console.log('MFS ID:', mfsId);
+                    // Show the loader before the request
+                    showLoader();
             
-            // Show the loader before the request
-            showLoader();
-            
-            $.ajax({
-                url: '{{ route('admin.inactivate.plant') }}', // Adjust the URL to match your route
-                type: 'POST',
-                data: {
-                    _token: '{{ csrf_token() }}',
-                    plant_id: plantId
-                },
-                success: function(response) {
-                    // Hide the loader
-                    hideLoader();
+                    $.ajax({
+                        url: '{{ route('delete.plant') }}', // Adjust the URL to match your route
+                        type: 'GET',
+                        data: {
+                            _token: '{{ csrf_token() }}',
+                            plant_id: plantId
+                        },
+                        success: function(response) {
+                            // Hide the loader
+                            hideLoader();
 
-                    // Success message using Swal
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Inactivated!',
-                        text: 'Plant has been successfully inactivated.'
-                    }).then(() => {
-                        // Close the modal and reload the page after alert is closed
-                        $('#inactivePlant').modal('hide');
-                        location.reload();
-                    });
-                },
-                error: function(xhr) {
-                    // Hide the loader
-                    hideLoader();
+                            // Success message using Swal
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Deleted!',
+                                text: 'Plant has been successfully Deleted.'
+                            }).then(() => {
+                                // Close the modal and reload the page after alert is closed
+                                $('#deletePlant').modal('hide');
+                                window.location.href = '{{ route('admin.manufracturers.redirectWithEncryption') }}?item_id=' + mfsId;
+                            });
+                        },
+                        error: function(xhr) {
+                            // Hide the loader
+                            hideLoader();
 
-                    // Error message using Swal
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Error!',
-                        text: 'An error occurred while inactivating the plant.'
+                            // Error message using Swal
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error!',
+                                text: 'An error occurred while deleting the plant.'
+                            });
+                        }
                     });
-                }
-            });
-        });
+                });
     });
+
         </script>
 
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>

@@ -1,11 +1,6 @@
 @extends('admin.layouts')
 @push('css')
     <link rel="stylesheet" type="text/css" href="{{ asset('admin/css/manufacturers.css') }}">
-    <link rel="stylesheet" type="text/css" href="{{ asset('css/responsive.css') }}">
-	<script src="{{asset('js/jquery-3.7.1.min.js')}}" type="text/javascript"></script>
-    <link rel="stylesheet" type="text/css" href="{{asset('css/managelocations.css')}}">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    
     <style>
         /*input[type="checkbox"] {
             appearance: none;
@@ -51,6 +46,7 @@
             line-height: 40px;
             border-radius: 5px;
         }
+
         .switch-toggle {
             display: inline-block;
             position: relative;
@@ -98,56 +94,68 @@
         .toggle__input:checked + .toggle__fill:before {
             transform: translateX(26px);
         }
-
-        span.input-group-text {
-            background: transparent;
-            border-radius: 5px;
-            font-size: 13px;
-            border: 1px solid var(--border);
-            font-weight: 400;
-            height: auto;
-            padding: 15px;
-            outline: 0;
-            display: inline-block;
-            color: var(--pink);
-            box-shadow: 0px 8px 13px 0px rgba(0, 0, 0, 0.05);
+        .status-rejected {
+            color: var(--white);
+            background: var(--red);
         }
-        .eye-icon {
-            position: absolute;
-            right: 10px;
-            top: 50%;
-            transform: translateY(-50%);
-            cursor: pointer;
+        .status-pending {
+            color: var(--white);
+            background: var(--yellow);
         }
 
-        .form-group {
-            position: relative;
-        }
-
-        .pac-container {
-        z-index: 9999; /* Ensure this is higher than the modal's z-index */
+        .loader-container {
+        position: fixed;
+        z-index: 9999;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        /* Semi-transparent black overlay */
+        display: none;
+        /* Initially hidden */
+        justify-content: center;
+        align-items: center;
     }
-    span.input-group-text {
-            background: transparent;
-            border-radius: 5px;
-            font-size: 13px;
-            border: 1px solid var(--border);
-            font-weight: 400;
-            height: auto;
-            padding: 15px;
-            outline: 0;
-            display: inline-block;
-            color: var(--pink);
-            box-shadow: 0px 8px 13px 0px rgba(0, 0, 0, 0.05);
+
+    .loader {
+        border: 8px solid #f3f3f3;
+        /* Light grey */
+        border-top: 8px solid #3498db;
+        /* Blue */
+        border-radius: 50%;
+        width: 50px;
+        height: 50px;
+        animation: spin 1s linear infinite;
+        position: relative;
+        top: 46%;
+        left: 46%;
+
+
+    }
+
+    .loader-container.show {
+        display: flex;
+    }
+
+
+    @keyframes spin {
+        0% {
+            transform: rotate(0deg);
         }
+
+        100% {
+            transform: rotate(360deg);
+        }
+    }
     </style>
 @endpush
 @section('content')
     <div class="body-main-content">
         <div class="ss-card">
             <div class="card-header">
-                <h2>Corporate Representatives({{ $total }})</h2>
-                <div class="search-filter" style="width:77%">
+                <h2>Plants({{ $total }})</h2>
+                <div class="search-filter wd80">
                     <div class="row g-1" style="justify-content: end;">
 
                         <div class="col-md-3  d-none">
@@ -170,7 +178,7 @@
                         </div>
 
 
-                        <div class="col-md-8">
+                        <div class="col-md-6">
                             <div class="search-form-refresh-group">
                                 <div class="search-form-input-group">
                                     <form action="" method="get">
@@ -184,43 +192,36 @@
                                         </div>
                                     </form>
                                 </div>
-                                <div class="col-md-3">
+                                <div class="col-md-4">
                                      <div class="form-group">
                                         <select name="status" class="form-control"  onchange="changeStatus(this.value)">
-                                        <option value="2" {{ request('status') == '2' ? 'selected' : '' }}>SHOW ALL</option>
+                                        <option value="2" {{ request('status') == '2' ? 'selected' : '' }}>Show All</option>
                                         <option value="1" {{ request('status') == '1' ? 'selected' : '' }}>Active</option>
                                         <option value="0" {{ request('status') == '0' ? 'selected' : '' }}>Inactive</option>
                                         </select> 
                                     </div> 
                                 </div>
                                 <div class="search-form-refresh-action">
-                                    <a class="btn-refresh" href="{{ route('admin.manufracturers.corporate') }}"> <i class="fa fa-refresh"
-                                    aria-hidden="true"></i></a>   
+                                    <a class="btn-refresh" href="{{ route('admin.manufracturers') }}"> <i class="fa fa-refresh"
+                                    aria-hidden="true"></i></a>
 
-                                    <a href="{{ route('admin.manufracturers.corporate', array_merge(request()->all(), ['download' => 1])) }}" class="btnDownloadExcel">
+                                    <a href="{{ route('admin.manufracturers', array_merge(request()->all(), ['download' => 1])) }}" class="btnDownloadExcel">
                                         <i class="fa fa-file-excel-o" aria-hidden="true"></i>
-                                    </a> 
-
-                                    <a href="javascript:void(0)" data-toggle="modal" data-target="#createAccountModal" class="btnDownloadExcel">
-                                        Create Account
-                                    </a>
+                                    </a>    
                                 </div>
                             </div> 
                         </div>
                       
-                      
-                        <div class="col-md-2 d-none">
+                        <div class="col-md-2">
                             <div class="form-group">
-                                <a class="btn-bl" href="" style="background-color: var(--green);"
-                                    data-bs-toggle="modal" id="open-activate-modal">Mark
-                                    As Active</a>
+                                <a class="btn-bl"  style="background-color: var(--green);"
+                                    data-bs-toggle="modal" id="open-activate-modal">Approve</a>
                             </div>
                         </div>
-                        <div class="col-md-2 d-none">
+                        <div class="col-md-2">
                             <div class="form-group">
                                 <a class="btn-bl" href="" style="background-color: var(--red);"
-                                    data-bs-toggle="modal" id="open-inactivate-modal">Mark
-                                    As Inactive</a>
+                                    data-bs-toggle="modal" id="open-inactivate-modal">Unapprove</a>
                             </div>
                         </div>
                     </div>
@@ -232,13 +233,14 @@
                     <?php $s_no = 1; ?>
                         @forelse ($manufracturers as $item)
                         @php 
-                        $manufacturer = \App\Models\PlantLogin::where('id',$item->id)->first();
+                        $manufacturer = \App\Models\PlantLogin::where('id',$item->manufacturer_id)->first();
                         @endphp
+                        @if ($manufacturer)
                             <div class="user-table-item">
                                 <div class="row g-1 align-items-center">
                                     <div class="col-md-3">
                                         <div class="usercheckbox-info">
-                                            <div class="sscheckbox d-none">
+                                            <div class="sscheckbox">
                                                 <input type="checkbox" name="select_plant[]" value="{{ $item->id }}" id="{{ $item->id }}">
                                                 <label for="{{ $item->id }}">&nbsp;</label>
                                             </div>
@@ -253,19 +255,21 @@
                                             @endphp
                                             <div class="user-profile-item">
                                                 <div class="user-profile-media">
-                                                    @if($manufacturer->image)
+                                                    @if ($manufacturer->image)
+                                                        <img
+                                                            src="{{ asset('upload/manufacturer-image/' . $manufacturer['image']) }}">
+                                                    @elseif($image)
                                                     <img
-                                                    src="{{ asset('upload/manufacturer-image/' . $manufacturer['image']) }}">
-                                                    @else 
-
+                                                    src="{{ asset('upload/manufacturer-image/' . $image['image_url']) }}">
+                                                    @else
                                                         <img src="{{ asset('images/default-user-2.png') }}">
                                                     @endif
                                                 </div>
                                                 <div class="user-profile-text">
-                                                    <h2>{{ $item->business_name ?? 'N/A' }}</h2>
+                                                <h2>{{ $item->plant_name ?? 'N/A' }}</h2>
                                                     <div
                                                         class="status-text d-none {{ $item->status == 1 ? 'status-active' : 'status-inactive' }}">
-                                                        {{ $item->status == 1 ? 'Active' : 'Inactive' }}
+                                                        {{ $item->status == 1 ? 'Approved' : 'Pending' }}
                                                     </div>
                                                 </div>
                                             </div>
@@ -279,7 +283,7 @@
                                                         <img src="{{ asset('images/location.svg') }}">
                                                     </div>
                                                     <div class="user-contact-info-content">
-                                                        <h2>Mgf. Location</h2>
+                                                        <h2>Location</h2>
                                                         <p>{{ $item->full_address ?? 'N/A' }}</p>
                                                     </div>
                                                 </div>
@@ -308,14 +312,47 @@
                                                     </div>
                                                 </div>
                                             </div>
+                                            @php 
+                                                $type = 'N/A';
+                                                if($manufacturer->plant_type === 'corp_rep'){
+                                                    $type =  'Corp. Representative';
+                                                }elseif($manufacturer->plant_type === 'plant_rep'){
+                                                    $type = ' Plant Representative';
+                                                }
+                                            @endphp
                                             <div class="col-md-2">
                                                 <div class="user-contact-info">
                                                     <div class="user-contact-info-content">
                                                         <h2>Status</h2>
-                                                        <div
-                                                        class="status-text {{ $item->status == 1 ? 'status-active' : 'status-inactive' }}">
-                                                        {{ $item->status == 1 ? 'Approved' : 'Pending' }}
-                                                    </div>
+                                                        <div class="status-text 
+                                                            @if($item->status == 1 && $item->is_approved == 'N') 
+                                                                status-rejected
+                                                            @elseif($item->status == 1 && $item->is_approved == 'Y') 
+                                                                status-active
+                                                            @elseif(is_null($item->status) && is_null($item->is_approved)) 
+                                                            status-pending
+                                                            @elseif($item->status == 0 && $item->is_approved == 'N') 
+                                                                status-rejected
+                                                            @elseif($item->status == 0 && is_null($item->is_approved)) 
+                                                                status-pending
+                                                            @else
+                                                                status-pending
+                                                            @endif
+                                                        ">
+                                                            @if($item->status == 1 && $item->is_approved == 'N')
+                                                                Unapproved
+                                                            @elseif($item->status == 1 && $item->is_approved == 'Y')
+                                                                Approved
+                                                            @elseif($item->status == 0 && $item->is_approved == 'N')
+                                                                Unapproved
+                                                            @elseif(is_null($item->status) && is_null($item->is_approved)) 
+                                                                Pending
+                                                            @elseif($item->status == 0 && is_null($item->is_approved))
+                                                                Pending
+                                                            @else
+                                                                Pending
+                                                            @endif
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
@@ -323,7 +360,7 @@
                                             <div class="col-md-1 text-end">
                                                 <div class="action-item-text">
                                                     <a class="action-btn"
-                                                        href="{{ route('admin.manufracturers.corporateshow', encrypt($item->id)) }}">
+                                                        href="{{ route('admin.manufracturers.show', encrypt($item->id)) }}">
                                                         <img src="{{ asset('images/arrow-right.svg') }}">
                                                     </a>
                                                 </div>
@@ -333,6 +370,8 @@
                                 </div>
                             </div>
                             <?php $s_no++; ?>
+                            @endif
+                            
                         @empty
                             <p class="text-center">No records found</p>
                         @endforelse
@@ -387,7 +426,7 @@
                 <div class="modal-body">
                     <div class="ss-modal-delete">
                         {{-- <div class="ss-modal-delete-icon"><img src=""></div> --}}
-                        <p id="delete-message">Are you sure you want to In-activate these Plants?</p>
+                        <p id="delete-message">Are you sure you want to Unapprove these Plants?</p>
                         <form id="inactivate-form" method="POST">
                             @csrf
                             <input type="hidden" id="plant-ids" name="plant_ids">
@@ -413,7 +452,7 @@
                 <div class="modal-body">
                     <div class="ss-modal-delete">
                         {{-- <div class="ss-modal-delete-icon"><img src=""></div> --}}
-                        <p id="delete-message">Are you sure you want to Activate these Plants?</p>
+                        <p id="delete-message">Are you sure you want to Approve these Plants?</p>
                         <form id="activate-form" method="POST">
                             @csrf
                             <input type="hidden" id="plant-idss" name="plant_ids">
@@ -429,259 +468,23 @@
             </div>
         </div>
     </div>
-    <!-- Modal -->
-    <div class="modal ss-modal fade" id="createAccountModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-        <div class="modal-header">
-                <h2 class="modal-title" style="color: var(--pink);margin-left: 171px;margin-top: 14px;font-size: 20px;">Create Account</h2>
-                <button type="button" class="close" id="closeModalBtn" data-dismiss="modal" aria-label="Close" style="margin-left: 9rem;">
-                    <span aria-hidden="true">&times;</span>
-                </button>
+    <div class="loader-container" id="loader">
+                <div class="loader"></div>
             </div>
-            <div class="modal-body">
-                <div class="ss-modal-form">
-                <form class="pt-4" method="post" action="{{ route('saveManufacturerAdmin') }}" enctype="multipart/form-data" autocomplete="off" id="manufacturerForm">
-                @csrf
-                <input type="hidden" name="rep_type" value="corp_rep">
-                        <div class="row">
-                        <div class="col-md-12">
-                            <div class="form-group">
-                            <input type="text" name="full_name" class="form-control @error('full_name') is-invalid @enderror" placeholder="Representative Name" value="{{ old('full_name') }}">
-                            @error('full_name')
-                                <span class="invalid-feedback" role="alert">
-                                    <strong>{{ $message }}</strong>
-                                </span>
-                            @enderror
-                        </div>
-                            </div>
-
-                            <div class="col-md-6">
-                                    <div class="form-group">
-                                <input id="email" type="email" name="email" required class="form-control @error('email') is-invalid @enderror" placeholder="Email Address *" value="{{ old('email') }}" onkeyup="checkEmail()">
-                                @error('email')
-                                    <span class="invalid-feedback" role="alert">
-                                        <strong>{{ $message }}</strong>
-                                    </span>
-                                @enderror
-                                <div id="email-feedback" class="invalid-feedback" style="display: none;"></div>
-                            </div>
-                            </div>
-
-                            <div class="col-md-6">
-                                <div class="form-group-phone">
-                                    <span class="input-group-text">+1</span>
-                                    <input type="text" name="mobile" class="form-control phone @error('mobile') is-invalid @enderror" placeholder="Phone Number" value="{{ old('mobile') }}" maxlength="14">
-                                    @error('mobile')
-                                        <span class="invalid-feedback" role="alert">
-                                            <strong>{{ $message }}</strong>
-                                        </span>
-                                    @enderror
-                                </div>
-                            </div>
-
-                            <div class="col-md-12">
-                    <div class="form-group">
-                        <input type="text" name="manufacturer_name" class="form-control @error('manufacturer_name') is-invalid @enderror" placeholder="Business Name *" value="{{ old('manufacturer_name') }}" required>
-                        @error('manufacturer_name')
-                            <span class="invalid-feedback" role="alert">
-                                <strong>{{ $message }}</strong>
-                            </span>
-                        @enderror
-                    </div>
-                </div>
-
-                            <div class="col-md-12">
-                            <div class="form-group form-group-icon">
-                                            <input id="geocoder" class="form-control" type="text" placeholder="Business Address *" required name="manufacturer_address" required class="form-control @error('manufacturer_address') is-invalid @enderror" placeholder="Search for location" value="{{ old('manufacturer_address') }}">
-                                            <input type="hidden" id="full_address" name="full_address" required class="form-control">
-                                            <input type="hidden" id="latitude" name="latitude">
-                                            <input type="hidden" id="longitude" name="longitude">
-                                            <input type="hidden" id="locationSelected" name="locationSelected" value="false">
-                                                <span class="form-input-icon"><img src="{{asset('images/location.svg')}}"></span>
-                                                @error('manufacturer_address')
-                                                    <span class="invalid-feedback" role="alert">
-                                                        <strong>{{ $message }}</strong>
-                                                    </span>
-                                                @enderror
-                                            </div>
-                            </div>
-
-                            <div class="col-md-12">
-                    <div class="form-group">
-                        <input type="password" name="password" class="form-control @error('password') is-invalid @enderror" placeholder="Create New Password *" id="password" required>
-                        <span class="eye-icon" onclick="togglePasswordVisibility('password', this)">
-                            <i class="fas fa-eye"></i>
-                        </span>
-                        @error('password')
-                            <span class="invalid-feedback" role="alert">
-                                <strong>{{ $message }}</strong>
-                            </span>
-                        @enderror
-                    </div>
-                </div>
-
-                <div class="col-md-12">
-                    <div class="form-group">
-                        <input type="password" name="password_confirmation" id="password_confirmation" required class="form-control @error('password_confirmation') is-invalid @enderror" placeholder="Confirm New Password *">
-                        <span class="eye-icon" onclick="togglePasswordVisibility('password_confirmation', this)">
-                            <i class="fas fa-eye"></i>
-                        </span>
-                        @error('password_confirmation')
-                            <span class="invalid-feedback" role="alert">
-                                <strong>{{ $message }}</strong>
-                            </span>
-                        @enderror
-                    </div>
-                </div>
-
-                            <div class="col-md-12">
-                                <div class="form-group">
-                                    <button type="submit" class="save-btn">Signup</button>
-                                </div>
-                            </div>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
-    </div>
+            <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" rel="stylesheet">
     <!-- Toastr JS -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
-    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
-<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
-<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDJ-ly7awveXkj-TeHKeCK3NFxxQR98i3U&libraries=places"></script>
-
     <script>
-    document.addEventListener('DOMContentLoaded', function () {
-        var input = document.getElementById('geocoder');
-        var autocomplete = new google.maps.places.Autocomplete(input);
+         function showLoader() {
+        document.getElementById('loader').style.display = 'block';
+    }
 
-        autocomplete.addListener('place_changed', function () {
-            var place = autocomplete.getPlace();
-
-            if (!place.geometry) {
-                window.alert("No details available for input: '" + place.name + "'");
-                return;
-            }
-
-            document.getElementById('full_address').value = place.formatted_address;
-            document.getElementById('latitude').value = place.geometry.location.lat();
-            document.getElementById('longitude').value = place.geometry.location.lng();
-            document.getElementById('locationSelected').value = 'true';
-        });
-
-        // Handle clear event
-        document.getElementById('geocoder').addEventListener('change', function () {
-            if (document.getElementById('geocoder').value === '') {
-                document.getElementById('full_address').value = '';
-                document.getElementById('latitude').value = '';
-                document.getElementById('longitude').value = '';
-                document.getElementById('locationSelected').value = 'false';
-            }
-        });
-
-        // Form submission validation
-        // document.getElementById('add-plant-form').addEventListener('submit', function(e) {
-        //     var locationSelected = document.getElementById('locationSelected').value;
-            
-        //     // Validation: Check if location is selected
-        //     if (locationSelected == 'true') {
-        //         alert('Please select a location from the dropdown.');
-        //         e.preventDefault(); // Prevent form submission
-        //         return; // Exit the function to avoid showing the loader
-        //     }
-            
-        //     // Show the loader if the form is valid
-        //     document.getElementById('loader').style.display = 'block';
-        // });
-    });
-</script>
-    <script>
-        $(document).ready(function() {
-            $(document).on('input', '.phone', function() {
-            var phoneNumber = $(this).val().replace(/\D/g, ''); // Remove non-numeric characters
-            var formattedPhoneNumber = formatPhoneNumber(phoneNumber); // Format the phone number
-
-            // Update the input value with formatted phone number
-            $(this).val(formattedPhoneNumber);
-
-            // Validate the formatted phone number
-            validatePhoneNumber(phoneNumber, $(this));
-        });
-
-        function formatPhoneNumber(phoneNumber) {
-            // Apply the phone number format (999)-999-9999
-            var formattedPhoneNumber = phoneNumber.replace(/(\d{0,3})(\d{0,3})(\d{0,4})/, function(_, p1, p2, p3) {
-                if (p3) {
-                    return '(' + p1 + ')-' + p2 + '-' + p3;
-                } else if (p2) {
-                    return '(' + p1 + ')-' + p2;
-                } else if (p1) {
-                    return '(' + p1;
-                } else {
-                    return '';
-                }
-            });
-            return formattedPhoneNumber;
-        }
-
-        function validatePhoneNumber(phoneNumber, element) {
-            // Check if the formatted phone number has exactly 10 digits
-            var isValid = phoneNumber.length === 10;
-
-            // Toggle 'is-invalid' class based on validation
-            if (!isValid) {
-                element.addClass('is-invalid');
-            } else {
-                element.removeClass('is-invalid');
-            }
-        }
-    document.addEventListener('DOMContentLoaded', function () {
-        var input = document.getElementById('geocoder');
-        var autocomplete = new google.maps.places.Autocomplete(input);
-
-        autocomplete.addListener('place_changed', function () {
-            var place = autocomplete.getPlace();
-
-            if (!place.geometry) {
-                window.alert("No details available for input: '" + place.name + "'");
-                return;
-            }
-
-            document.getElementById('full_address').value = place.formatted_address;
-            document.getElementById('latitude').value = place.geometry.location.lat();
-            document.getElementById('longitude').value = place.geometry.location.lng();
-            document.getElementById('locationSelected').value = 'true';
-        });
-
-        // Handle clear event
-        document.getElementById('geocoder').addEventListener('change', function () {
-            if (document.getElementById('geocoder').value === '') {
-                document.getElementById('full_address').value = '';
-                document.getElementById('latitude').value = '';
-                document.getElementById('longitude').value = '';
-                document.getElementById('locationSelected').value = 'false';
-            }
-        });
-
-        // Form submission validation
-        // document.getElementById('add-plant-form').addEventListener('submit', function(e) {
-        //     var locationSelected = document.getElementById('locationSelected').value;
-            
-        //     // Validation: Check if location is selected
-        //     if (locationSelected == 'true') {
-        //         alert('Please select a location from the dropdown.');
-        //         e.preventDefault(); // Prevent form submission
-        //         return; // Exit the function to avoid showing the loader
-        //     }
-            
-        //     // Show the loader if the form is valid
-        //     document.getElementById('loader').style.display = 'block';
-        // });
-    });
+    // Function to hide the loader
+    function hideLoader() {
+        document.getElementById('loader').style.display = 'none';
+    }
+$(document).ready(function() {
     // Attach the event handler using event delegation
     $(document).on('change', '.toggle__input', function() {
         // Get the new status and the data-id of the clicked toggle
@@ -697,7 +500,7 @@
 
         // Perform the AJAX request to toggle the status
         $.ajax({
-            url: baseUrl + '/set_statuss_all',
+            url: baseUrl + '/set_status',
             type: 'POST',
             data: {
                 request_id: request_id,
@@ -765,6 +568,7 @@
             e.preventDefault();
             let form = document.getElementById('inactivate-form');
             let formData = new FormData(form);
+            showLoader();
             fetch("{{ route('set_status') }}", {
                     method: 'POST',
                     headers: {
@@ -774,14 +578,36 @@
                 })
                 .then(response => response.json())
                 .then(data => {
+                    hideLoader(); 
                     if (data.success) {
+                        Swal.fire({
+                        icon: 'success',
+                        title: 'Success',
+                        text: 'Status updated successfully!'
+                    }).then(() => {
+                        location.reload(); // Reload page after alert is closed
+                    });
                         location.reload();
                     } else {
-                        alert('An error occurred while updating the status.');
+                        Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'An error occurred while updating the status.'
+                    });
                     }
                 })
-                .catch(error => console.error('Error:', error));
-        });
+                .catch(error => {
+                hideLoader(); // Hide loader on error
+                console.error('Error:', error);
+                
+                // Error alert
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'An unexpected error occurred.'
+                });
+            });
+    });
 
 
 
@@ -789,6 +615,7 @@
             e.preventDefault();
             let form = document.getElementById('activate-form');
             let formData = new FormData(form);
+            showLoader();
             console.log(formData);
             fetch("{{ route('set_statuss') }}", {
                     method: 'POST',
@@ -799,14 +626,35 @@
                 })
                 .then(response => response.json())
                 .then(data => {
+                    hideLoader();
                     if (data.success) {
-                        location.reload();
+                        Swal.fire({
+                        icon: 'success',
+                        title: 'Success',
+                        text: 'Status updated successfully!'
+                    }).then(() => {
+                        location.reload(); // Reload page after alert is closed
+                    });
                     } else {
-                        alert('An error occurred while updating the status.');
+                        Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'An error occurred while updating the status.'
+                    });
                     }
                 })
-                .catch(error => console.error('Error:', error));
-        });
+                .catch(error => {
+                hideLoader(); // Hide loader on error
+                console.error('Error:', error);
+                
+                // Error alert
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'An unexpected error occurred.'
+                });
+            });
+    });
     </script>
     <script>
         document.getElementById('date').addEventListener('change', function() {
@@ -838,89 +686,5 @@
             // Reload the page with the new URL
             window.location.href = currentUrl.toString();
         }
-    </script> 
-
-    <script>
-   
-
-
-
-    function togglePasswordVisibility(fieldId, icon) {
-        var field = document.getElementById(fieldId);
-        if (field.type === "password") {
-            field.type = "text";
-            icon.innerHTML = '<i class="fas fa-eye-slash"></i>';
-        } else {
-            field.type = "password";
-            icon.innerHTML = '<i class="fas fa-eye"></i>';
-        }
-    }
-
-    let emailIsValid = true;
-    function checkEmail() {
-        const emailInput = document.getElementById('email');
-        const feedbackDiv = document.getElementById('email-feedback');
-        const submitButton = document.querySelector('button[type="submit"]');
-        
-        // Clear previous feedback
-        feedbackDiv.style.display = 'none';
-        feedbackDiv.textContent = '';
-
-        const email = emailInput.value;
-        
-        if (email.length > 0) {
-            // Fetch CSRF token from the meta tag
-            const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-
-            fetch('{{ route('checkEmail') }}', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': csrfToken
-                },
-                body: JSON.stringify({ email: email })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.exists) {
-                    feedbackDiv.textContent = 'This email is already registered.';
-                    feedbackDiv.style.display = 'block';
-                    emailIsValid = false;
-                    submitButton.disabled = true; // Disable the submit button
-                } else {
-                    emailIsValid = true;
-                    submitButton.disabled = false; // Enable the submit button
-                }
-            })
-            .catch(error => console.error('Error:', error));
-        } else {
-            emailIsValid = true;
-            submitButton.disabled = false; // Enable the submit button if email is empty
-        }
-    }
-
-    // Check email on form submit
-    document.querySelector('form').addEventListener('submit', function(event) {
-        if (!emailIsValid) {
-            event.preventDefault(); // Prevent form submission if email is invalid
-            alert('Please correct the email address before submitting.');
-        }
-    });
-</script>
-<script>
-    // Function to clear form after submission
-    document.getElementById('manufacturerForm').onsubmit = function() {
-        // If the form is successfully submitted, reset the form
-        setTimeout(function() {
-            document.getElementById('manufacturerForm').reset();
-        }, 1000); // Clear form after 1 second (adjust time if needed)
-    };
-
-    // Optional: You can also clear specific feedback or error messages if needed
-    function clearFeedback() {
-        document.querySelectorAll('.invalid-feedback').forEach(function(feedback) {
-            feedback.style.display = 'none';
-        });
-    }
-</script>
+    </script>
 @endsection

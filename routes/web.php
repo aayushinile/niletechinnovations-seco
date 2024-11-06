@@ -46,9 +46,12 @@ Route::get('/payment/failure', function () {
     return 'failure';
 });
 Route::post('/contact-us', [ManufacturerController::class, 'saveContact'])->name('contact.save');
+
+
 Route::get('manufacturer/login', [ManufacturerController::class, 'loginManufacturer'])->name('manufacturer.login');
 Route::post('manufacturer/login', [ManufacturerController::class, 'authenticate']);
 Route::middleware(['auth:manufacturer'])->group(function () {
+    Route::delete('/delete-sales-manager/{id}', [AjaxController::class, 'deleteSalesManager'])->name('deleteSalesManager');
     Route::get('manufacturer/dashboard', [ManufacturerController::class, 'dashboard'])->name('manufacturer.dashboard');
     Route::get('manufacturer/profile', [ManufacturerController::class, 'ManufacturerProfile'])->name('profile');
     Route::match(['get', 'post'], 'manufacturer/enquiry', [ManufacturerController::class, 'enquiries'])->name('manufacturer.enquiry');
@@ -66,7 +69,7 @@ Route::middleware(['auth:manufacturer'])->group(function () {
     Route::put('/manufacturers/{id}', [ManufacturerController::class, 'updateManufacturer'])->name('manufacturers.update');
     Route::post('/plant', [ManufacturerController::class, 'savePlant'])->name('savePlant');
     Route::post('/update-plant/{id}', [ManufacturerController::class, 'updatePlant'])->name('updatePlant');
-    Route::delete('/delete-sales-manager/{id}', [AjaxController::class, 'deleteSalesManager'])->name('deleteSalesManager');
+   
     Route::delete('/delete-plant', [ManufacturerController::class, 'delete'])->name('delete-plant');
 
     // Route::post('specifications', [AjaxController::class, 'saveSpecifications']);
@@ -84,10 +87,16 @@ Route::middleware(['auth:manufacturer'])->group(function () {
     Route::post('/manufacturer-import-excel', [ManufacturerController::class, 'ManufacturerimportExcel'])->name('plants.importExcelmanufacturer');
 });
 
+
+
 Route::get('/edit-plant-admin/{id}', [AdminController::class, 'EditPlant'])->name('EditPlantAdmin');
+Route::get('/delete-plant-admin', [AdminController::class, 'DeletePlant'])->name('delete.plant');
 Route::post('/update-plant-admin/{id}', [AdminController::class, 'updatePlantAdmin'])->name('updatePlantAdmin');
+Route::get('/add-plant-admin', [AdminController::class, 'AddPlantAdmin'])->name('AddPlantAdmin');
+Route::post('/save-plant-admin', [AdminController::class, 'savePlantAdmin'])->name('savePlantAdmin');
 Route::post("/toggleUserRequestStatus", [AjaxController::class, 'toggleUserRequestStatus'])->name('toggleUserRequestStatus');
 Route::post('/import-excel', [ManufacturerController::class, 'importExcel'])->name('plants.importExcel');
+Route::get('redirect-with-encryption', [AdminController::class, 'redirectWithEncryption'])->name('admin.manufracturers.redirectWithEncryption');
 
 Route::post('/manufacturers-admin', [AdminController::class, 'saveManufacturerAdmin'])->name('saveManufacturerAdmin');
 Route::group(['prefix' => 'manufacturer', 'as' => 'manufacturer.'], function () {
@@ -106,6 +115,7 @@ Route::post('/signup', [ManufacturerController::class, 'saveManufacturer'])->nam
 Route::post('/check-email', [ManufacturerController::class, 'checkEmail'])->name('checkEmail');
 
 // Admin routes 
+Route::post('/delete-sales-managers/{id}', [AjaxController::class, 'deleteSalesManagers'])->name('deleteSalesManagers');
 Route::post('set_status', [AjaxController::class, 'set_status'])->name('set_status');
 Route::post('delete_user_account', [AjaxController::class, 'deleteAccount'])->name('delete_user_account');
 Route::post('delete_user_account_multiple', [AjaxController::class, 'deleteAccountMultiple'])->name('delete_user_account_multiple');
@@ -124,6 +134,7 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.'], function () {
 
 
     Route::middleware(['auth:admin'])->group(function () {
+        
         Route::get('dashboard', [AdminController::class, 'dashboard'])->name('dashboard');
         Route::get('logout', [AdminController::class, 'logout'])->name('logout');
         Route::get('profile', [AdminController::class, 'profile'])->name('profile');
@@ -150,6 +161,9 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.'], function () {
         Route::get('plants/{slug}', [AdminController::class, 'manufracturersShow'])->name('manufracturers.show');
         
         Route::get('corporate/plants/{slug}', [AdminController::class, 'manufracturersCorpShow'])->name('manufracturers.corporateshow');
+
+
+        Route::get('corporate/plants-admin/{slug}', [AdminController::class, 'manufracturersCorpShowAdmin'])->name('manufracturers.corporateshowAdmin');
 
 
         //   settings

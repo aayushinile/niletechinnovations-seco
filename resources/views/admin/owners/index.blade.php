@@ -177,156 +177,116 @@
                 </div>
             </div>
             <div class="card-body">
-                <div class="ss-card-table">
-                    <div class="user-table-list">
-                    <?php $s_no = 1; ?>
-                        @forelse ($owners as $item)
-                            <div class="user-table-item">
-                                <div class="row g-1 align-items-center">
-                                    <div class="col-md-3">
-                                    <div class="usercheckbox-info">
-                                    <div class="sscheckbox">
+            <div class="ss-card-table">
+            <div class="" style="overflow-x: sc !important; width: 100% !important;">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th></th>
+                                <th>Community/Retailer Name</th>
+                                <th>Email</th>
+                                <th>Phone</th>
+                                <th>Type</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php $s_no = 1; ?>
+                            @forelse ($owners as $item)
+                                <tr>
+                                    <td>
                                         <input type="checkbox" name="select_plant[]" value="{{ $item->id }}" id="{{ $item->id }}">
                                         <label for="{{ $item->id }}">&nbsp;</label>
-                                            </div>
+                                    </td>
+                                    <td>
                                         <div class="user-profile-item">
                                             <div class="user-profile-media">
                                                 @if(empty($item->image))
-                                                <img
-                                                    src="{{ asset('images/default-user-2.png') }}">
-                                                @else 
-                                                <img src="{{ asset('upload/profile-image/' . $item->image) }}">
+                                                    <img src="{{ asset('images/default-user-2.png') }}" alt="Default Profile Image" width="50">
+                                                @else
+                                                    <img src="{{ asset('upload/profile-image/' . $item->image) }}" alt="{{ $item->fullname }}" width="50">
                                                 @endif
-                                                </div>
+                                            </div>
                                             <div class="user-profile-text">
                                                 <h2>{{ $item->fullname }}</h2>
-                                                <div
-                                                    class="status-text   {{ $item->status == 1 ? 'status-active' : 'status-inactive' }}">
-                                                    {{ $item->status == 1 ? 'Approved' : 'Pending for Approval' }}</div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    </div>
-                                    <div class="col-md-9">
-                                        <div class="row g-1 align-items-center">
-                                            <div class="col-md-3">
-                                                <div class="user-contact-info">
-                                                    <div class="user-contact-info-icon">
-                                                        <img src="{{ asset('admin/images/sms.svg') }}">
-                                                    </div>
-                                                    <div class="user-contact-info-content">
-                                                        <h2>Email</h2>
-                                                        <p>{{ $item->email }}</p>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            
-
-                                            <div class="col-md-3">
-                                                <div class="user-contact-info">
-                                                    <div class="user-contact-info-icon">
-                                                        <img src="{{ asset('admin/images/call.svg') }}">
-                                                    </div>
-                                                    <div class="user-contact-info-content">
-                                                        <h2>Phone</h2>
-                                                        <p>@if ($item->mobile)
-                    {{ substr($item->mobile, 0, 2) === '+1' ? $item->mobile : '+1 ' . $item->mobile }}
-                @else
-                    N/A
-                @endif</p>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div class="col-md-2">
-                                                <div class="user-contact-info">
-                                                    <div class="user-contact-info-content">
-                                                        <h2>Type</h2>
-                                                        <p> @if($item->type == 1)
-                                                                Retailer
-                                                            @else
-                                                                Community Owner
-                                                            @endif</p>
-                                                    </div>
-                                                </div>
-                                            </div>
-
-
-                                            <div class="col-md-3">
-                                                <div class="user-contact-info">
-                                                    <div class="user-contact-info-content">
-                                                        <h2>Status</h2>
-                                                        <div class="switch-toggle">
-                                    <label class="toggle" for="myToggleClass_{{ $s_no }}">
-                                        <input class="toggle__input myToggleClass" name="status" data-id="{{ $item->id }}" type="checkbox" id="myToggleClass_{{ $s_no }}" {{ $item->status == 1 ? 'checked' : '' }}>
-                                        <div class="toggle__fill"></div>
-                                    </label>
-                                </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            <div class="col-md-1 text-end">
-                                                <div class="action-item-text">
-                                                    <a class="action-btn"
-                                                        href="{{ route('admin.community.owners.show', encrypt($item->id)) }}"><img
-                                                            src="{{ asset('admin/images/arrow-right.svg') }}"></a>
+                                                <div class="status-text {{ $item->status == 1 ? 'status-active' : 'status-inactive' }}">
+                                                    {{ $item->status == 1 ? 'Approved' : 'Pending for Approval' }}
                                                 </div>
                                             </div>
                                         </div>
-                                    </div>
-                                </div>
-                            </div>
-                             <?php $s_no++; ?>
-                        @empty
-                            <div>
-                                <p class="text-center">No results found</p>
-                            </div>
-                           
-                        @endforelse
+                                    </td>
+                                    <td>{{ $item->email }}</td>
+                                    <td>
+                                        @if ($item->mobile)
+                                            {{ substr($item->mobile, 0, 2) === '+1' ? $item->mobile : '+1 ' . $item->mobile }}
+                                        @else
+                                            N/A
+                                        @endif
+                                    </td>
+                                    <td>
+                                        @if($item->type == 1)
+                                            Retailer
+                                        @else
+                                            Community Owner
+                                        @endif
+                                    </td>
+                                    <td>
+                                        <label class="toggle" for="myToggleClass_{{ $s_no }}">
+                                            <input class="toggle__input myToggleClass" name="status" data-id="{{ $item->id }}" type="checkbox" id="myToggleClass_{{ $s_no }}" {{ $item->status == 1 ? 'checked' : '' }}>
+                                            <div class="toggle__fill"></div>
+                                        </label>
+                                    </td>
+                                    <td>
+                                        <a class="action-btn" href="{{ route('admin.community.owners.show', encrypt($item->id)) }}">
+                                            <img src="{{ asset('admin/images/arrow-right.svg') }}" alt="View">
+                                        </a>
+                                    </td>
+                                </tr>
+                                <?php $s_no++; ?>
+                            @empty
+                                <tr>
+                                    <td colspan="8" class="text-center">No results found</td>
+                                </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
 
-
-
-                    </div>
-                    @if ($owners->isNotEmpty())
+                @if ($owners->isNotEmpty())
                     @if (method_exists($owners, 'hasPages'))
                         <div class="ss-table-pagination">
                             <ul class="ss-pagination">
                                 @if ($owners->onFirstPage())
                                     <li class="disabled" id="example_previous">
-                                        <a href="#" aria-controls="example" data-dt-idx="0" tabindex="0"
-                                            class="page-link">Prev</a>
+                                        <a href="#" aria-controls="example" data-dt-idx="0" tabindex="0" class="page-link">Prev</a>
                                     </li>
                                 @else
                                     <li id="example_previous">
-                                        <a href="{{ $owners->previousPageUrl() }}" aria-controls="example" data-dt-idx="0"
-                                            tabindex="0" class="page-link">Prev</a>
+                                        <a href="{{ $owners->previousPageUrl() }}" aria-controls="example" data-dt-idx="0" tabindex="0" class="page-link">Prev</a>
                                     </li>
                                 @endif
 
                                 @foreach ($owners->getUrlRange(1, $owners->lastPage()) as $page => $url)
                                     <li class="{{ $owners->currentPage() == $page ? 'active' : '' }}">
-                                        <a href="{{ $url }}" aria-controls="example"
-                                            data-dt-idx="{{ $page }}" tabindex="0"
-                                            class="page-link">{{ $page }}</a>
+                                        <a href="{{ $url }}" aria-controls="example" data-dt-idx="{{ $page }}" tabindex="0" class="page-link">{{ $page }}</a>
                                     </li>
                                 @endforeach
 
                                 @if ($owners->hasMorePages())
                                     <li class="next" id="example_next">
-                                        <a href="{{ $owners->nextPageUrl() }}" aria-controls="example" data-dt-idx="7"
-                                            tabindex="0" class="page-link">Next</a>
+                                        <a href="{{ $owners->nextPageUrl() }}" aria-controls="example" data-dt-idx="7" tabindex="0" class="page-link">Next</a>
                                     </li>
                                 @else
                                     <li class="disabled" id="example_next">
-                                        <a href="#" aria-controls="example" data-dt-idx="7" tabindex="0"
-                                            class="page-link">Next</a>
+                                        <a href="#" aria-controls="example" data-dt-idx="7" tabindex="0" class="page-link">Next</a>
                                     </li>
                                 @endif
                             </ul>
                         </div>
                     @endif
-                    @endif
-                </div>
+                @endif
+            </div>
             </div>
         </div>
     </div>

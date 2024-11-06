@@ -32,7 +32,7 @@ class EnquiriesExport implements FromCollection, WithHeadings, ShouldAutoSize
                 $plantName,
                 $item->user_name,
                 $item->email,
-                $item->phone_no,
+                $item->phone_no === '+1' ? 'N/A' : $item->phone_no,
                 $item->company_name,
                 $item->message,
                 'type' => $this->getType($item),
@@ -54,7 +54,7 @@ class EnquiriesExport implements FromCollection, WithHeadings, ShouldAutoSize
             case 2:
                 return 'Community Owner';
             default:
-                return 'N/A';
+                return 'Community Owner';
         }
     }
 

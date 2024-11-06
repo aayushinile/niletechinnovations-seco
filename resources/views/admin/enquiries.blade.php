@@ -97,12 +97,14 @@
                             @if (!$mergedData->isEmpty())
                                 @foreach ($mergedData as $data)
                                     <tr>
-                                        <td style="width: 8% !important;">{{ date('m-d-Y', strtotime($data->created_at)) }}</td>
+                                        <td style="width: 8% !important;">{{ date('m/d/Y', strtotime($data->created_at)) }}</td>
                                         <td>{{ $data->plant_name }}</td>
                                         <td>{{$data->type == 1 ? 'Retailer': 'Community Owner' }}</td>
                                         <td>{{ $data->user_name }}</td>
                                         <td>{{ $data->email }}</td>
-                                        <td style="width: 12% !important;"> {{ $data->phone_no }}</td>
+                                        <td style="width: 12% !important;">
+                                            {{ $data->phone_no == '+1' ? 'N/A' : $data->phone_no }}
+                                        </td>
                                         <td>{{ $data->company_name ?? 'N/A' }}</td>
                                         <td> {{ substr($data->message, 0, 50) }}{{ strlen($data->message) > 50 ? '...' : '' }}
                                         @if(strlen($data->message) > 30)

@@ -45,7 +45,7 @@
                     <td valign="top" style="padding: 10px 30px;">
                         <p
                             style="font-size: 16px;font-weight: normal;line-height: 24px;text-align:justify;color: #25272b;">
-                            This is to inform you that a new plant has been created by manufacturer. Please review the plant details at your earliest convenience and take action. The details of the newly added plant are as follows:</p>
+                            This is to inform you that a new plant has been created. Please review the plant details at your earliest convenience and take action. The details of the newly added plant are as follows:</p>
                     </td>
                 </tr>
 

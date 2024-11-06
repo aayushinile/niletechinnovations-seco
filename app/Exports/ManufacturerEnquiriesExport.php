@@ -34,7 +34,7 @@ class ManufacturerEnquiriesExport implements FromCollection, WithHeadings, Shoul
                 $plantName,
                 $item->enquiry_name,
                 $item->enquiry_mail,
-                $item->enquiry_phone,
+                $item->enquiry_phone === '+1' ? 'N/A' : $item->enquiry_phone,
                 $item->company_name ?? 'N/A',
                 $item->message,
                 'type' => $this->getType($item),
@@ -56,7 +56,7 @@ class ManufacturerEnquiriesExport implements FromCollection, WithHeadings, Shoul
             case 2:
                 return 'Community Owner';
             default:
-                return 'N/A';
+                return 'Community Owner';
         }
     }
 

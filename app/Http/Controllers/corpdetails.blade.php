@@ -1,13 +1,6 @@
 @extends('admin.layouts')
 @push('css')
     <link rel="stylesheet" type="text/css" href="{{ asset('admin/css/communityowners.css') }}">
-    <link rel="stylesheet" type="text/css" href="{{ asset('admin/css/home.css') }}">
-
-    <link rel="stylesheet" type="text/css" href="{{ asset('admin/css/manufacturers.css') }}">
-    <link rel="stylesheet" type="text/css" href="{{ asset('css/responsive.css') }}">
-	<script src="{{asset('js/jquery-3.7.1.min.js')}}" type="text/javascript"></script>
-    <link rel="stylesheet" type="text/css" href="{{asset('css/managelocations.css')}}">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
         .wd6{width: 60%;}
         .wd5{width: 50%;}
@@ -84,17 +77,6 @@
         color: var(--white);
         background: var(--yellow);
     }
-    a.btn-refresh {
-            width: 36px;
-            border: none;
-            display: inline-block;
-            height: 40px;
-            text-align: center;
-            background: var(--pink);
-            color: #fff;
-            line-height: 40px;
-            border-radius: 5px;
-        }
     </style>
 @endpush
 @section('content')
@@ -113,17 +95,15 @@
                         
                     </div>
                 </div>
-                <div class="search-filter "style="width:50%">
-                    
+                <div class="search-filter wd5">
                     <div class="row g-1">
-                   
                     <div class="col-md-2">
                         <div class="form-group">
                             <a class="btn-bl"  style="background-color: var(--green);"
                                 data-bs-toggle="modal" id="open-activate-modal">Approve</a>
                         </div>
                     </div>
-                    <div class="col-md-3">
+                    <div class="col-md-2">
                         <div class="form-group">
                             <a class="btn-bl" href="" style="background-color: var(--red);"
                                 data-bs-toggle="modal" id="open-inactivate-modal">Unapprove</a>
@@ -133,9 +113,9 @@
                     <div class="col-md-4">
                         <a class="ChangePasswordbtn btn-bl" style="background-color: var(--green);" data-bs-toggle="modal" data-bs-target="#ChangePassword"  data-plant-id="{{ $mfs['id'] }}" data-email-id="{{ $mfs['email'] }}">Reset Credentials</a>
                     </div>
-                    <div class="col-md-3">
+                    <div class="col-md-4">
                         <div class="form-group">
-                            <a class="addnewplant-btn" href="javascript:void(0);" onclick="document.getElementById('fileInput').click()" style="background-color: var(--green);font-weight:600;height:40px;">
+                            <a class="addnewplant-btn" href="javascript:void(0);" onclick="document.getElementById('fileInput').click()" style="background-color: var(--green);">
                                 <i class="fas fa-file-excel"></i> Import
                             </a>
                         </div> 
@@ -149,7 +129,12 @@
                     <div class="row g-1 align-items-center">
                         <div class="col-md-4">
                             <div class="user-profile-item">
-                                <div class="user-profile-media"><img src="{{ asset('images/default-user-2.png') }}">
+                                <div class="user-profile-media">
+                                @if ($mfs->image)
+                                    <img src="{{ asset('upload/manufacturer-image/' . $mfs->image) }}" alt="Plant Image" style="object-fit: contain;">
+                                @else
+                                    <img src="{{ asset('images/default-user-2.png') }}" alt="Default Image">
+                                @endif
                                 </div>
                                 <div class="user-profile-text">
                                     <h2>{{ $mfs->business_name ?? 'N/A' }}</h2>
@@ -193,68 +178,36 @@
 
                 
 
-        
-                <div class="added-comminity-head">
-    <div class="d-flex justify-content-between align-items-center w-100">
-        <h2 style="width: 12%;">Plants ({{ $count }})</h2>
-        <div class="d-flex align-items-center w-100">
-            <div class="search-filter" style="width: 35%;">
-                <div class="search-form-input-group">
-                    <form action="" method="get">
-                        <div class="form-group">
-                            <div class="search-form-group">
-                                <input type="text" name="search" class="form-control"
-                                       @if (request()->has('search')) value="{{ request('search') }}" @endif
-                                       placeholder="Search">
-                                <span class="search-icon"><img src="{{ asset('images/search-icon.svg') }}"></span>
-                            </div>
-                        </div>
+
+                <div class="added-comminity-section">
+                <div class="row d-flex">
+    <div class="col-md-12">
+        <div class="added-comminity-card">
+            <div class="added-comminity-head">
+                <div class="">
+                    <h2>Added Plants ({{ $count }})</h2>
+                </div>
+                @if ($plants->isNotEmpty())
+                <div class=" text-right">
+                    <form action="{{ route('admin.plant.export') }}" method="GET">
+                        <input type="hidden" value="{{$mfs->id}}" name="id">
+                        <button type="submit" class="btnDownloadExcel">
+                            <i class="fa fa-file-excel-o" aria-hidden="true"></i>
+                        </button>
                     </form>
                 </div>
+                @endif
             </div>
-            <div class="col-md-3">
-                    <div class="form-group">
-                    <select name="status" class="form-control"  onchange="changeStatus(this.value)">
-                    <option value="2" {{ request('status') == '2' ? 'selected' : '' }}>SHOW ALL</option>
-                    <option value="1" {{ request('status') == '1' ? 'selected' : '' }}>Approved</option>
-                    <option value="3" {{ request('status') == '3' ? 'selected' : '' }}>Unapproved</option>
-                    </select> 
-                </div> 
-            </div>
-            <div class="col-md-2" style="margin-left:6px;">
-                <a class="btn-refresh" href="#" onclick="clearSearch()"> 
-                    <i class="fa fa-refresh" aria-hidden="true"></i>
-                </a> 
-            </div>
-            <div class="d-flex justify-content-end" style="margin-left:18rem;">
-                <!-- Excel Export Button -->
-                <form action="{{ route('admin.plant.export') }}" method="GET" class="me-2">
-                    <input type="hidden" value="{{ $mfs->id }}" name="id">
-                    <input type="hidden" name="search" value="{{ request('search') }}">
-                    <input type="hidden" name="status" value="{{ request('status') }}">
-                    <button type="submit" class="btnDownloadExcel">
-                        <i class="fa fa-file-excel-o" aria-hidden="true"></i>
-                    </button>
-                </form>
-
-                <!-- Add Plant Button -->
-                <a href="{{ url('add-plant-admin') }}?mfs_id={{ $mfs->id }}" class="addnewplant-btn" style="padding: 9px 21px;">
-                    Add Plant
-                </a>
-            </div>
-        </div>
-    </div>
-</div>
             <div class="added-comminity-body d-none">
                 @foreach ($plants as $item)
                 @php 
-                $image = \App\Models\PlantLogin::where('id',$mfs->id)->first();
+                $image = \App\Models\PlantMedia::where('plant_id',$item->plant_id)->first();
                 $plant = \App\Models\Plant::where('id',$item->plant_id)->first();
                  @endphp
                     <div class="added-comminity-item">
                         <div class="added-comminity-item-image">
                         @if ($image)
-                            <img src="{{ asset('upload/manufacturer-image/' . $image->image) }}" alt="Plant Image">
+                            <img src="{{ asset('upload/manufacturer-image/' . $image->image_url) }}" alt="Plant Image">
                         @else
                             <img src="{{ asset('images/default-user-2.png') }}" alt="Default Image">
                         @endif
@@ -279,90 +232,169 @@
 
 
             <div class="card-body">
-    <div class="ss-card-table">
-    <div class="" style="overflow-x: sc !important; width: 100% !important;">
-        <table class="table">
-            <thead>
-                <tr>
-                    <th></th>
-                    <th>Plant Name</th>
-                    <th>Location</th>
-                    <th>City</th>
-                    <th>State</th>
-                    <th>Status</th>
-                    <th>Action</th>
-                </tr>
-            </thead>
-            <tbody>
-                @forelse ($plants as $item)
-                @php 
-                    $image = \App\Models\PlantMedia::where('plant_id',$item->plant_id)->first();
-                    $plant = \App\Models\Plant::where('id',$item->plant_id)->first();
-                @endphp
-                <tr>
-                    <td>
-                        <input type="checkbox" name="select_plant[]" value="{{ $item->plant_id }}" id="{{ $item->plant_id }}">
-                    </td>
-                    <td>
-                        <div class="user-profile-item">
-                            <div class="user-profile-media">
-                                @if ($image)
-                                    <img src="{{ asset('upload/manufacturer-image/' . $image->image_url) }}" alt="Plant Image" style="width: 58px; height: auto;">
+                <div class="ss-card-table">
+                    <div class="user-table-list">
+                    <?php $s_no = 1; ?>
+                    @forelse ($plants as $item)
+                    @php 
+                $image = \App\Models\PlantMedia::where('plant_id',$item->plant_id)->first();
+                $plant = \App\Models\Plant::where('id',$item->plant_id)->first();
+                 @endphp
+                            <div class="user-table-item">
+                                <div class="row g-1 align-items-center">
+                                    <div class="col-md-3">
+                                        <div class="usercheckbox-info">
+                                            <div class="sscheckbox">
+                                                <input type="checkbox" name="select_plant[]" value="{{ $item->plant_id }}" id="{{ $item->plant_id }}">
+                                                <label for="{{ $item->plant_id }}">&nbsp;</label>
+                                            </div>
+                                            <div class="user-profile-item">
+                                                <div class="user-profile-media">
+                                                @if ($image)
+                                                    <img src="{{ asset('upload/manufacturer-image/' . $image->image_url) }}" alt="Plant Image">
+                                                @else
+                                                    <img src="{{ asset('images/default-user-2.png') }}" alt="Default Image">
+                                                @endif
+                                                </div>
+                                                <div class="user-profile-text">
+                                                <h2>{{ $item->plant_name ?? 'N/A' }}</h2>
+                                                    <div
+                                                        class="status-text d-none {{ $item->status == 1 ? 'status-active' : 'status-inactive' }}">
+                                                        {{ $item->status == 1 ? 'Approved' : 'Pending' }}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-9">
+                                        <div class="row g-1 align-items-center">
+                                            <div class="col-md-3">
+                                                <div class="user-contact-info">
+                                                    <div class="user-contact-info-icon">
+                                                        <img src="{{ asset('images/location.svg') }}">
+                                                    </div>
+                                                    <div class="user-contact-info-content">
+                                                        <h2>Location</h2>
+                                                        <p>{{ $item->full_address ?? 'N/A' }}</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div class="col-md-3">
+                                                <div class="user-contact-info">
+                                                    <div class="user-contact-info-icon">
+                                                        <img src="{{ asset('images/sms.svg') }}">
+                                                    </div>
+                                                    <div class="user-contact-info-content">
+                                                        <h2>Email</h2>
+                                                        <p>{{ $item->email ?? 'N/A' }}</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div class="col-md-3">
+                                                <div class="user-contact-info">
+                                                    <div class="user-contact-info-icon">
+                                                        <img src="{{ asset('images/call.svg') }}">
+                                                    </div>
+                                                    <div class="user-contact-info-content">
+                                                        <h2>Phone</h2>
+                                                        <p>{{ $item->phone ? '+1 ' . $item->phone : 'N/A' }}</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-2">
+                                                <div class="user-contact-info">
+                                                    <div class="user-contact-info-content">
+                                                        <h2>Status</h2>
+                                                        <div class="status-text 
+                                                            @if($item->status == 1 && $item->is_approved == 'N') 
+                                                                status-rejected
+                                                            @elseif($item->status == 1 && $item->is_approved == 'Y') 
+                                                                status-active
+                                                            @elseif($item->status == 0 && $item->is_approved == 'N') 
+                                                                status-rejected
+                                                            @elseif($item->status == 0 && is_null($item->is_approved)) 
+                                                                status-pending
+                                                            @else
+                                                                status-inactive
+                                                            @endif
+                                                        ">
+                                                            @if($item->status == 1 && $item->is_approved == 'N')
+                                                                Unapproved
+                                                            @elseif($item->status == 1 && $item->is_approved == 'Y')
+                                                                Approved
+                                                            @elseif($item->status == 0 && $item->is_approved == 'N')
+                                                                Unapproved
+                                                            @elseif($item->status == 0 && is_null($item->is_approved))
+                                                                Pending
+                                                            @else
+                                                                Pending
+                                                            @endif
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div class="col-md-1 text-end">
+                                                <div class="action-item-text">
+                                                    <a class="action-btn"
+                                                    href="{{ route('admin.manufracturers.show', encrypt($item->plant_id)) }}">
+                                                        <img src="{{ asset('images/arrow-right.svg') }}">
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <?php $s_no++; ?>
+                            
+                        @empty
+                            <p class="text-center">No records found</p>
+                        @endforelse
+                    </div>
+                    @if ($plants->isNotEmpty())
+                    @if (method_exists($plants, 'hasPages'))
+                        <div class="ss-table-pagination">
+                            <ul class="ss-pagination">
+                                @if ($plants->onFirstPage())
+                                    <li class="disabled" id="example_previous">
+                                        <a href="#" aria-controls="example" data-dt-idx="0" tabindex="0"
+                                            class="page-link">Prev</a>
+                                    </li>
                                 @else
-                                    <img src="{{ asset('images/default-user-2.png') }}" alt="Default Image" style="width: 58px; height: auto;">
+                                    <li id="example_previous">
+                                        <a href="{{ $plants->previousPageUrl() }}" aria-controls="example"
+                                            data-dt-idx="0" tabindex="0" class="page-link">Prev</a>
+                                    </li>
                                 @endif
-                            </div>
-                            <div class="user-profile-text">
-                                <h2>{{ $item->plant_name ?? 'N/A' }}</h2>
-                            </div>
+
+                                @foreach ($plants->getUrlRange(1, $plants->lastPage()) as $page => $url)
+                                    <li class="{{ $plants->currentPage() == $page ? 'active' : '' }}">
+                                        <a href="{{ $url }}" aria-controls="example"
+                                            data-dt-idx="{{ $page }}" tabindex="0"
+                                            class="page-link">{{ $page }}</a>
+                                    </li>
+                                @endforeach
+
+                                @if ($plants->hasMorePages())
+                                    <li class="next" id="example_next">
+                                        <a href="{{ $plants->nextPageUrl() }}" aria-controls="example"
+                                            data-dt-idx="7" tabindex="0" class="page-link">Next</a>
+                                    </li>
+                                @else
+                                    <li class="disabled" id="example_next">
+                                        <a href="#" aria-controls="example" data-dt-idx="7" tabindex="0"
+                                            class="page-link">Next</a>
+                                    </li>
+                                @endif
+                            </ul>
                         </div>
-                    </td>
-                    <td>{{ $item->full_address ?? 'N/A' }}</td>
-                    <td>{{ $item->city ?? 'N/A' }}</td>
-                    <td>{{ $item->state ?? 'N/A' }}</td>
-                    <td>
-                        <div class="status-text 
-                            @if($item->status == 1 && $item->is_approved == 'N') 
-                                status-rejected
-                            @elseif($item->status == 1 && $item->is_approved == 'Y') 
-                                status-active
-                            @elseif($item->status == 0 && $item->is_approved == 'N') 
-                                status-rejected
-                            @elseif($item->status == 0 && is_null($item->is_approved)) 
-                                status-pending
-                            @else
-                                status-inactive
-                            @endif
-                        ">
-                            @if($item->status == 1 && $item->is_approved == 'N')
-                                Unapproved
-                            @elseif($item->status == 1 && $item->is_approved == 'Y')
-                                Approved
-                            @elseif($item->status == 0 && $item->is_approved == 'N')
-                                Unapproved
-                            @elseif($item->status == 0 && is_null($item->is_approved))
-                                Pending
-                            @else
-                                Pending
-                            @endif
-                        </div>
-                    </td>
-                    <td>
-                        <a class="action-btn" href="{{ route('admin.manufracturers.show', encrypt($item->plant_id)) }}">
-                            <img src="{{ asset('images/arrow-right.svg') }}">
-                        </a>
-                    </td>
-                </tr>
-                @empty
-                    <tr>
-                        <td colspan="7" class="text-center">No records found</td>
-                    </tr>
-                @endforelse
-            </tbody>
-        </table>
-    </div>
-    </div>
-</div>
+                    @endif
+                    @endif
+                </div>
+            </div>
 
 
         </div>
@@ -571,21 +603,6 @@
   function cancelUpload() {
     $('#fileModal').modal('hide');
   }
-
-
-  function changeManu(val) {
-    var selectedValue = val;
-    var currentUrl = new URL(window.location.href);
-
-    // Add or update the 'run_id' parameter
-    currentUrl.searchParams.set('manufacturer_id', selectedValue);
-    if (val == 0) {
-        currentUrl.searchParams.delete('manufacturer_id');
-
-    }
-    // Reload the page with the new URL
-    window.location.href = currentUrl.toString();
-}
 </script>
 <script>
     $(document).on('click', '.ChangePasswordbtn', function() {
@@ -604,12 +621,6 @@
     function hideLoader() {
         document.getElementById('loader').style.display = 'none';
     }
-    function clearSearch() {
-    const url = new URL(window.location.href);
-    url.searchParams.delete('search'); // Remove the search parameter
-    url.searchParams.delete('status');
-    window.location.href = url.toString(); // Reload the page with the updated URL
-}
 </script>
 <script>
     
@@ -798,7 +809,7 @@ $(document).ready(function() {
                         Swal.fire({
                         icon: 'success',
                         title: 'Success',
-                        text: 'Plant(s) have been unapproved successfully!'
+                        text: 'Status updated successfully!'
                     }).then(() => {
                         location.reload(); // Reload page after alert is closed
                     });
@@ -846,7 +857,7 @@ $(document).ready(function() {
                         Swal.fire({
                         icon: 'success',
                         title: 'Success',
-                        text: 'Plant(s) have been approved successfully!'
+                        text: 'Status updated successfully!'
                     }).then(() => {
                         location.reload(); // Reload page after alert is closed
                     });
@@ -872,23 +883,35 @@ $(document).ready(function() {
     });
     </script>
     <script>
+        document.getElementById('date').addEventListener('change', function() {
+            var selectedValue = this.value;
+            var currentUrl = new URL(window.location.href);
 
-    function changeStatus(val) {
-        var selectedValue = val;
-        var currentUrl = new URL(window.location.href);
-        
-        // Ensure the 0 value is handled properly
-        if (selectedValue === '2') {
-            // If SHOW ALL is selected, remove the 'status' parameter
-            currentUrl.searchParams.delete('status');
-        } else {
-            // Set the 'status' parameter to the selected value, including 0
-            currentUrl.searchParams.set('status', selectedValue);
+            // Add or update the 'run_id' parameter
+            currentUrl.searchParams.set('date', selectedValue);
+            if (selectedValue == "") {
+                currentUrl.searchParams.delete('date');
+
+            }
+            // Reload the page with the new URL
+            window.location.href = currentUrl.toString();
+        });
+
+        function changeStatus(val) {
+            var selectedValue = val;
+            var currentUrl = new URL(window.location.href);
+            console.log(selectedValue);
+            // If the selected value is empty, remove the 'status' parameter
+            if (selectedValue === '') {
+                currentUrl.searchParams.delete('status');
+            } else {
+                // Otherwise, set the 'status' parameter to the selected value
+                currentUrl.searchParams.set('status', selectedValue);
+            }
+
+            // Reload the page with the new URL
+            window.location.href = currentUrl.toString();
         }
-
-        // Reload the page with the updated URL
-        window.location.href = currentUrl.toString();
-    }
     </script>
 @endsection
 

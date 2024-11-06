@@ -69,7 +69,7 @@
                                     </div>
                                     <div class="form-group">
                                         <button type="submit" class="auth-form-btn">Login</button>
-                                        <a href="{{ url('signup') }}" class="btn-auth-gr" data-bs-toggle="modal" data-bs-target="#signupPlant">Signup As A New Manufacturer/Plant</a>
+                                        <a href="{{ url('signup/corporate') }}" class="btn-auth-gr" >Signup As A New Manufacturer/Plant</a>
                                     </div>
                                     <div class="mt-1 forgotpsw-text" >
                                         <a href="{{ route('manufacturer.forget.password') }}" style="text-decoration: none !important;"><b style="text-decoration: underline !important;">Forgot Password </b>?</a>

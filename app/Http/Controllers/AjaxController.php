@@ -157,6 +157,19 @@ class AjaxController extends Controller
         }
     }
 
+    public function deleteSalesManagers($id)
+    {
+        try {
+            // Find the sales manager by ID and delete it
+            $salesManager = PlantSalesManager::where('id',$id)->first();
+            $salesManager->delete();
+
+            return response()->json(['message' => 'Sales manager deleted successfully.']);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Failed to delete sales manager.'], 500);
+        }
+    }
+
     public function toggleRequestStatus(Request $request)
     {
         if ($request->has('request_id')) {

@@ -39,7 +39,6 @@
         }
     }
 
-
     .loader-container {
         position: fixed;
         z-index: 9999;
@@ -86,15 +85,31 @@
         }
     }
 
+    span.input-group-text {
+        background: transparent;
+        border-radius: 5px;
+        font-size: 13px;
+        border: 1px solid var(--border);
+        font-weight: 400;
+        height: auto;
+        padding: 10px;
+        outline: 0;
+        display: inline-block;
+        color: var(--pink);
+        box-shadow: 0px 8px 13px 0px rgba(0, 0, 0, 0.05);
+    }
+
+    .error-message {
+        color: red;
+        font-size: 14px;
+        margin-top: 5px;
+    }
+
     .img-fluid {
         height: 200px !important;
     }
 
     .upload-file-item-icon.visible {
-        display: block !important;
-    }
-
-    .upload-file-item-icon2.visible {
         display: block !important;
     }
     .Uploadphoto-thumb{
@@ -105,43 +120,42 @@
     <div class="body-main-content">
         <div class="ss-heading-section">
             <h2>Manage Manufacturer/Plant Details</h2>
-           
             <div class="search-filter wd20">
-            @php 
-                        $plant_id = $plant['id'];
-                    @endphp
-                <div class="row g-1 justify-content-end">
-                    <div class="col-md-12 d-none">
-                        <div class="form-group">
-                            <a href="{{ route('ViewPlant', ['id' => $plant_id]) }}" class="addnewplant-btn">Back</a>
-                        </div>
+                <div class="row g-1  justify-content-end">
+                    <div class="col-md-4">
+                        <!-- <div class="form-group">
+                            <a href="{{ route('manufacturer.manage-locations') }} "class="addnewplant-btn">Back</a>
+                        </div> -->
                     </div>
                 </div>
             </div>
         </div>
-        <form id="add-plant-form" action="{{ route('updatePlantAdmin', ['id' => $plant['id']]) }}" method="POST"
-            enctype="multipart/form-data">
+        <form id="add-plant-form" action="{{ route('savePlantAdmin') }}" method="POST" enctype="multipart/form-data">
             @csrf
-            <input type="hidden" name="plant_id" value="{{ $plant['id'] }}">
+            @php
+                $plant = \App\Models\PlantLogin::where('id',$user)->first();;
+            @endphp
+            <input type="hidden" name="manufacturer_id" value="{{$user}}">
             <div class="add-plants-section">
                 <div class="add-plants-item">
-                    <h2>Update Plant</h2>
+                    <h2>Plant Details</h2>
 
                     <div class="add-plants-form">
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="form-group">
                                     <h5>Manufacturer/Plant Name *</h5>
-                                    <input type="text" class="form-control" name="plant_name" placeholder="Plant Name"
-                                        value="{{ $plant['plant_name'] }}" required>
+                                    <input type="text" class="form-control" name="plant_name" placeholder="Manufacturer/Plant Name"
+                                        value="{{ $plant['plant_type'] === 'plant_rep' ? $plant['plant_name'] : '' }}" required>
                                 </div>
                             </div>
 
                             <div class="col-md-6">
                                 <div class="form-group">
                                     <h5>Email *</h5>
-                                    <input type="text" class="form-control" name="email" placeholder="Email Address"
-                                        value="{{ $plant['email'] }}" required>
+                                    <input type="email" class="form-control email" name="email"
+                                        placeholder="Email Address" value="{{ $plant['plant_type'] === 'corp_rep' ? $plant['email'] : '' }}" required>
+                                    <span id="emailError" class="error-message"></span>
                                 </div>
                             </div>
 
@@ -149,55 +163,59 @@
 
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <h5>Phone </h5>
+                                    <h5>Phone</h5>
                                     <div class="form-group-phone">
                                         <span class="input-group-text">+1</span>
                                         <div class="input-group-form-control">
                                             <input type="text" class="form-control phone" name="phone"
-                                                placeholder="Phone number" maxlength="10" value="{{ $plant['phone'] }}">
+                                                placeholder="Phone Number" maxlength="10" value="{{ $plant['phone'] }}">
                                             <div class="invalid-feedback">Please enter a 10-digit phone number.</div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
 
+
+
                             <div class="col-md-6">
                                 <div class="form-group">
                                     <h5>Location *</h5>
+
                                     <input id="geocoder" class="form-control" type="text"
-                                        placeholder="Plant Full Address" value="{{ $plant['full_address'] }}" required>
+                                        placeholder="Mgf./Plant Full Address" required value="{{ $plant['full_address'] }}">
                                     <input type="hidden" id="full_address" name="full_address" required
                                         class="form-control" value="{{ $plant['full_address'] }}">
                                     <input type="hidden" id="latitude" name="latitude" value="{{ $plant['latitude'] }}">
                                     <input type="hidden" id="longitude" name="longitude" value="{{ $plant['longitude'] }}">
                                     <input type="hidden" id="locationSelected" name="locationSelected" value="false">
+                                    <!-- <span class="form-input-icon"><img src="{{ asset('images/location.svg') }}"></span> -->
                                 </div>
                             </div>
                             <!-- <div class="col-md-3">
-                                                                    <div class="form-group">
-                                                                        <h5>State </h5>
-                                                                        <select class="form-control">
-                                                                            <option>Choose State</option>
-                                                                        </select>
-                                                                    </div>
-                                                                </div> -->
+                                                                                                                                                                                                                    <div class="form-group">
+                                                                                                                                                                                                                        <h5>State </h5>
+                                                                                                                                                                                                                        <select class="form-control">
+                                                                                                                                                                                                                            <option>Choose State</option>
+                                                                                                                                                                                                                        </select>
+                                                                                                                                                                                                                    </div>
+                                                                                                                                                                                                                </div> -->
                             <!-- <div class="col-md-3">
-                                                                    <div class="form-group">
-                                                                        <h5>City </h5>
-                                                                        <input type="text" class="form-control" name="city" placeholder="Plant Name">
-                                                                    </div>
-                                                                </div> -->
+                                                                                                                                                                                                                    <div class="form-group">
+                                                                                                                                                                                                                        <h5>City </h5>
+                                                                                                                                                                                                                        <input type="text" class="form-control" name="city" placeholder="Plant Name">
+                                                                                                                                                                                                                    </div>
+                                                                                                                                                                                                                </div> -->
                             <!-- <div class="col-md-3">
-                                                                    <div class="form-group">
-                                                                        <h5>Zip </h5>
-                                                                        <input type="text" class="form-control" name="zipcode" placeholder="Plant Name">
-                                                                    </div>
-                                                                </div> -->
+                                                                                                                                                                                                                    <div class="form-group">
+                                                                                                                                                                                                                        <h5>Zip </h5>
+                                                                                                                                                                                                                        <input type="text" class="form-control" name="zipcode" placeholder="Plant Name">
+                                                                                                                                                                                                                    </div>
+                                                                                                                                                                                                                </div> -->
 
                             <div class="col-md-12">
                                 <div class="form-group">
-                                    <h5>About Our Homes</h5>
-                                    <textarea class="form-control" placeholder="Description" name="description" >{{ $plant['description'] ?? '' }}</textarea>
+                                    <h5>About Our Homes </h5>
+                                    <textarea class="form-control" placeholder="Description" name="description" ></textarea>
                                     @error('description')
                                         <div class="alert alert-danger">{{ $message }}</div>
                                     @enderror
@@ -208,21 +226,19 @@
                                 <div class="form-group">
                                     <h5>Type *</h5>
                                     <select class="form-control" name="type">
-                                        <option value="sw" {{ $plant['type'] === 'sw' ? 'selected' : '' }}>Single Wide
-                                        </option>
-                                        <option value="dw" {{ $plant['type'] === 'dw' ? 'selected' : '' }}>Double Wide
-                                        </option>
-                                        <option value="sw_dw" {{ $plant['type'] === 'sw_dw' ? 'selected' : '' }}>Single
-                                            Wide & Double Wide</option>
+                                        <option value="sw">Single Wide</option>
+                                        <option value="dw">Double Wide</option>
+                                        <option value="sw_dw">Single Wide & Double Wide</option>
                                     </select>
                                 </div>
                             </div>
+
 
                             <div class="col-md-6">
                                 <div class="form-group form-group-icon">
                                     <h5>Website Link</h5>
                                     <input type="text" name="web_link"  class="form-control"
-                                            placeholder="abc.com" value="{{$plant['web_link'] ?? ''}}">
+                                            placeholder="abc.com" >
                                 </div>
                             </div>
 
@@ -230,7 +246,7 @@
                                 <div class="form-group form-group-icon">
                                     <h5>From Price Range *</h5>
                                     <input type="number" name="from_price_range"  class="form-control"
-                                            placeholder="$0.00" value="{{ $plant['from_price_range'] ?? $plant['price_range'] }}">
+                                            placeholder="$0.00" >
                                     <span class="form-input-icon"><img
                                             src="{{ asset('images/dollar-circle.png') }}"></span>
                                 </div>
@@ -241,18 +257,18 @@
                                 <div class="form-group form-group-icon">
                                     <h5>To Price Range *</h5>
                                     <input type="number" name="to_price_range"  class="form-control"
-                                        placeholder="$0. 00" value="{{ $plant['to_price_range'] ?? 0 }}">
+                                        placeholder="$0. 00">
                                     <span class="form-input-icon"><img
                                             src="{{ asset('images/dollar-circle.png') }}"></span>
                                 </div>
                             </div>
                             <!-- <div class="col-md-4">
-                                                                    <div class="form-group form-group-icon">
-                                                                        <h5>Shipping Cost (Rate Per Miles) *</h5>
-                                                                        <input type="text" name="shipping_cost" required="" class="form-control" placeholder="$0. 00" value="{{ $plant['shipping_cost'] }}">
-                                                                        <span class="form-input-icon"><img src="{{ asset('images/dollar-circle.png') }}"></span>
-                                                                    </div>
-                                                                </div> -->
+                                                                                                                                                                                                                    <div class="form-group form-group-icon">
+                                                                                                                                                                                                                        <h5>Shipping Cost (Rate Per Miles) *</h5>
+                                                                                                                                                                                                                        <input type="text" name="shipping_cost" required="" class="form-control" placeholder="$0. 00">
+                                                                                                                                                                                                                        <span class="form-input-icon"><img src="{{ asset('images/dollar-circle.png') }}"></span>
+                                                                                                                                                                                                                    </div>
+                                                                                                                                                                                                                </div> -->
 
                             <div class="col-md-12">
                                 <div class="form-group">
@@ -271,45 +287,26 @@
                                         </label>
                                     </div>
                                 </div>
-                                <div class="row">
-                                    @if (!empty($plant['images']))
-                                        @foreach ($plant['images'] as $image)
-                                            <div class="col-md-3">
-                                                <div class="upload-file-item">
-                                                    <div class="upload-file-item-content">
-                                                        <div class="upload-file-media">
-                                                            <img
-                                                                src="{{ asset('upload/manufacturer-image/' . $image['image_url']) }}">
-                                                        </div>
-                                                    </div>
-                                                    <div class="upload-file-action">
-                                                        <a class="delete-btn" href="#"
-                                                            data-image-id="{{ $image['id'] }}">
-                                                            <img src="{{ asset('images/close-circle.svg') }}">
-                                                        </a>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        @endforeach
-                                    @endif
-                                </div>
                             </div>
                             <div id="preview_container" class="row g-1 mt-2"></div>
+                            <!-- <div class="upload-file-action">
+                                                                                                                                                                                                            <a class="delete-btn" href="#"><img src="{{ asset('images/close-circle.svg') }}"></a>
+                                                                                                                                                                                                                                        </div> -->
 
                             <!-- <div class="col-md-4">
-                                                                    <div class="specification-info">
-                                                                        <div class="specification-content">
-                                                                            <div class="specification-info-icon">
-                                                                                <img src="{{ asset('images/1.jpg') }}">
-                                                                            </div>
-                                                                            <div class="specification-info-content">
-                                                                                <h2>Untitled.jpg</h2>
-                                                                                <p>2KB</p>
-                                                                            </div>
-                                                                        </div>
-                                                                        <div class="specification-action"><a href="#">Remove</a></div>
-                                                                    </div>
-                                                                </div> -->
+                                                                                                                                                                                                                    <div class="specification-info">
+                                                                                                                                                                                                                        <div class="specification-content">
+                                                                                                                                                                                                                            <div class="specification-info-icon">
+                                                                                                                                                                                                                                <img src="{{ asset('images/1.jpg') }}">
+                                                                                                                                                                                                                            </div>
+                                                                                                                                                                                                                            <div class="specification-info-content">
+                                                                                                                                                                                                                                <h2>Untitled.jpg</h2>
+                                                                                                                                                                                                                                <p>2KB</p>
+                                                                                                                                                                                                                            </div>
+                                                                                                                                                                                                                        </div>
+                                                                                                                                                                                                                        <div class="specification-action"><a href="#">Remove</a></div>
+                                                                                                                                                                                                                    </div>
+                                                                                                                                                                                                                </div> -->
 
                         </div>
                     </div>
@@ -325,101 +322,82 @@
                                 </div>
                             </div>
                             <div class="sales-add-body ">
-                                @if(!empty($plant['sales_managers']))
                                 <div class="sales-add-form">
-                                    @foreach ($plant['sales_managers'] as $key => $manager)
-                                        <div class="row g-1 sales-manager-row mb-4">
-                                            <div class="col-md-2">
-                                                <div class="form-group">
-                                                    <h5>Name</h5>
-                                                    <input type="text" class="form-control text-capitalize"
-                                                        name="sales_manager[name][]" value="{{ $manager['name'] }}"
-                                                        placeholder="Name">
-                                                </div>
+                                    <div class="row g-1">
+                                        <div class="col-md-2">
+                                            <div class="form-group">
+                                                <h5>Name</h5>
+                                                <input type="text" class="form-control text-capitalize" name="sales_manager[name][]"
+                                                    placeholder="Name">
                                             </div>
+                                        </div>
 
-                                            <div class="col-md-2">
-                                                <div class="form-group">
-                                                    <h5>Designation</h5>
-                                                    <input type="text" class="form-control"
-                                                        name="sales_manager[designation][]"
-                                                        value="{{ $manager['designation'] }}" placeholder="Designation">
-                                                </div>
+                                        <div class="col-md-2">
+                                            <div class="form-group">
+                                                <h5>Designation </h5>
+                                                <input type="text" class="form-control"
+                                                    name="sales_manager[designation][]" placeholder="Designation">
                                             </div>
+                                        </div>
 
-                                            <div class="col-md-2">
-                                                <div class="form-group">
-                                                    <h5>Email</h5>
-                                                    <input type="text" class="form-control"
-                                                        name="sales_manager[email][]" value="{{ $manager['email'] }}"
-                                                        placeholder="Email Address">
-                                                </div>
+                                        <div class="col-md-2">
+                                            <div class="form-group">
+                                                <h5>Email</h5>
+                                                <input type="email" class="form-control" name="sales_manager[email][]"
+                                                    placeholder="Email Address">
                                             </div>
+                                        </div>
 
-                                            <div class="col-md-3">
-                                                <div class="form-group">
-                                                    <h5>Phone</h5>
-                                                    <div class="form-group-phone">
-                                                        <span class="input-group-text">+1</span>
-                                                        <div class="input-group-form-control">
-                                                            <input type="text" class="form-control phone"
-                                                                name="sales_manager[phone][]"
-                                                                value="{{ $manager['phone'] }}" placeholder="Phone"
-                                                                maxlength="10">
-                                                            <div class="invalid-feedback">Please enter a 10-digit phone
-                                                                number.</div>
+                                        <div class="col-md-3">
+                                            <div class="form-group">
+                                                <h5>Phone </h5>
+                                                <div class="form-group-phone">
+                                                    <span class="input-group-text">+1</span>
+                                                    <div class="input-group-form-control">
+                                                        <input type="text" class="form-control phone"
+                                                            name="sales_manager[phone][]" placeholder="Phone Number"
+                                                            maxlength="10">
+                                                        <div class="invalid-feedback">Please enter a 10-digit phone number.
                                                         </div>
                                                     </div>
-                                                </div>
-                                            </div>
-
-                                            <div class="col-md-2">
-                                                <div class="form-group">
-                                                    <h5>Upload Photos</h5>
-                                                    <div class="salesUploadphoto">
-                                                        <div class="Uploadphoto-file1">
-                                                            <input type="file" id="uploadPhoto-{{ $key }}"
-                                                                class="ssUploadphoto1" name="sales_manager[images][]"
-                                                                onchange="previewImage(event, 'imagePreview-{{ $key }}')"
-                                                                accept=".png, .jpg, .jpeg">
-                                                            <label for="uploadPhoto-{{ $key }}">
-                                                                <div class="Uploadphoto-text">
-                                                                    <div class="exportfile-text">
-                                                                        <img src="{{ asset('images/upload-icon.svg') }}"
-                                                                            height="24">
-                                                                    </div>
-                                                                </div>
-                                                            </label>
-                                                        </div>
-                                                        <div class="Uploadphoto-thumb"
-                                                            style="box-shadow: none; border: none">
-                                                            @if (!empty($manager['image']))
-                                                                <img src="{{ asset('upload/sales-manager-images/' . $manager['image']) }}"
-                                                                    id="imagePreview-{{ $key }}">
-                                                                <input type="hidden"
-                                                                    name="sales_manager[existing_images][]"
-                                                                    value="{{ $manager['image'] }}">
-                                                            @else
-                                                                <img id="imagePreview-{{ $key }}"
-                                                                    style="display: none;">
-                                                            @endif
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            <div class="col-md-1">
-                                                <div class="form-group">
-                                                    <button type="button" class="btn btn-danger btn-remove"
-                                                        data-manager-id="{{ $manager['id'] }}">Remove</button>
                                                 </div>
                                             </div>
                                         </div>
-                                    @endforeach
+
+                                        <div class="col-md-2">
+                                            <div class="form-group">
+                                                <h5>Upload Photos </h5>
+                                                <div class="salesUploadphoto">
+                                                    <div class="Uploadphoto-file1">
+                                                        <input type="file" multiple="multiple" id="Upload Photos"
+                                                            class="ssUploadphoto1" name="sales_manager[images][]"
+                                                            onchange="previewImage(event)" accept=".png, .jpg, .jpeg">
+                                                        <label for="Upload Photos">
+                                                            <div class="Uploadphoto-text">
+                                                                <div class="exportfile-text"><img
+                                                                        src="{{ asset('images/upload-icon.svg') }}"
+                                                                        height="24"></div>
+                                                            </div>
+                                                        </label>
+                                                    </div>
+                                                    <div class="Uploadphoto-thumb">
+                                                        <img id="imagePreview" class="">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <!-- <div class="form-group">
+                                                                                                                                                                                                                                <h5>Upload Photos </h5>
+                                                                                                                                                                                                                                <input type="file" class="form-control"  name=""  multiple="multiple" />
+                                                                                                                                                                                                                            </div> -->
+                                        </div>
+
+                                        <div class="col-md-1">
+                                            <div class="form-group">
+                                                <button class="btn-remove">Remove</button>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
-                                
-                                @endif
-                                
                             </div>
                         </div>
                     </div>
@@ -430,72 +408,81 @@
                         <div class="sales-add-head">
                             <h2>Specification *</h2>
                             <div class="add-plants-action">
-                                <a class="addmore" data-bs-toggle="modal" data-bs-target="#addspecification"
-                                    style="cursor: pointer;">Add More</a>
+                                <a class="addmore" data-bs-toggle="modal" onclick="$('.upload-file-item').hide()"
+                                    data-bs-target="#addspecification" style="cursor: pointer;">Add More</a>
                             </div>
                         </div>
                         <div class="sales-add-body">
                             <div class="sales-add-form">
-                                <div class="row g-1" id="specifications-container">
-                                    @foreach ($specificationss as $specification)
-                                        @php
-                                            $plantSpecifications = explode(',', $plant['specification'] ?? '');
-                                            $isChecked = in_array($specification->id, $plantSpecifications);
-                                        @endphp
-                                        <div class="col-md-4" id="specification-{{ $specification->id }}">
-                                            <div class="specification-info">
-                                                <div class="specification-content">
-                                                    <div class="specificationcheckbox">
-                                                        <input type="checkbox" name="specifications[]"
-                                                            id="{{ $specification->id }}"
-                                                            value="{{ $specification->id }}"
-                                                            {{ $isChecked ? 'checked' : '' }}>
-                                                        <label for="{{ $specification->id }}">&nbsp</label>
-                                                    </div>
-                                                    @if (!empty($specification->image))
-                                                        <div class="specification-info-icon">
-                                                            <img
-                                                                src="{{ asset('upload/specification-image/' . $specification->image) }}">
-                                                        </div>
-                                                    @endif
-                                                    <div class="specification-info-content">
 
-                                                        <h2>{{ $specification->name }}</h2>
-                                                        <p>{{ $specification->values }}</p>
+                                <div class="row g-1" id="specifications-container">
+                                    @if ($specifications->isNotEmpty())
+                                        @foreach ($specifications as $specification)
+                                            <div class="col-md-4" id="specification-{{ $specification->id }}">
+                                                <div class="specification-info">
+                                                    <div class="specification-content">
+                                                        <div class="specificationcheckbox">
+                                                            <input type="checkbox" name="specifications[]"
+                                                                id="{{ $specification->id }}"
+                                                                value="{{ $specification->id }}">
+                                                            <label for="{{ $specification->id }}">&nbsp</label>
+                                                        </div>
+                                                        @if (!empty($specification->image))
+                                                            <div class="specification-info-icon">
+                                                                <img
+                                                                    src="{{ asset('upload/specification-image/' . $specification->image) }}">
+                                                            </div>
+                                                        @endif
+                                                        <div class="specification-info-content">
+                                                            <h2>{{ $specification->name }}</h2>
+                                                            <p>{{ $specification->values }}</p>
+                                                        </div>
+                                                    </div>
+                                                    <div class="specification-action">
+                                                        <a class="editbtn1" href="#" data-bs-toggle="modal"
+                                                            data-bs-target="#editspecification"
+                                                            onclick="openEditForm(this)"
+                                                            data-id="{{ $specification->id }}"
+                                                            data-name="{{ $specification->name }}"
+                                                            data-values="{{ $specification->values }}"
+                                                            data-image = "{{ $specification->image }}"><img
+                                                                src="{{ asset('images/edit-2.svg') }}"
+                                                                style="margin-top:6px"></a>
+                                                        <a class="trashbtn remove-specification" style="cursor: pointer"
+                                                            onclick="deleteSpec({{ $specification->id }})"
+                                                            data-specification-id="{{ $specification->id }}"><img
+                                                                src="{{ asset('images/trash.svg') }}"
+                                                                style="margin-top:6px"></a>
                                                     </div>
                                                 </div>
-                                                <div class="specification-action">
-                                                    <a class="editbtn1" href="#" data-bs-toggle="modal"
-                                                        data-bs-target="#editspecification" onclick="openEditForm(this)"
-                                                        data-id="{{ $specification->id }}"
-                                                        data-name="{{ $specification->name }}"
-                                                        data-values="{{ $specification->values }}"
-                                                        data-image = "{{ $specification->image }}"><img
-                                                            src="{{ asset('images/edit-2.svg') }}"
-                                                            style="margin-top:6px"></a>
-                                                    <a href="#"
-                                                        class="trashbtn remove-specification
-                                                    remove-specification"
-                                                        onclick="deleteSpec({{ $specification->id }})"
-                                                        data-specification-id="{{ $specification->id }}"
-                                                        data-plant-id="{{ $plant['id'] }}"><img
-                                                            src="{{ asset('images/trash.svg') }}"
-                                                            style="margin-top:6px"></a>
+                                            </div>
+                                        @endforeach
+                                    @endif
+                                </div>
+                                @if (!$specifications->isNotEmpty())
+                                    <div class="row g-1" id="emptySpecifications">
+                                        <div class="col-md-12">
+                                            <div class=" justify-content-center">
+                                                <div class="specification-content justify-content-center">
+                                                    <div class="specification-info-content">
+                                                        <p>No specification added yet.</p>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
-                                    @endforeach
-                                </div>
+                                    </div>
+                                @endif
                             </div>
                         </div>
                     </div>
                 </div>
                 <div class="add-plants-foot">
-                   
                     <div class="row">
                         <div class="col-md-12">
                             <div class="form-group">
-                                <button type="submit" class="savecreatebtn">Update</button>
+                                <a href="{{ route('manufacturer.manage-locations') }} "class="addnewplant-btn d-none"
+                                    style="width: 10%;padding: 10px 15px;">Cancel</a>
+                                <button type="submit" class="savecreatebtn">Create</button>
                             </div>
                         </div>
                     </div>
@@ -509,6 +496,7 @@
 
 
     <!-- add specification -->
+
     <div class="modal ss-modal fade" id="addspecification" tabindex="-1" aria-labelledby="exampleModalLabel"
         aria-hidden="true">
         <div class="modal-dialog">
@@ -537,7 +525,7 @@
                                             placeholder="Business Logo" onchange="previewSpecImage(event)">
                                     </div>
 
-                                    <div class="upload-file-item-icon" style="display: none;">
+                                    <div class="upload-file-item" style="display: none;">
                                         <div class="upload-file-item-content">
                                             <div class="upload-file-media">
                                                 <img id="preview_image" src="">
@@ -557,8 +545,6 @@
             </div>
         </div>
     </div>
-
-
     <div class="modal ss-modal fade" id="editspecification" tabindex="-1" aria-labelledby="exampleModalLabel"
         aria-hidden="true">
         <div class="modal-dialog">
@@ -585,20 +571,15 @@
                                 <div class="form-group">
                                     <input type="file" id="spec_icon" name="image" class="form-control"
                                         placeholder="Business Logo" onchange="previewSpecImage2(event)">
-
-                                    <div class="row">
-                                        <div class="col-md-3">
-                                            <div class="upload-file-item-icon2" style="display: none;">
-                                                <div class="upload-file-item-content">
-                                                    <div class="upload-file-media">
-                                                        <img id="preview_image_icon" src="">
-                                                    </div>
-                                                </div>
-                                                <div class="upload-file-action">
-                                                    <a class="delete-btn-icon" href="#"><img
-                                                            src="{{ asset('images/close-circle.svg') }}"></a>
-                                                </div>
+                                    <div class="upload-file-item-icon" style="display: none;">
+                                        <div class="upload-file-item-content">
+                                            <div class="upload-file-media">
+                                                <img id="preview_image_icon" src="">
                                             </div>
+                                        </div>
+                                        <div class="upload-file-action">
+                                            <a class="delete-btn-icon" href="#"><img
+                                                    src="{{ asset('images/close-circle.svg') }}"></a>
                                         </div>
                                     </div>
                                 </div>
@@ -614,7 +595,6 @@
             </div>
         </div>
     </div>
-
 
     <!-- Successfully plants -->
     <div class="modal ss-modal fade" id="Successfullyplants" tabindex="-1" aria-labelledby="exampleModalLabel"
@@ -694,7 +674,9 @@
         </div>
     </div>
 
+
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
         $(document).ready(function() {
             $('#closeModalBtn').on('click', function() {
@@ -704,10 +686,6 @@
 
             $('#closeModaldeleteBtn').on('click', function() {
                 $('#Deletespecifications').modal('hide');
-            });
-
-            $('#EditSucesspecifications').on('click', function() {
-                $('#closeModaleditBtn').modal('hide');
             });
 
 
@@ -743,6 +721,42 @@
                     element.addClass('is-invalid');
                 } else {
                     element.removeClass('is-invalid');
+                }
+            }
+        });
+    </script>
+    <script>
+        $(document).ready(function() {
+            // Validate email on input change
+            $(document).on('input', '.email', function() {
+                validateEmailOnInput();
+            });
+
+            // Function to validate email on input change
+            function validateEmailOnInput() {
+                var email = $('.email').val().trim();
+                var emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                var emailError = $('#emailError');
+
+                if (!emailPattern.test(email)) {
+                    emailError.text('Please enter a valid email address');
+                } else {
+                    emailError.text('');
+                }
+            }
+
+            // Function to validate email on form submission
+            function validateEmail() {
+                var email = $('.email').val().trim();
+                var emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                var emailError = $('#emailError');
+
+                if (!emailPattern.test(email)) {
+                    emailError.text('Please enter a valid email address');
+                    return false;
+                } else {
+                    emailError.text('');
+                    return true;
                 }
             }
         });
@@ -804,7 +818,7 @@
                                         </label>
                                     </div>
                                     <div class="Uploadphoto-thumb">
-                                        <img class="preview-image"  id="previewImage-${uniqueId}">
+                                        <img class="preview-image" id="previewImage-${uniqueId}">
                                     </div>
                                 </div>
                             </div>
@@ -842,6 +856,8 @@
                 var formData = new FormData(this);
                 var baseUrl = "{{ url('/') }}";
                 console.log(baseUrl);
+                var editIconUrl = "{{ asset('images/edit-2.svg') }}";
+                var trashIconUrl = "{{ asset('images/trash.svg') }}";
 
                 $.ajax({
                     url: baseUrl + '/save-specification', // Your backend endpoint
@@ -857,7 +873,6 @@
                             $('#specificationForm')[0].reset();
                             $("#spec_icon").val('');
 
-
                             // Create a new specification item dynamically
                             var newSpec = $('<div class="col-md-4">' +
                                 '<div class="specification-info">' +
@@ -870,20 +885,26 @@
                                 '</div>' +
                                 '</div>' +
                                 '<div class="specification-action">' +
-                                '<a class="editbtn1" href="#"><img src="' +
-                                "{{ asset('images/edit-2.svg') }}" +
-                                '" style="margin-top:6px;"></a>' +
-                                '<a href="#" class="trashbtn remove-specification"><img src="' +
-                                "{{ asset('images/trash.svg') }}" +
-                                '" style="margin-top:6px;"></a>' +
+                                '<a class="editbtn1" href="#" data-bs-toggle="modal" data-bs-target="#editspecification" ' +
+                                'data-id="' + response.specification.id + '" ' +
+                                'data-name="' + response.specification.name + '" ' +
+                                'data-values="' + response.specification.values + '">' +
+                                '<img src="' + editIconUrl + '" style="margin-top:6px">' +
+                                '</a>' +
+                                '<a href="#" class="trashbtn remove-specification" data-specification-id="' +
+                                response.specification.id + '">' +
+                                '<img src="' + trashIconUrl + '" style="margin-top:6px">' +
+                                '</a>' +
                                 '</div>' +
                                 '</div>' +
                                 '</div>');
-
+                            $('#emptySpecifications').remove();
                             // Append the new specification item to the container
                             // $('#specifications-container').append(newSpec);
                             $('#specifications-container').html(response.view);
+
                             document.getElementById('loader').style.display = 'none';
+
                             // setTimeout(function() {
                             //     location.reload();
                             // }, 2000);
@@ -893,8 +914,8 @@
                         }
                     },
                     error: function(xhr, status, error) {
-                        alert('An error occurred: ' + xhr.responseText);
                         document.getElementById('loader').style.display = 'none';
+                        alert('An error occurred: ' + xhr.responseText);
                     }
                 });
             });
@@ -905,54 +926,58 @@
     <script src='https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v4.7.0/mapbox-gl-geocoder.min.js'></script>
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDJ-ly7awveXkj-TeHKeCK3NFxxQR98i3U&libraries=places">
     </script>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
     <script>
-        mapboxgl.accessToken = 'pk.eyJ1IjoidXNlcnMxIiwiYSI6ImNsdGgxdnpsajAwYWcya25yamlvMHBkcGEifQ.qUy8qSuM_7LYMSgWQk215w';
-        var input = document.getElementById('geocoder');
-        var autocomplete = new google.maps.places.Autocomplete(input);
+        document.addEventListener('DOMContentLoaded', function() {
+            var input = document.getElementById('geocoder');
+            var autocomplete = new google.maps.places.Autocomplete(input);
 
-        autocomplete.addListener('place_changed', function() {
-            var place = autocomplete.getPlace();
+            autocomplete.addListener('place_changed', function() {
+                var place = autocomplete.getPlace();
 
-            if (!place.geometry) {
-                window.alert("No details available for input: '" + place.name + "'");
-                return;
-            }
+                if (!place.geometry) {
+                    window.alert("No details available for input: '" + place.name + "'");
+                    return;
+                }
 
-            document.getElementById('full_address').value = place.formatted_address;
-            document.getElementById('latitude').value = place.geometry.location.lat();
-            document.getElementById('longitude').value = place.geometry.location.lng();
-            document.getElementById('locationSelected').value = 'true';
+                document.getElementById('full_address').value = place.formatted_address;
+                document.getElementById('latitude').value = place.geometry.location.lat();
+                document.getElementById('longitude').value = place.geometry.location.lng();
+                document.getElementById('locationSelected').value = 'true';
+            });
+
+            // Handle clear event
+            document.getElementById('geocoder').addEventListener('change', function() {
+                if (document.getElementById('geocoder').value === '') {
+                    document.getElementById('full_address').value = '';
+                    document.getElementById('latitude').value = '';
+                    document.getElementById('longitude').value = '';
+                    document.getElementById('locationSelected').value = 'false';
+                }
+            });
+
+            // Form submission validation
+            document.getElementById('add-plant-form').addEventListener('submit', function(e) {
+                var locationSelected = document.getElementById('locationSelected').value;
+
+                // Validation: Check if location is selected
+                // if (!locationSelected == 'true') {
+                //     alert('Please select a location from the dropdown.');
+                //     e.preventDefault(); // Prevent form submission
+                //     return; // Exit the function to avoid showing the loader
+                // }
+
+                // Show the loader if the form is valid
+                document.getElementById('loader').style.display = 'block';
+            });
         });
-
-        // Handle clear event
-        document.getElementById('geocoder').addEventListener('change', function() {
-            if (document.getElementById('geocoder').value === '') {
-                document.getElementById('full_address').value = '';
-                document.getElementById('latitude').value = '';
-                document.getElementById('longitude').value = '';
-                document.getElementById('locationSelected').value = 'false';
-            }
-        });
-
-        // document.getElementById('add-plant-form').addEventListener('submit', function(e) {
-        //     var locationSelected = document.getElementById('locationSelected').value;
-        //     if (locationSelected !== 'true') {
-        //         alert('Please select a location from the dropdown.');
-        //         e.preventDefault();
-        //     }
-        // });
     </script>
-
     <script>
         $(document).ready(function() {
             // $('.remove-specification').on('click', function(e) {
-            //     document.getElementById('loader').style.display = 'block';
             //     e.preventDefault();
 
             //     var specificationId = $(this).data('specification-id');
-            //     var plantId = $(this).data('plant-id');
-            //     console.log(plantId);
             //     var baseUrl = "{{ url('/') }}";
 
             //     $.ajax({
@@ -962,29 +987,206 @@
             //         headers: {
             //             'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
             //         },
-            //         data: {
-            //             plant_id: plantId // Pass plant_id in the data payload
-            //         },
             //         success: function(response) {
             //             $('#specification-' + specificationId).fadeOut(300, function() {
             //                 $(this).remove();
             //             });
             //             $('#specification-' + specificationId).remove();
-
             //             $('#Deletespecifications').modal('show');
             //             setTimeout(function() {
             //                 location.reload();
             //             }, 2000);
             //             //console.log('Specification removed successfully.');
-            //             document.getElementById('loader').style.display = 'none';
             //         },
             //         error: function(xhr, status, error) {
             //             alert('Error deleting specification: ' + error);
-            //             document.getElementById('loader').style.display = 'none';
             //         }
             //     });
             // });
         });
+    </script>
+    <script>
+          let filesArray = []; // Array to keep track of files
+
+// Array to keep track of files
+
+function previewImages(event) {
+    var input = event.target;
+    var previewContainer = document.getElementById('preview_container');
+
+    // Clear existing previews
+    previewContainer.innerHTML = '';
+
+    if (input.files) {
+        const allowedExtensions = ['.png', '.jpg', '.jpeg'];
+        filesArray = Array.from(input.files); // Update the filesArray
+
+        const invalidFiles = [];
+
+        filesArray.forEach((file, index) => {
+            const fileExtension = file.name.slice(((file.name.lastIndexOf(".") - 1) >>> 0) + 2).toLowerCase();
+
+            // Check if the file extension is allowed
+            if (!allowedExtensions.includes(`.${fileExtension}`)) {
+                invalidFiles.push(file.name);
+                return; // Skip this file
+            }
+
+            var reader = new FileReader();
+
+            reader.onload = function(e) {
+                var colDiv = document.createElement('div');
+                colDiv.classList.add('col-md-3', 'mb-2');
+                colDiv.id = 'preview-' + index; // Assign a unique id to each preview
+
+                var imgDiv = document.createElement('div');
+                imgDiv.classList.add('position-relative');
+
+                var img = document.createElement('img');
+                img.src = e.target.result;
+                img.classList.add('img-fluid');
+
+                var deleteBtn = document.createElement('button');
+                deleteBtn.classList.add('btn', 'btn-danger', 'btn-sm', 'position-absolute', 'top-0', 'end-0');
+                deleteBtn.innerHTML = '&times;';
+                deleteBtn.onclick = function() {
+                    deleteImage(index);
+                };
+
+                imgDiv.appendChild(img);
+                imgDiv.appendChild(deleteBtn);
+                colDiv.appendChild(imgDiv);
+                previewContainer.appendChild(colDiv);
+            }
+
+            reader.readAsDataURL(file);
+        });
+
+        // Show error if there are invalid files
+        if (invalidFiles.length > 0) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Invalid File Type',
+                text: `The following files are not allowed: ${invalidFiles.join(', ')}`,
+                confirmButtonText: 'OK'
+            });
+
+            // Clear the file input
+            input.value = '';
+        }
+    }
+}
+function deleteImage(index) {
+    // Remove preview from the container
+    var previewDiv = document.getElementById('preview-' + index);
+    if (previewDiv) {
+        previewDiv.remove();
+    }
+
+    // Remove the file from the filesArray
+    filesArray.splice(index, 1);
+
+    // Clear the file input and reassign the remaining files
+    var input = document.getElementById('UploadPhotos');
+    var dataTransfer = new DataTransfer();
+
+    filesArray.forEach(file => {
+        dataTransfer.items.add(file);
+    });
+
+    // Set the new file list
+    input.files = dataTransfer.files;
+
+    // Update the preview
+    previewImages({ target: input });
+
+    // Clear the file input value if there are no files left
+    if (filesArray.length === 0) {
+        input.value = '';
+    }
+}
+
+// Optional: Clear filesArray on form reset
+document.querySelector('form').addEventListener('reset', function() {
+    filesArray = [];
+    document.getElementById('preview_container').innerHTML = '';
+    document.getElementById('UploadPhotos').value = ''; // Clear file input
+});
+
+        function previewImage(event) {
+            var input = event.target;
+            var previewContainer = document.querySelector('.Uploadphoto-thumb');
+            var existingImage = document.getElementById('imagePreview');
+            const allowedExtensions = ['.png', '.jpg', '.jpeg'];
+
+            if (input.files && input.files[0]) {
+                var file = input.files[0];
+                const fileExtension = file.name.slice(((file.name.lastIndexOf(".") - 1) >>> 0) + 2).toLowerCase();
+                if (!allowedExtensions.includes(`.${fileExtension}`)) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Invalid File Type',
+                text: `Only the following file types are allowed: ${allowedExtensions.join(', ')}`,
+                confirmButtonText: 'OK'
+            });
+
+            // Clear the file input
+            event.target.value = '';
+            preview.src = ''; // Clear any existing preview
+            return;
+        }
+                var reader = new FileReader();
+
+                reader.onload = function(e) {
+                    if (existingImage) {
+                        // Update the existing image preview
+                        existingImage.src = e.target.result;
+                    } else {
+                        // If no existing image, create a new image preview element
+                        var newImagePreview = document.createElement('img');
+                        newImagePreview.src = e.target.result;
+                        newImagePreview.classList.add('imgfluid');
+                        newImagePreview.id = 'imagePreview'; // Set the ID for future reference
+
+                        // Append the new image preview to the container
+                        previewContainer.appendChild(newImagePreview);
+                    }
+                }
+
+                reader.readAsDataURL(file);
+            }
+        }
+
+
+        function previewImages2(event, previewId) {
+            const files = event.target.files;
+            const preview = document.getElementById(previewId);
+            const allowedExtensions = ['.png', '.jpg', '.jpeg'];
+            if (files && files[0]) {
+                const file = files[0];
+                const fileExtension = file.name.slice(((file.name.lastIndexOf(".") - 1) >>> 0) + 2).toLowerCase();
+                const reader = new FileReader();
+
+                if (!allowedExtensions.includes(`.${fileExtension}`)) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Invalid File Type',
+                text: `Only the following file types are allowed: ${allowedExtensions.join(', ')}`,
+                confirmButtonText: 'OK'
+            });
+
+            // Clear the file input
+            event.target.value = '';
+            preview.src = ''; // Clear any existing preview
+            return;
+        }
+                reader.onload = function(e) {
+                    preview.src = e.target.result;
+                };
+                reader.readAsDataURL(files[0]);
+            }
+        }
+
 
         function openEditForm(ele) {
             // Get data attributes from the button
@@ -1047,268 +1249,37 @@
             });
 
         }
-    </script>
-
-    <script>
-        // Ensure jQuery is included before this script
-        $(document).ready(function() {
-            $('.btn-remove').click(function() {
-                var managerId = $(this).data('manager-id');
-                console.log(managerId);
-                var baseUrl = "{{ url('/') }}";
-
-                // Confirm deletion (optional)
-                // if (!confirm('Are you sure you want to remove this sales manager?')) {
-                //     return;
-                // }
-
-                // AJAX request to delete sales manager
-                $.ajax({
-                    url: baseUrl + '/delete-sales-managers/' + managerId,// Replace with your route URL
-                    type: 'POST',
-                    data: {
-                        _token: '{{ csrf_token() }}'
-                    },
-                    headers: {
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                    },
-                    success: function(response) {
-                        // Optionally handle success response (e.g., remove DOM element)
-                        console.log(response); // Log response for debugging
-                        // Remove the parent row on success
-
-                        $(this).closest('.sales-manager-row').remove();
-                        location.reload();
-
-                    },
-                    error: function(xhr, status, error) {
-                        console.error(xhr.responseText); // Log error for debugging
-                        alert('An error occurred while deleting the sales manager.');
-                    }
-                });
-            });
-        });
-
-        document.addEventListener('DOMContentLoaded', function() {
-            document.getElementById('add-plant-form').addEventListener('submit', function() {
-                document.getElementById('loader').style.display = 'block'; // Show the loader
-            });
-        });
-    </script>
-    <script>
-       let filesArray = []; // Array to keep track of files
-
-function previewImages(event) {
-    var input = event.target;
-    var previewContainer = document.getElementById('preview_container');
-    const allowedExtensions = ['.png', '.jpg', '.jpeg'];
-    if (input.files) {
-        filesArray = Array.from(input.files);
-        previewContainer.innerHTML = ''; // Clear existing previews
-
-        filesArray.forEach((file, index) => {
-            const fileExtension = file.name.slice(((file.name.lastIndexOf(".") - 1) >>> 0) + 2).toLowerCase();
-            if (!allowedExtensions.includes(`.${fileExtension}`)) {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Invalid File Type',
-                    text: `Only the following file types are allowed: ${allowedExtensions.join(', ')}`,
-                    confirmButtonText: 'OK'
-                });
-
-                // Clear the file input
-                event.target.value = '';
-                return;
-            }
-            var reader = new FileReader();
-
-            reader.onload = function(e) {
-                var colDiv = document.createElement('div');
-                colDiv.classList.add('col-md-3', 'mb-2');
-                colDiv.id = 'preview-' + index; // Assign a unique id to each preview
-
-                var imgDiv = document.createElement('div');
-                imgDiv.classList.add('position-relative');
-
-                var img = document.createElement('img');
-                img.src = e.target.result;
-                img.classList.add('img-fluid');
-
-                var deleteBtn = document.createElement('button');
-                deleteBtn.classList.add('btn', 'btn-danger', 'btn-sm', 'position-absolute', 'top-0', 'end-0');
-                deleteBtn.innerHTML = '&times;';
-                deleteBtn.onclick = function() {
-                    deleteImage(index);
-                };
-
-                imgDiv.appendChild(img);
-                imgDiv.appendChild(deleteBtn);
-                colDiv.appendChild(imgDiv);
-                previewContainer.appendChild(colDiv);
-            }
-
-            reader.readAsDataURL(file);
-        });
-    }
-}
-
-function deleteImage(index) {
-    var previewDiv = document.getElementById('preview-' + index);
-    if (previewDiv) {
-        previewDiv.remove();
-    }
-
-    // Remove the file from the filesArray
-    filesArray.splice(index, 1);
-
-    // Clear the file input and reassign the remaining files
-    var input = document.getElementById('UploadPhotos');
-    var dataTransfer = new DataTransfer();
-
-    filesArray.forEach(file => {
-        dataTransfer.items.add(file);
-    });
-
-    input.files = dataTransfer.files;
-}
-
-
-        function previewImage(event, previewId) {
-            var input = event.target;
-            var preview = document.getElementById(previewId);
-            const allowedExtensions = ['.png', '.jpg', '.jpeg'];
-            if (input.files && input.files[0]) {
-                const file = files[0];
-                const fileExtension = file.name.slice(((file.name.lastIndexOf(".") - 1) >>> 0) + 2).toLowerCase();
-                if (!allowedExtensions.includes(`.${fileExtension}`)) {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Invalid File Type',
-                    text: `Only the following file types are allowed: ${allowedExtensions.join(', ')}`,
-                    confirmButtonText: 'OK'
-                });
-
-                // Clear the file input
-                event.target.value = '';
-                preview.src = ''; // Clear any existing preview
-                return;
-            }
-                var reader = new FileReader();
-
-                reader.onload = function(e) {
-                    preview.src = e.target.result;
-                    preview.style.display = 'block'; // Show the image preview
-                }
-
-                reader.readAsDataURL(input.files[0]);
-            }
-        }
-
-
-        function previewImages2(event, previewId) {
-            const files = event.target.files;
-            const preview = document.getElementById(previewId);
-            const allowedExtensions = ['.png', '.jpg', '.jpeg'];
-            if (files && files[0]) {
-                const file = files[0];
-                const fileExtension = file.name.slice(((file.name.lastIndexOf(".") - 1) >>> 0) + 2).toLowerCase();
-                const reader = new FileReader();
-                if (!allowedExtensions.includes(`.${fileExtension}`)) {
-            Swal.fire({
-                icon: 'error',
-                title: 'Invalid File Type',
-                text: `Only the following file types are allowed: ${allowedExtensions.join(', ')}`,
-                confirmButtonText: 'OK'
-            });
-
-            // Clear the file input
-            event.target.value = '';
-            preview.src = ''; // Clear any existing preview
-            return;
-        }
-                reader.onload = function(e) {
-                    preview.src = e.target.result;
-                };
-                reader.readAsDataURL(files[0]);
-            }
-        }
-
-
-
-        document.addEventListener('DOMContentLoaded', function() {
-            const deleteButtons = document.querySelectorAll('.delete-btn');
-
-            deleteButtons.forEach(button => {
-                button.addEventListener('click', function(e) {
-                    e.preventDefault();
-
-                    const imageId = this.getAttribute('data-image-id');
-                    const imageElement = this.closest('.upload-file-item');
-
-                    fetch("{{ route('delete-photo', ':id') }}".replace(':id', imageId), {
-                            method: 'POST',
-                            headers: {
-                                'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                                'Content-Type': 'application/json'
-                            },
-                            body: JSON.stringify({
-                                id: imageId
-                            })
-                        })
-                        .then(response => {
-                            if (!response.ok) {
-                                throw new Error('Network response was not ok');
-                            }
-                            return response.json();
-                        })
-                        .then(data => {
-                            if (data.success) {
-                                imageElement.remove();
-                                window.location.reload();
-                            } else {
-                                alert('Failed to delete the image.');
-                            }
-                        })
-                        .catch(error => {
-                            console.error('There was a problem with the fetch operation:',
-                                error);
-                            alert('An error occurred while deleting the image.');
-                        });
-                });
-            });
-        });
-
-
         document.addEventListener('DOMContentLoaded', function() {
             const editButtons = document.querySelectorAll('.editbtn1');
 
-            editButtons.forEach(button => {
-                button.addEventListener('click', function() {
-                    // Get data attributes from the button
-                    const name = this.getAttribute('data-name');
-                    const values = this.getAttribute('data-values');
-                    const id = this.getAttribute('data-id');
-                    const image = this.getAttribute('data-image');
+            // editButtons.forEach(button => {
+            //     button.addEventListener('click', function() {
+            //         // Get data attributes from the button
+            //         const name = this.getAttribute('data-name');
+            //         const values = this.getAttribute('data-values');
+            //         const id = this.getAttribute('data-id');
+            //         const image = this.getAttribute('data-image');
+            //         console.log(image);
 
-                    // Populate the modal form fields
-                    document.getElementById('spec-id').value = id;
-                    document.getElementById('spec-name').value = name;
-                    document.getElementById('spec-values').value = values;
+            //         // Populate the modal form fields
+            //         document.getElementById('spec-id').value = id;
+            //         document.getElementById('spec-name').value = name;
+            //         document.getElementById('spec-values').value = values;
 
-                    const previewImage = document.getElementById('preview_image_icon');
-                    const uploadFileItem = document.querySelector('.upload-file-item-icon2');
+            //         const previewImage = document.getElementById('preview_image_icon');
+            //         const uploadFileItem = document.querySelector('.upload-file-item-icon');
 
-                    if (image) {
-                        previewImage.src = "{{ asset('upload/specification-image/') }}/" + image;
-                        uploadFileItem.classList.add(
-                            'visible'); // Show the upload file item container
-                    } else {
-                        previewImage.src = '';
-                        uploadFileItem.style.display =
-                            'none'; // Hide the upload file item container
-                    }
-                });
-            });
+            //         if (image) {
+            //             previewImage.src = "{{ asset('upload/specification-image/') }}/" + image;
+            //             uploadFileItem.classList.add(
+            //                 'visible'); // Show the upload file item container
+            //         } else {
+            //             previewImage.src = '';
+            //             uploadFileItem.style.display =
+            //                 'none'; // Hide the upload file item container
+            //         }
+            //     });
+            // });
 
             document.getElementById('specificationEditForm').addEventListener('submit', function(e) {
                 e.preventDefault(); // Prevent the default form submission
@@ -1338,6 +1309,7 @@ function deleteImage(index) {
 
                             }, 2000);
                             $('#specifications-container').html(data.view);
+
                             document.getElementById('loader').style.display =
                                 'none'; // Refresh the page to show updated data
                         } else {
@@ -1351,7 +1323,6 @@ function deleteImage(index) {
                     });
             });
         });
-
         document.getElementById('spec_icon').addEventListener('change', previewSpecImage);
 
         function previewSpecImage(event) {
@@ -1365,7 +1336,7 @@ function deleteImage(index) {
                 reader.onload = function(e) {
                     preview.src = e.target.result;
                     // Show the upload-file-item div if an image is selected
-                    document.querySelector('.upload-file-item-icon').classList.add('visible');
+                    document.querySelector('.upload-file-item').style.display = 'block';
                     //console.log(e.target.result);
                 }
 
@@ -1379,6 +1350,7 @@ function deleteImage(index) {
             }
         }
 
+
         function previewSpecImage2(event) {
             const input = event.target;
             const preview = document.getElementById('preview_image_icon');
@@ -1388,7 +1360,7 @@ function deleteImage(index) {
 
                 reader.onload = function(e) {
                     preview.src = e.target.result;
-                    document.querySelector('.upload-file-item-icon2').style.display =
+                    document.querySelector('.upload-file-item').style.display =
                         'block'; // Show the new image preview container
                 };
 
@@ -1399,6 +1371,8 @@ function deleteImage(index) {
                     'none'; // Hide the new image preview container if no image selected
             }
         }
+
+
 
         document.addEventListener('DOMContentLoaded', function() {
             const deleteButtons = document.querySelectorAll('.delete-btn-icon');
@@ -1426,7 +1400,10 @@ function deleteImage(index) {
                         const data = await response.json();
 
                         if (response.ok && data.success) {
+                            imageElement.remove();
                             window.location.reload();
+                        } else {
+                            alert('Failed to delete the image.');
                         }
                     } catch {
                         alert('An error occurred while deleting the image.');

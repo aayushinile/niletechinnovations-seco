@@ -745,6 +745,7 @@ class ManufacturerController extends Controller
     public function ManufacturerProfile(Request $request)
     {
         $users = Auth::user();
+        // dd($users);
         $user = Manufacturer::where('plant_id',$users->id)->first();
         $attributes = DB::table('manufacturer_attributes')->where('manufacturer_id',$user->id)->first();
         //dd($attributes);
@@ -1081,10 +1082,36 @@ class ManufacturerController extends Controller
         
         // Fetch plants associated with the authenticated user
         $plants = Plant::where('manufacturer_id', $user->id);
-        if ($request->filled('search')) { 
-            $plants->Where('plant_name', 'LIKE', '%' . $request->search . '%');
+        if ($request->filled('search')) {
+            // Apply search across multiple fields (plant_name, full_address, city, and state)
+            $plants->where(function($query) use ($search) {
+                $query->where('plant_name', 'LIKE', '%' . $search . '%')
+                      ->orWhere('full_address', 'LIKE', '%' . $search . '%')
+                      ->orWhere('city', 'LIKE', '%' . $search . '%')
+                      ->orWhere('state', 'LIKE', '%' . $search . '%');
+            });
         }
-        $plants = $plants->paginate(12);
+
+        if ($request->has('status') && !empty($request->status)) {
+            if ($request->status == 1) {
+                // Approved plants (status 1 and is_approved 'Y')
+                $plants->where('plant.status', 1)
+                            ->where('plant.is_approved', 'Y');
+            } elseif ($request->status == 3) {
+                // Unapproved plants (status 0 and is_approved 'N')
+                $plants->where('plant.status', 0)
+                            ->where('plant.is_approved', 'N');
+            } elseif ($request->status == 4) {
+                // Pending plants (status 0 or NULL, and is_approved NULL)
+                $plants->where(function($q) {
+                    $q->where('plant.status', 0)
+                    ->orWhereNull('plant.status');
+                })
+                ->whereNull('plant.is_approved');
+            }
+        }
+        $plantCount = $plants->count();
+        $plants = $plants->get();
         // Loop through each plant to fetch state and country based on latitude and longitude
         foreach ($plants as $plant) {
             $lat = $plant->latitude;
@@ -1131,7 +1158,7 @@ class ManufacturerController extends Controller
          }
 
         // Pass the fetched data to the view 'manufacturer.manage-locations'
-        return view('manufacturer.manage-locations', compact('plants', 'user','search'));
+        return view('manufacturer.manage-locations', compact('plants', 'user','search','plantCount'));
     }
 
 

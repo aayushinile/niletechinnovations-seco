@@ -1,6 +1,52 @@
 @extends('manufacturer.layouts')
 @section('content')
+<style>
+     .loader-container {
+        position: fixed;
+        z-index: 9999;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        /* Semi-transparent black overlay */
+        display: none;
+        /* Initially hidden */
+        justify-content: center;
+        align-items: center;
+    }
 
+    .loader {
+        border: 8px solid #f3f3f3;
+        /* Light grey */
+        border-top: 8px solid #3498db;
+        /* Blue */
+        border-radius: 50%;
+        width: 50px;
+        height: 50px;
+        animation: spin 1s linear infinite;
+        position: relative;
+        top: 46%;
+        left: 46%;
+
+
+    }
+
+    .loader-container.show {
+        display: flex;
+    }
+
+
+    @keyframes spin {
+        0% {
+            transform: rotate(0deg);
+        }
+
+        100% {
+            transform: rotate(360deg);
+        }
+    }
+</style>
     <div class="body-main-content">
         <div class="ss-heading-section">
             <h2>Manage Manufacturer/Plant Details</h2>
@@ -52,6 +98,7 @@
                     <a class="" data-bs-toggle="modal" data-bs-target="#deleteplants"
                         data-plant-id="{{ $plant['id'] }}" data-plant-name="{{ $plant['plant_name'] }}"
                         style="background: var(--red);color: var(--white);padding: 12px 20px;border-radius: 5px;font-size: 14px;box-shadow: 0 4px 10px #5f0f5845;display: inline-block;position: relative;">Delete</a>
+                        <a class="edit-btn" style="background: var(--green);" href="{{route('manufacturer.manage-locations')}}"> Back </a>
                 </div>
             </div>
             <div class="listed-plants-details-section">
@@ -235,6 +282,9 @@
             </div>
         </div>
     </div>
+    <div class="loader-container" id="loader">
+        <div class="loader"></div>
+    </div>
     <!-- <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script> -->
     <script>
         $(document).ready(function() {
@@ -248,6 +298,7 @@
             });
 
             $('#delete-form').submit(function(e) {
+                document.getElementById('loader').style.display = 'block';
                 e.preventDefault();
                 var form = $(this);
                 var url = form.attr('action');

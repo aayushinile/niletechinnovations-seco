@@ -38,6 +38,7 @@ use App\Mail\ForgetPassword;
 use App\Mail\ResetCredentials;
 use Illuminate\Support\Facades\Log;
 use GuzzleHttp\Client;
+use App\Mail\ApprovalMail;
 
 class AdminController extends Controller
 {
@@ -113,7 +114,7 @@ class AdminController extends Controller
         $total_manufacturer_corp = DB::table('plant_login')->where('plant_type','corp_rep')->count();
         $total_manufacturer_plant = DB::table('plant_login')->where('plant_type','plant_rep')->count();
         $total_community = DB::table('community')->where('status', 1)->count();
-        $manufacturer_request = DB::table('plant_login')->where('status', 1)->orderBy("id", 'desc')->take(5)
+        $manufacturer_request = DB::table('plant_login')->where('status', 1)->where('plant_type','corp_rep')->orderBy("id", 'desc')->take(5)
             ->get();
         $community = Community::whereNotNull("user_id")->groupBy("user_id")->pluck("user_id")->toArray();
 
@@ -162,7 +163,7 @@ class AdminController extends Controller
             $owners_2 = $owners;
         } else {
             $owners_2 = $ownersQuery->orderBy("id", "desc")->get();
-            $owners = $ownersQuery->orderBy("id", "desc")->paginate(10);
+            $owners = $ownersQuery->orderBy("id", "desc")->get();
         }
 
         // Export to Excel if download request is filled
@@ -322,9 +323,44 @@ class AdminController extends Controller
 
     public function plantexport(Request $request)
     {
-        $manufracturers = Plant::where('manufacturer_id',$request->id)
-        ->orderBy("id", "desc");
-        $manufacturer_2 = $manufracturers->get();
+        // Start the base query for the Plant model
+        $manufracturers = Plant::where('manufacturer_id', $request->id);
+
+        // Apply status filter if it exists in the request
+        if ($request->has('status') && !empty($request->status)) {
+            if ($request->status == 1) {
+                // Approved plants (status 1 and is_approved 'Y')
+                $manufracturers->where('plant.status', 1)
+                            ->where('plant.is_approved', 'Y');
+            } elseif ($request->status == 3) {
+                // Unapproved plants (status 0 and is_approved 'N')
+                $manufracturers->where('plant.status', 0)
+                            ->where('plant.is_approved', 'N');
+            } elseif ($request->status == 4) {
+                // Pending plants (status 0 or NULL, and is_approved NULL)
+                $manufracturers->where(function($q) {
+                    $q->where('plant.status', 0)
+                    ->orWhereNull('plant.status');
+                })
+                ->whereNull('plant.is_approved');
+            }
+        }
+
+        // Apply search filter if it exists in the request
+        if ($request->has('search') && !empty($request->search)) {
+            $searchTerm = $request->search;
+            $manufracturers->where(function($subQuery) use ($searchTerm) {
+                $subQuery->where('plant.plant_name', 'LIKE', "%{$searchTerm}%")
+                        ->orWhere('plant.full_address', 'LIKE', "%{$searchTerm}%")
+                        ->orWhere('plant.city', 'LIKE', "%{$searchTerm}%")
+                        ->orWhere('plant.state', 'LIKE', "%{$searchTerm}%");
+            });
+        }
+
+        // Get the filtered results
+        $manufacturer_2 = $manufracturers->orderBy("id", "desc")->get();
+
+        // Return the Excel download
         return Excel::download(new PlantsExport($manufacturer_2), 'plants.xls');
     }
 
@@ -403,6 +439,7 @@ class AdminController extends Controller
     public function manufracturersShow(Request $request, $slug)
     {
         $id = decrypt($slug);
+       
         $manufacturer = null;
         $plant = Plant::where('id', $id)->first();
         $mfs = PlantLogin::where('id',$plant->manufacturer_id)->first();
@@ -422,6 +459,7 @@ class AdminController extends Controller
         //         $item->image = null;
         //     }
         // }
+        
 
         if (!empty($plant)) {
             $images = PlantMedia::where('plant_id', $plant->id)->get();
@@ -682,10 +720,11 @@ class AdminController extends Controller
             if ($request->has('sales_manager')) {
                 // Delete existing sales managers
                 DB::table('plant_sales_manager')->where('plant_id', $plant->id)->where('manufacturer_id', $plant->manufacturer_id)->delete();
-    
+                //dd($plant->manufacturer_id);die;
                 // Create new sales managers
                 foreach ($request->sales_manager['name'] as $key => $value) {
                     if (!empty($value)) {
+                        // dd($request->all());
                         $imagePath = null;
                         $name = ucfirst(strtolower($value));
     
@@ -743,6 +782,7 @@ class AdminController extends Controller
                 $contact_m = collect(); // Same for contacted manufacturers
                 $manufacturers = collect();
             }
+            
             return view('admin.manufracturers.detail',compact('mfs', 'plant', 'images', 'sales_managers', 'specifications', 'manufacturer','contact_m','manufacturers'))
             ->with('success', 'Plant details updated successfully.');
         } catch (\Exception $e) {
@@ -755,42 +795,55 @@ class AdminController extends Controller
     public function manufracturersCorpShow(Request $request, $slug)
     {
         $id = decrypt($slug);
+        $query = DB::table('plant')
+        ->leftJoin('plant_media', 'plant_media.plant_id', '=', 'plant.id')
+        ->where('plant.manufacturer_id', $id)
+        ->orderBy('plant.id', 'DESC')
+        ->select(
+            'plant.id as plant_id',
+            'plant.plant_name',
+            'plant.full_address',
+            'plant.status',
+            'plant.phone',
+            'plant.email',
+            'plant.is_approved',
+            'plant.city',
+            'plant.state'
+        );
 
-        $plants = DB::table('plant')
-                ->leftJoin('plant_media', 'plant_media.plant_id', '=', 'plant.id')
-                ->where('plant.manufacturer_id', $id)
-                ->orderBy('plant.id', 'DESC')
-                ->select(
-                    'plant.id as plant_id', // Select and alias the community id
-                    'plant.plant_name',
-                    'plant.full_address',
-                    'plant.status', 
-                    'plant.phone',   // Select the value from community_attributes
-                    'plant.email',
-                    'plant.is_approved',
-                )
-                ->distinct()
-                ->paginate(10);
 
-            $count = DB::table('plant')
-            ->leftJoin('plant_media', 'plant_media.plant_id', '=', 'plant.id')
-            ->where('plant.manufacturer_id', $id)
-            ->orderBy('plant.id', 'DESC')
-            ->select(
-                'plant.id as plant_id', // Select and alias the community id
-                'plant.plant_name',
-                'plant.full_address',
-                'plant.status', 
-                'plant.phone',   // Select the value from community_attributes
-                'plant.email',
-                'plant.is_approved',
-            )
-            ->distinct()
-            ->count();
+        if ($request->has('status') && !empty($request->status)) {
+            if ($request->status == 1) {
+                // Approved plants (status 1 and is_approved 'Y')
+                $query->where('plant.status', 1)
+                      ->where('plant.is_approved', 'Y');
+            } elseif ($request->status == 3) {
+                // Unapproved plants (status 0 and is_approved 'N')
+                $query->where('plant.status', 0)
+                      ->where('plant.is_approved', 'N');
+            }
+        }
+    
+        // Check if there's a search term in the request
+        if ($request->has('search') && !empty($request->search)) {
+            $searchTerm = $request->search;
+            $query->where(function($subQuery) use ($searchTerm) {
+                $subQuery->where('plant.plant_name', 'LIKE', "%{$searchTerm}%")
+                         ->orWhere('plant.full_address', 'LIKE', "%{$searchTerm}%")
+                         ->orWhere('plant.city', 'LIKE', "%{$searchTerm}%")
+                         ->orWhere('plant.state', 'LIKE', "%{$searchTerm}%");
+            });
+        }
+
+        // Get the plants
+        $plants = $query->distinct()->get();
+        
+        // Get the count of the plants
+        $count = $query->distinct()->count();
 
         //$plant = Plant::where('id', $id)->first();
         $mfs = PlantLogin::where('id',$id)->first();
-
+        //dd($mfs);
         // $manufracturers = ContactManufacturer::where("plant_id", $plant->id)->pluck("user_id")->toArray();
         // //dd($manufracturers);
         // $contact_m = DB::table('users')
@@ -826,6 +879,241 @@ class AdminController extends Controller
     }
 
 
+
+    public function DeletePlant(Request $request)
+    {
+        $plantId = $request->input('plant_id');
+        $plant = Plant::where('id',$plantId)->first();
+        $item_id = PlantLogin::where('id',$plant->manufacturer_id)->first();
+        $id_2 = $item_id->id;
+        
+        // Perform deletion logic
+        $plant = Plant::find($plantId);
+        if (!$plant) {
+            return response()->json(['error' => 'Plant not found'], 404);
+        }
+
+        PlantSalesManager::where('plant_id', $plantId)->delete();
+        PlantMedia::where('plant_id', $plantId)->delete();
+        $plant->delete();
+        Plant::where('id', $plantId)->delete();
+        $plant->delete();
+
+        // Flash success message
+        session()->flash('success', 'Plant deleted successfully!');
+
+        // Return response with a redirect URL
+        return response()->json([
+            'message' => 'Plant deleted successfully',
+            'redirect_url' => route('admin.manufracturers.corporateshow', encrypt($id_2))  // Redirect route
+        ]);
+    }
+
+
+    public function AddPlantAdmin(Request $request)
+    {
+        $user = $request->query('mfs_id');
+        //dd($user);
+        // $userSettings = DB::table('settings')->where('manufacturer_id', $user->id)->first();
+        // $selectedCountry = $userSettings->country ?? 'United States'; 
+        $specifications = DB::table('specifications')->where('manufacturer_id', $user)->get();
+        return view('admin.manufracturers.add-plant-admin',compact('user','specifications'));
+    }
+
+
+    public function savePlantAdmin(Request $request)
+    {
+        try {
+            $validator = Validator::make($request->all(), [
+                'plant_name' => 'nullable|string',
+                'email' => 'nullable|string',
+                'phone' => 'nullable|string',
+                'description' => 'nullable|string',
+                'full_address' => 'nullable|string',
+                'latitude' => 'required_with:full_address|numeric',
+                'longitude' => 'required_with:full_address|numeric',
+                'city' => 'nullable|string',
+                'state' => 'nullable|string',
+                'zipcode' => 'nullable|string',
+                'shipping_cost' => 'nullable|string',
+                'sales_manager' => 'nullable|array',
+                'sales_manager.name.*' => 'nullable|string',
+                'sales_manager.email.*' => 'nullable|string',
+                'sales_manager.phone.*' => 'nullable|string',
+                'sales_manager.designation.*' => 'nullable|string',
+                'sales_manager.images.*' => 'nullable',
+                'price_range' => 'nullable|string',
+                'from_price_range' => 'nullable|string',
+                'to_price_range' => 'nullable|string',
+                'specification' => 'nullable|string',
+                'type' => 'nullable|string',
+                'web_link' => 'nullable',
+                'images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            ]);
+
+            if ($validator->fails()) {
+                return redirect()->back()->withErrors($validator)->withInput();
+            }
+            $validated = $validator->validated();
+            //dd($request->all());
+            $specifications = $request->specifications ? implode(',', $request->specifications) : null;
+
+            // Initialize the HTTP client
+            $client = new Client();
+
+            // Make the request to the Mapbox Geocoding API
+            $response = $client->get('https://api.mapbox.com/geocoding/v5/mapbox.places/' . urlencode($request->full_address) . '.json', [
+                'query' => [
+                    'access_token' => 'pk.eyJ1IjoidXNlcnMxIiwiYSI6ImNsdGgxdnpsajAwYWcya25yamlvMHBkcGEifQ.qUy8qSuM_7LYMSgWQk215w',
+                ],
+            ]);
+    
+            // Parse the response
+            $data = json_decode($response->getBody(), true);
+            $features = $data['features'][0] ?? [];
+            //dd($features);
+            // Extract city, state, and country from the response
+            $city = '';
+            $state = '';
+            $country = '';
+    
+            if (isset($data['features'][0])) {
+                $features = $data['features'][0];
+                $city = $state = $country = $features['text'] ?? ''; // Default to text if no specific context
+                
+                foreach ($features['context'] as $context) {
+                    if (strpos($context['id'], 'place') === 0) {
+                        $city = $context['text'];
+                    } elseif (strpos($context['id'], 'region') === 0) {
+                        $state = $context['text'];
+                    } elseif (strpos($context['id'], 'country') === 0) {
+                        $country = $context['text'];
+                    }
+                }
+    
+                // If no specific city found in context, use the text from the response
+                $city = $city ?: $features['text'];
+            } else {
+                // Handle case where features are not available
+                $city = $state = $country = 'Unknown';
+            }
+
+            // Create the new plant
+            $plant = Plant::create([
+                'plant_name' => $request->plant_name,
+                'email' => $request->email,
+                'phone' => $request->phone,
+                'description' => $request->description,
+                'full_address' => $request->full_address,
+                'latitude' => $request->latitude,
+                'longitude' => $request->longitude,
+                'city' => $city,
+                'state' => $state,
+                'country' => $country,
+                'zipcode' => null,
+                'price_range' => $request->price_range,
+                'from_price_range' => $request->from_price_range,
+                'to_price_range' => $request->to_price_range,
+                'specification' => $specifications,
+                'type' => $request->type,
+                'web_link' => $request->web_link,
+                'manufacturer_id' => $request->manufacturer_id,
+                'shipping_cost'=> $request->shipping_cost,
+                'status' => 0,
+            ]);
+            $user = $request->manufacturer_id;
+
+             $plants_login = PlantLogin::where('id',$user)->first();
+        //    // dd($plants_login->plant_type);
+            // try {
+            //     $name = 'Admin';
+            //     $email = 'spencer@roane.com';
+            //     $plantName = $plant->plant_name;
+            //     $type = $plants_login->plant_type;
+            //     $location = $plant->full_address;
+            //     $business_name = $plants_login->business_name ?? 'N/A';
+            //     Mail::to($email)->send(new ApprovalMail($plantName,$location,$type,$business_name));
+            // } catch (\Throwable $th) {
+            // }
+
+           
+
+            // if($plants_login['plant_type'] == 'plant_rep'){
+            //     PlantLogin::where('id', $user->id)->update([
+            //         'email' => $request->email,
+            //         'plant_name' => $request->plant_name,
+            //         'full_address' => $request->full_address,
+            //         'longitude' => $request->longitude,
+            //         'latitude' => $request->latitude,
+            //         'phone' => $request->phone,
+            //         'city' => $city,
+            //         'state' => $state,
+            //         'country' => $country,
+            //     ]);
+            // }
+            
+
+            // Handle sales managers
+            if ($request->has('sales_manager')) {
+                foreach ($request->sales_manager['name'] as $key => $value) {
+                    if (!empty($value)) {
+                        $name = ucfirst(strtolower($value));
+                        $imagePath = null;
+                        if ($request->hasFile("sales_manager.images.$key")) {
+                            $file = $request->file("sales_manager.images.$key");
+                            $imageName = 'IMG_' . date('YmdHis') . '_' . rand(1000, 9999) . '.' . $file->getClientOriginalExtension();
+                            $file->move(public_path('upload/sales-manager-images'), $imageName);
+                            $imagePath = $imageName;
+                        }
+
+                        PlantSalesManager::create([
+                            'plant_id' => $plant->id,
+                            'name' => $name,
+                            'phone' => $request->sales_manager['phone'][$key],
+                            'email' => $request->sales_manager['email'][$key],
+                            'designation' => $request->sales_manager['designation'][$key],
+                            'manufacturer_id' => $request->manufacturer_id,
+                            'image' => $imagePath,
+                        ]);
+                    }
+                }
+            }
+
+            // Handle images
+            if ($request->hasfile('images')) {
+                foreach ($request->file('images') as $file) {
+                    $name = 'IMG_' . date('YmdHis') . '_' . rand(1000, 9999) . '.' . $file->getClientOriginalExtension();
+                    $file->move(public_path('upload/manufacturer-image'), $name);
+                    PlantMedia::create([
+                        'plant_id' => $plant->id,
+                        'image_url' => $name
+                    ]);
+                }
+            }
+            $manufacturer = null;
+            if (!empty($plant)) {
+                $images = PlantMedia::where('plant_id', $plant->id)->get();
+                $sales_managers = PlantSalesManager::where('plant_id', $plant->id)->get();
+                $specificationIds = explode(',', $plant->specification);
+                $specifications = Specifications::whereIn('id', $specificationIds)->get();
+                $manufracturers = ContactManufacturer::where("plant_id", $plant->id)->pluck("user_id")->toArray();
+                $contact_m = DB::table('users')
+                    ->whereIn('id', $manufracturers)
+                    ->get();
+                $manufacturers = ContactManufacturer::where("plant_id", $plant->id)->orderby('id','DESC')->get();
+            } else {
+                $images = collect(); // Use an empty collection instead of an array
+                $sales_managers = collect(); // Same for sales managers
+                $specifications = collect(); // Same for specifications
+                $contact_m = collect(); // Same for contacted manufacturers 
+                $manufacturers = collect();
+            }
+            $mfs = PlantLogin::where('id',$request->manufacturer_id)->first();
+            return view("admin.manufracturers.detail", compact('mfs', 'plant', 'images', 'sales_managers', 'specifications', 'manufacturer','contact_m','manufacturers'));
+        } catch (\Exception $e) {
+            return response('Exception => ' . $e->getMessage());
+        }
+    }
 
     // anshul coded this functions
     public function enquiries(Request $request)
@@ -1274,15 +1562,16 @@ class AdminController extends Controller
             $plant->plant_type = $request->rep_type;
             $plant->business_name = $request->input('manufacturer_name') ?? '';
             $plant->save();
+            
 
-            // $manufacturer = new Manufacturer();
-            // $manufacturer->status = 0;
-            // $manufacturer->plant_id = $plant->id; // Associate plant with manufacturer
-            // $manufacturer->manufacturer_name = $request->input('manufacturer_name') ?? '';
-            // $manufacturer->full_name = $request->input('manufacturer_full_name') ?? '';
-            // $manufacturer->save();
+            $manufacturer = new Manufacturer();
+            $manufacturer->status = 0;
+            $manufacturer->plant_id = $plant->id; // Associate plant with manufacturer
+            $manufacturer->manufacturer_name = $request->input('manufacturer_name') ?? '';
+            $manufacturer->full_name = $request->input('manufacturer_full_name') ?? '';
+            $manufacturer->save();
 
-            // $plant->update(['manufacturer_id' => $manufacturer->id]);
+            $plant->update(['manufacturer_id' => $manufacturer->id]);
 
             // if ($request->hasFile('manufacturer_image')) {
             //     $file = $request->file('manufacturer_image');
@@ -1315,4 +1604,20 @@ class AdminController extends Controller
             return errorMsg("Exception -> " . $e->getMessage());
         }
     }
+
+
+    public function redirectWithEncryption(Request $request)
+    {
+        // Get the item ID from the request
+        $itemId = $request->input('item_id');
+        //dd($itemId);
+        // Encrypt the item ID
+        $encryptedId = encrypt($itemId);
+
+        // Redirect to the route with the encrypted ID
+        return redirect()->route('admin.manufracturers.corporateshow', $encryptedId);
+    }
+
+
+    
 }
